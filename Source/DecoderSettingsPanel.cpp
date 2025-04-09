@@ -27,6 +27,7 @@ DecoderSettingsPanel::DecoderSettingsPanel(USATAudioProcessor& p)
         if (xml != nullptr) {
             xml->writeTo(file);
         }
+        
         audioProcessor.decode();
     };
 }

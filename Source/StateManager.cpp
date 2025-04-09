@@ -55,8 +55,8 @@ pluginParameterHandler(apvts)
     ensureDirectoryExists(resourceDirectory);
     ensureDirectoryExists(pythonScriptsDirectory);
     
-    DBG("Base Directory Path: " + presetsDirectory.getFullPathName());
-    DBG("Speaker Layout Path: " + speakerLayoutDirectory.getFullPathName());
+    //DBG("Base Directory Path: " + presetsDirectory.getFullPathName());
+    //DBG("Speaker Layout Path: " + speakerLayoutDirectory.getFullPathName());
 }
 
 StateManager::~StateManager()
@@ -142,15 +142,15 @@ void StateManager::debugGlobalValueTree() const {
         
         if (child.isValid()) {
             
-            DBG("Type: " << child.getType().toString());
-            DBG("Number of Properties: " << child.getNumProperties());
+            //DBG("Type: " << child.getType().toString());
+            //DBG("Number of Properties: " << child.getNumProperties());
             
             for (int j = 0; j < child.getNumProperties(); j++) {
                 
                 auto currentPropertyName    = child.getPropertyName(j);
                 auto currentPropertyVal     = child.getProperty(currentPropertyName);
                 
-                DBG(currentPropertyName << ": " << currentPropertyVal.toString());
+                //DBG(currentPropertyName << ": " << currentPropertyVal.toString());
             }
         }
     }

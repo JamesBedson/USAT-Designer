@@ -10,8 +10,8 @@
 
 #include "USAT.h"
 USAT::USAT()
+: pyThread(interpreter, gainsMatrix)
 {
-    
     
 }
 
@@ -86,11 +86,28 @@ const bool USAT::channelAndMatrixDimensionsMatch()
 
 // GAINS ========================================================================
 
-void USAT::computeMatrix(const std::string& scriptPath,
-                         const std::string& valueTreeXML)
+void USAT::computeMatrix(const std::string& valueTreeXML)
 {
-    // TODO: Make sure that the dimensions of gain matrix vs speaker layout matches
-    matrixReady = interpreter.runScript(scriptPath, valueTreeXML, gainsMatrix);
+
+    pyThread.setNewValueTree(valueTreeXML);
+    pyThread.setOnDoneCallback([this]()
+    {
+        this->matrixReady = true;
+
+        // Now that the matrix is ready, you can continue execution
+        DBG("Matrix is done!");
+    });
+    
+    if (PyGILState_Check()) {
+        DBG("Releasing GIL from main thread");
+        PyEval_ReleaseThread(interpreter.threadState);
+    }
+    
+    pyThread.startThread();
+    
+    
+    PyEval_AcquireThread(interpreter.threadState);
+    //interpreter.runScript(valueTreeXML, gainsMatrix);
 }
 
 void USAT::reshapeMatrix()
