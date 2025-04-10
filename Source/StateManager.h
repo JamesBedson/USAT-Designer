@@ -42,8 +42,10 @@ public:
     }
     
     const juce::ValueTree createGlobalValueTree() const;
-    const juce::ValueTree createValueTreeFromAPVTS() const;
-    void debugGlobalValueTree() const;
+    const juce::ValueTree createEncodingSettingsTree() const;
+    const juce::ValueTree createInputAmbisonicsTree() const;
+    const juce::ValueTree createOutputAmbisonicsTree() const;
+    void debugValueTree(const juce::ValueTree& tree) const;
     
     APVTS&                      apvts;
     PluginParameterHandler      pluginParameterHandler;

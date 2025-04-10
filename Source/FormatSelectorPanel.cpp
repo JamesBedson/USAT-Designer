@@ -109,6 +109,4 @@ void FormatSelectorPanel::comboBoxChanged(juce::ComboBox *comboBoxThatHasChanged
                 break;
         }
     }
-    
-    stateManager.debugGlobalValueTree();
 }

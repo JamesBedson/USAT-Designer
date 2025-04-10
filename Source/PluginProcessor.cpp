@@ -101,7 +101,8 @@ void USATAudioProcessor::decode()
 {
     std::string globalValueTree = stateManager.createGlobalValueTree().toXmlString().toStdString();
     std::string scriptPath      = stateManager.getPythonScript().getFullPathName().toStdString();
-    decoder.computeMatrix(globalValueTree);
+    //decoder.computeMatrix(globalValueTree);
+    stateManager.debugValueTree(stateManager.createGlobalValueTree());
 }
 
 

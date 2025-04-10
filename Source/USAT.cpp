@@ -88,7 +88,6 @@ const bool USAT::channelAndMatrixDimensionsMatch()
 
 void USAT::computeMatrix(const std::string& valueTreeXML)
 {
-
     pyThread.setNewValueTree(valueTreeXML);
     pyThread.setOnDoneCallback([this]()
     {

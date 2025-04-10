@@ -31,11 +31,13 @@ namespace ProcessingConstants {
     }
     namespace TreeTags {
     
-    const juce::String inputTreeType        = "Input_Loudspeaker_Layout";
-    const juce::String outputTreeType       = "Output_Loudspeaker_Layout";
-    const juce::String encodingTreeType     = "Encoding_Settings";
-    const juce::String globalTreeType       = "USAT_State_Parameters";
-    const juce::String coefficientsTreeType = "Coefficients";
+    const juce::String inputTreeType            = "Input_Loudspeaker_Layout";
+    const juce::String outputTreeType           = "Output_Loudspeaker_Layout";
+    const juce::String encodingTreeType         = "Encoding_Settings";
+    const juce::String inputAmbisonicsTreeType  = "Input_Ambisonics";
+    const juce::String outputAmbisonicsTreeType = "Output_Ambisonics";
+    const juce::String globalTreeType           = "USAT_State_Parameters";
+    const juce::String coefficientsTreeType     = "Coefficients";
     
     }
 
@@ -47,11 +49,11 @@ namespace ProcessingConstants {
 
     namespace EncodingOptions {
     
-    const juce::String inputType    = "inputType";
-    const juce::String outputType   = "outputType";
+    const juce::String inputType    = "InputType";
+    const juce::String outputType   = "OutputType";
     
-    const juce::String ambisonics       = "ambisonics";
-    const juce::String speakerLayout    = "speaker_layout";
+    const juce::String ambisonics       = "Ambisonics";
+    const juce::String speakerLayout    = "SpeakerLayout";
     
     // EncodingOptions
     const juce::StringArray encodingChoices {
@@ -60,15 +62,15 @@ namespace ProcessingConstants {
     };
     
         namespace Ambisonics {
-        const juce::String orderIn  = "ambisonicsOrderIn";
-        const juce::String orderOut = "ambisonicsOrderOut";
+        const juce::String orderIn  = "AmbisonicsOrderIn";
+        const juce::String orderOut = "AmbisonicsOrderOut";
         const juce::StringArray orderChoices {
                 "1", "2", "3", "4", "5", "6", "7"
             };
         }
     
         namespace Surround {
-            const juce::String surroundLayout   = "surroundLayout";
+            const juce::String surroundLayout   = "SurroundLayout";
             const juce::StringArray layoutChoices {
                 "5.1.4",
                 "7.1.4",
@@ -227,7 +229,7 @@ namespace ProcessingConstants {
             { EncodingOptions::inputType,                   "input_type"},
             { EncodingOptions::outputType,                  "output_type"},
             { EncodingOptions::ambisonics,                  "ambisonics"},
-            { EncodingOptions::speakerLayout,                    "surround"},
+            { EncodingOptions::speakerLayout,               "surround"},
             { EncodingOptions::Ambisonics::orderIn,         "ambisonics_order_in"},
             { EncodingOptions::Ambisonics::orderOut,        "ambisonics_order_out"},
             { EncodingOptions::Surround::surroundLayout,    "surroundLayout"}
