@@ -32,6 +32,8 @@
             file="Source/ParameterDefinitions.h"/>
       <FILE id="NKLt9m" name="USAT.cpp" compile="1" resource="0" file="Source/USAT.cpp"/>
       <FILE id="nGSQt3" name="USAT.h" compile="0" resource="0" file="Source/USAT.h"/>
+      <FILE id="wDAqn8" name="PythonInterpreter.h" compile="0" resource="0"
+            file="Source/PythonInterpreter.h"/>
       <FILE id="Lwsx9C" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
       <FILE id="DiCCZE" name="PluginProcessor.h" compile="0" resource="0"

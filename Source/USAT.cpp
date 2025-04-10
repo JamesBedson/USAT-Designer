@@ -98,16 +98,7 @@ void USAT::computeMatrix(const std::string& valueTreeXML)
         DBG("Matrix is done!");
     });
     
-    if (PyGILState_Check()) {
-        DBG("Releasing GIL from main thread");
-        PyEval_ReleaseThread(interpreter.threadState);
-    }
-    
     pyThread.startThread();
-    
-    
-    PyEval_AcquireThread(interpreter.threadState);
-    //interpreter.runScript(valueTreeXML, gainsMatrix);
 }
 
 void USAT::reshapeMatrix()
