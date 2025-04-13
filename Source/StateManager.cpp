@@ -88,10 +88,7 @@ const juce::ValueTree StateManager::createEncodingSettingsTree() const
     
     int inputType          = apvts.getParameterAsValue(ProcessingConstants::EncodingOptions::inputType).getValue();
     int outputType         = apvts.getParameterAsValue(ProcessingConstants::EncodingOptions::outputType).getValue();
-    int ambisonicsOrderIn  = apvts.getParameterAsValue(ProcessingConstants::EncodingOptions::Ambisonics::orderIn).getValue();
-    int ambisonicsOrderOut = apvts.getParameterAsValue(ProcessingConstants::EncodingOptions::Ambisonics::orderOut).getValue();
-    
-    
+
     // INPUT ================================================================================================
     if (inputType == 0) { // SpeakerLayout
         encodingTree.setProperty(ProcessingConstants::EncodingOptions::inputType,

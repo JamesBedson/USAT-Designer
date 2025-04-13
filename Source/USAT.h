@@ -38,6 +38,7 @@ public:
     
     // Matrix Processing
     void computeMatrix(const std::string& valueTreeXML);
+    void debugMatrix() const;
     
     const bool decodingMatrixReady();
     void process(juce::AudioBuffer<float>& buffer);

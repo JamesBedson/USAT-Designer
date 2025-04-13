@@ -12,7 +12,7 @@
 USAT::USAT()
 : pyThread(interpreter, gainsMatrix)
 {
-    
+    matrixReady = false;
 }
 
 USAT::~USAT()
@@ -25,7 +25,7 @@ USAT::~USAT()
 
 const bool USAT::decodingMatrixReady()
 {
-    return false;
+    return matrixReady;
 }
 
 const int USAT::getMatrixChannelCountIn()
@@ -84,17 +84,26 @@ const bool USAT::channelAndMatrixDimensionsMatch()
     && (getMatrixChannelCountOut() == currentChannelCountOut);
 }
 
+void USAT::debugMatrix() const {
+    for (int i = 0; i < gainsMatrix.size(); ++i) {
+        juce::String row;
+        for (int j = 0; j < gainsMatrix[i].size(); ++j) {
+            row += juce::String(gainsMatrix[i][j], 6) + " ";
+        }
+        DBG("Row " << i << ": " << row);
+    }
+}
 // GAINS ========================================================================
 
 void USAT::computeMatrix(const std::string& valueTreeXML)
 {
+    matrixReady = false;
     pyThread.setNewValueTree(valueTreeXML);
     pyThread.setOnDoneCallback([this]()
     {
-        this->matrixReady = true;
-
-        // Now that the matrix is ready, you can continue execution
+        matrixReady = true;
         DBG("Matrix is done!");
+        debugMatrix();
     });
     
     pyThread.startThread();

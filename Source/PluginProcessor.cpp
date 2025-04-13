@@ -100,17 +100,18 @@ void USATAudioProcessor::changeProgramName (int index, const juce::String& newNa
 void USATAudioProcessor::decode()
 {
     std::string globalValueTree = stateManager.createGlobalValueTree().toXmlString().toStdString();
-    std::string scriptPath      = stateManager.getPythonScript().getFullPathName().toStdString();
-    //decoder.computeMatrix(globalValueTree);
-    stateManager.debugValueTree(stateManager.createGlobalValueTree());
+    decoder.computeMatrix(globalValueTree);
 }
 
-
+¡
 void USATAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     // check if gains are loaded
+    if (!decoder.decodingMatrixReady()) {
+        
+        // TODO: alert message and something that won't let user playback
+    }
     
-    // check if channel and matrix dimensions match (how to handle case when they don't?)
     jassert(decoder.channelAndMatrixDimensionsMatch());
 }
 
