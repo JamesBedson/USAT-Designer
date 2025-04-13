@@ -10,16 +10,15 @@
 
 #include "USAT.h"
 USAT::USAT()
-: pyThread(interpreter, gainsMatrix)
 {
     matrixReady = false;
+    pyThread = std::make_unique<PythonThread>(interpreter, gainsMatrix);
 }
 
 USAT::~USAT()
 {
     
 }
-
 
 // CONFIGURATION ================================================================
 
@@ -28,96 +27,62 @@ const bool USAT::decodingMatrixReady()
     return matrixReady;
 }
 
-const int USAT::getMatrixChannelCountIn()
-{
-    return static_cast<int>(gainsMatrix.size());
-}
-
-const int USAT::getMatrixChannelCountOut()
-{
-    if (gainsMatrix.size() > 0) {
-        int initialOutputDimension = static_cast<int>(gainsMatrix[0].size());
-        
-        for (int i = 1; i < gainsMatrix.size(); i++) {
-            if (gainsMatrix[i].size() != initialOutputDimension)
-                return -1;
-        }
-    
-        return initialOutputDimension;
-    }
-    
-    return 0;
-}
-
-void USAT::setChannelCountIn(const int& channelCountIn)
-{
-    currentChannelCountIn = channelCountIn;
-    reshapeMatrix();
-}
-
-void USAT::setChannelCountOut(const int& channelCountOut)
-{
-    currentChannelCountOut = channelCountOut;
-    reshapeMatrix();
-}
-
-void USAT::setChannelCounts(const int &channelCountIn, const int &channelCountOut)
-{
-    currentChannelCountIn   = channelCountIn;
-    currentChannelCountOut  = channelCountOut;
-    reshapeMatrix();
-}
-
-const int USAT::getMatrixDimension(const MatrixDim& dimension) const {
-    if (dimension == MatrixDim::Row) {
-        return static_cast<int>(gainsMatrix.size());
-    }
-    
-    else {
-        return static_cast<int>(gainsMatrix.at(0).size());
-    }
-}
-
-const bool USAT::channelAndMatrixDimensionsMatch()
-{
-    return (getMatrixChannelCountIn() == currentChannelCountIn)
-    && (getMatrixChannelCountOut() == currentChannelCountOut);
-}
-
-void USAT::debugMatrix() const {
-    for (int i = 0; i < gainsMatrix.size(); ++i) {
-        juce::String row;
-        for (int j = 0; j < gainsMatrix[i].size(); ++j) {
-            row += juce::String(gainsMatrix[i][j], 6) + " ";
-        }
-        DBG("Row " << i << ": " << row);
-    }
-}
 // GAINS ========================================================================
 
 void USAT::computeMatrix(const std::string& valueTreeXML)
 {
     matrixReady = false;
-    pyThread.setNewValueTree(valueTreeXML);
-    pyThread.setOnDoneCallback([this]()
+    pyThread->setNewValueTree(valueTreeXML);
+    pyThread->setOnDoneCallback([this]()
     {
         matrixReady = true;
         DBG("Matrix is done!");
-        debugMatrix();
     });
     
-    pyThread.startThread();
-}
-
-void USAT::reshapeMatrix()
-{
-    gainsMatrix.resize(currentChannelCountIn);
-    
-    for (int chIn = 0; chIn < currentChannelCountIn; chIn++)
-        gainsMatrix[chIn].resize(currentChannelCountOut);
+    pyThread->startThread();
 }
 
 // ==============================================================
-void USAT::process(juce::AudioBuffer<float> &buffer) {
+void USAT::prepare(double sampleRate,
+                   int samplesPerBlock,
+                   int numInputChannelsInHost,
+                   int numOutputChannelsInHost)
+{
+    tempOutputBuffer.setSize(currentChannelCountOut, samplesPerBlock);
+    tempOutputBuffer.clear();
+
+    if (!gainsMatrix.verifyMatrixDimensions(numInputChannelsInHost, numOutputChannelsInHost)) {
+        // TODO: Handle Input and Output Dimension Mismatch. Dialog Box or something
+    };
+}
+
+
+void USAT::process(juce::AudioBuffer<float> &buffer,
+                   int numInputChannelsFromHost,
+                   int numOutputChannelsFromHost)
+{
+    const int numSamples        = buffer.getNumSamples();
+    const int numInputChannels  = juce::jmin(numInputChannelsFromHost, gainsMatrix.getNumInputChannels());
+    const int numOutputChannels = gainsMatrix.getNumOutputChannels();
     
+    if (gainsMatrix.verifyMatrixDimensions(numInputChannelsFromHost, numOutputChannelsFromHost)) {
+ 
+        for (int chOut = 0; chOut < numOutputChannels; chOut++) {
+            float* dest = tempOutputBuffer.getWritePointer(chOut);
+            
+            for (int chIn = 0; chIn < numInputChannels; chIn++) {
+                const float* src    = buffer.getReadPointer(chIn);
+                float gain          = gainsMatrix.get(chIn, chOut);
+                
+                if (chIn == 0)
+                    juce::FloatVectorOperations::multiply(dest, src, gain, numSamples);
+                
+                else
+                    juce::FloatVectorOperations::addWithMultiply(dest, src, gain, numSamples);
+            } // Input Channels
+        } // Output Channels
+        
+        for (int ch = 0; ch < numOutputChannels; ++ch)
+            buffer.copyFrom(ch, 0, tempOutputBuffer, ch, 0, numSamples);
+    }
 }

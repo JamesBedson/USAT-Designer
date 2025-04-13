@@ -14,8 +14,10 @@
 #include "ProcessingConstants.h"
 #include "StateManager.h"
 #include "PythonInterpreter.h"
+#include "GainMatrix.h"
 
 using APVTS     = juce::AudioProcessorValueTreeState;
+using Matrix    = std::vector<std::vector<float>>;
 
 class USAT {
     
@@ -29,28 +31,27 @@ public:
         Column
     };
     
-    // Matrix Pre-Processing
-    void setChannelCountIn(const int& channelCountIn);
-    void setChannelCountOut(const int& channelCountOut);
-    void setChannelCounts(const int& channelCountIn, const int& channelCountOut);
-    const int getMatrixDimension(const MatrixDim& dimension) const;
-    const bool channelAndMatrixDimensionsMatch();
-    
     // Matrix Processing
     void computeMatrix(const std::string& valueTreeXML);
-    void debugMatrix() const;
-    
     const bool decodingMatrixReady();
-    void process(juce::AudioBuffer<float>& buffer);
     
-    PythonThread pyThread;
+    void prepare(double sampleRate,
+                 int samplesPerBlock,
+                 int numInputChannelsInHost,
+                 int numOutputChannelsInHost);
     
-private:
-    void setParams();
-    void reshapeMatrix();
+    void process(juce::AudioBuffer<float>& buffer,
+                 int numInputChannelsFromHost,
+                 int numOutputChannelsFromHost);
     
+    std::unique_ptr<PythonThread> pyThread;
+    GainMatrix gainsMatrix;
+    
+private:    
     const int getMatrixChannelCountIn();
     const int getMatrixChannelCountOut();
+    
+    juce::AudioBuffer<float> tempOutputBuffer;
     
     int currentChannelCountIn;
     int currentChannelCountOut;
@@ -59,5 +60,4 @@ private:
     
     bool matrixReady;
     PythonInterpreter interpreter;
-    std::vector<std::vector<double>> gainsMatrix;
 };

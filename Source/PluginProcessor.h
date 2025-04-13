@@ -16,8 +16,6 @@
 
 
 //==============================================================================
-/**
-*/
 
 class USATAudioProcessor  : public juce::AudioProcessor
 {

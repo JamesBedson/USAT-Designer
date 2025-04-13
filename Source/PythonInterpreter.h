@@ -11,8 +11,9 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include "GainMatrix.h"
 
-using Matrix    = std::vector<std::vector<double>>;
+using Matrix = std::vector<std::vector<float>>;
 
 class ScopedGILGuard {
 public:
@@ -119,18 +120,19 @@ public:
         return func;
     }
     
-    bool loadMatrix(PyObject* matrixCoefficients, std::vector<std::vector<double>>& gainsMatrix) {
+    bool loadMatrix(PyObject* matrixCoefficients, GainMatrix& gainsMatrix) {
         
         if (PyList_Check(matrixCoefficients)) {
-            Py_ssize_t numRows = PyList_Size(matrixCoefficients);
-            gainsMatrix.resize(numRows);
+            Py_ssize_t numInputChannels = PyList_Size(matrixCoefficients);
             
-            if (numRows == 0) {
+            if (numInputChannels == 0) {
                 DBG("Number of rows is zero.");
                 return false;
             }
             
-            for (Py_ssize_t i = 0; i < numRows; i++) {
+            gainsMatrix.setNumInputChannels(static_cast<int>(numInputChannels));
+    
+            for (Py_ssize_t i = 0; i < numInputChannels; i++) {
                 PyObject* innerList = PyList_GetItem(matrixCoefficients, i);
                 
                 if (!PyList_Check(innerList)) {
@@ -138,20 +140,20 @@ public:
                     return false;
                 }
                 
-                Py_ssize_t numCols  = PyList_Size(innerList);
-                gainsMatrix[i].resize(numCols);
+                Py_ssize_t numOutputs  = PyList_Size(innerList);
+                gainsMatrix.setNumOutputChannelsForRow(static_cast<int>(i), static_cast<int>(numOutputs));
                 
-                if (numCols == 0) {
+                if (numOutputs == 0) {
                     DBG("Number of columns is zero");
                     return false;
                 }
                 
-                for (Py_ssize_t j = 0; j < numCols; j++) {
+                for (Py_ssize_t j = 0; j < numOutputs; j++) {
                     
                     PyObject* coefficient = PyList_GetItem(innerList, j);
                     
                     if (PyFloat_Check(coefficient) || PyLong_Check(coefficient)) {
-                        gainsMatrix[i][j] = PyFloat_AsDouble(coefficient);
+                        gainsMatrix.assign(static_cast<int>(i), static_cast<int>(j), PyFloat_AsDouble(coefficient));
                     }
                     
                     else {
@@ -168,7 +170,7 @@ public:
     }
     
     bool runScript(const std::string& valueTreeXML,
-                   std::vector<std::vector<double>>& gainsMatrix)
+                   GainMatrix& gainsMatrix)
     {
         ScopedGILGuard gil;
         
@@ -176,8 +178,8 @@ public:
             
             DBG("Entered run script");
             
-            PyObject* func      = loadFunction(receiveParametersModule);
-            PyObject* args      = PyTuple_Pack(1, PyUnicode_FromString(valueTreeXML.c_str()));
+            PyObject* func  = loadFunction(receiveParametersModule);
+            PyObject* args  = PyTuple_Pack(1, PyUnicode_FromString(valueTreeXML.c_str()));
             
             DBG("Calling function...");
             PyObject* matrixCoefficients = PyObject_CallObject(func, args);
@@ -219,7 +221,7 @@ public:
     using OnDoneCallback = std::function<void()>;
     
     PythonThread(PythonInterpreter& pyReference,
-                 Matrix& gainsMatrix)
+                 GainMatrix& gainsMatrix)
     
     : juce::Thread ("Python Thread"),
     pyRef(pyReference),
@@ -265,7 +267,7 @@ public:
     
 private:
     PythonInterpreter& pyRef;
-    Matrix& gainsMatrixRef;
+    GainMatrix& gainsMatrixRef;
     std::string valueTreeXML;
     
     OnDoneCallback onDone;

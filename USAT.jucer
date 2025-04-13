@@ -36,6 +36,9 @@
             file="Source/PythonInterpreter.h"/>
       <FILE id="Lwsx9C" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
+      <FILE id="gd1Un8" name="GainMatrix.h" compile="0" resource="0" file="Source/GainMatrix.h"/>
+      <FILE id="ZTz29p" name="MatrixMultiplication.h" compile="0" resource="0"
+            file="Source/MatrixMultiplication.h"/>
       <FILE id="DiCCZE" name="PluginProcessor.h" compile="0" resource="0"
             file="Source/PluginProcessor.h"/>
       <FILE id="V08EvH" name="PluginEditor.cpp" compile="1" resource="0"
