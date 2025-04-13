@@ -33,10 +33,19 @@ void USAT::computeMatrix(const std::string& valueTreeXML)
 {
     matrixReady = false;
     pyThread->setNewValueTree(valueTreeXML);
+    
     pyThread->setOnDoneCallback([this]()
     {
         matrixReady = true;
         DBG("Matrix is done!");
+    });
+    
+    pyThread->setOnProgressCallback([this](float progress) {
+        DBG("Called On Progress Callback");
+        
+        juce::MessageManager::callAsync([this, progress]() {
+            pyThread¡->progress = progress;
+        });
     });
     
     pyThread->startThread();

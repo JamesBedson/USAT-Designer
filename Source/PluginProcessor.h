@@ -60,10 +60,12 @@ public:
     StateManager stateManager;
     void decode();
     
+    juce::Value progressValue;
+    
 private:
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (USATAudioProcessor)
-    USAT                decoder;
-    APVTS               userParameters;
+    USAT            decoder;
+    APVTS           userParameters;
     
 };

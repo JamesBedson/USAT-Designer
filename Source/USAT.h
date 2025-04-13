@@ -17,7 +17,6 @@
 #include "GainMatrix.h"
 
 using APVTS     = juce::AudioProcessorValueTreeState;
-using Matrix    = std::vector<std::vector<float>>;
 
 class USAT {
     
@@ -44,9 +43,6 @@ public:
                  int numInputChannelsFromHost,
                  int numOutputChannelsFromHost);
     
-    std::unique_ptr<PythonThread> pyThread;
-    GainMatrix gainsMatrix;
-    
 private:    
     const int getMatrixChannelCountIn();
     const int getMatrixChannelCountOut();
@@ -60,4 +56,7 @@ private:
     
     bool matrixReady;
     PythonInterpreter interpreter;
+    
+    std::unique_ptr<PythonThread> pyThread;
+    GainMatrix gainsMatrix;
 };

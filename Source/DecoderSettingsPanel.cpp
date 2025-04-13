@@ -58,5 +58,8 @@ void DecoderSettingsPanel::resized()
     
     decode.setBounds(0, 0, buttonWidth, buttonHeight);
     decode.setCentrePosition(buttonCentreX, buttonCentreY);
-    
+}
+
+void DecoderSettingsPanel::valueChanged(juce::Value &value) {
+    DBG("Received value: " << value.toString());
 }

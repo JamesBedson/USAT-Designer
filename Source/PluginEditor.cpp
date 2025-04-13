@@ -29,6 +29,7 @@ WrappedAudioProcessorEditor::WrappedAudioProcessorEditor (USATAudioProcessor& p)
     }
     setResizable(true, true);
     setSize (UI::SizeLimits::maximumWidth, UI::SizeLimits::maximumHeight);
+    
 }
 
 WrappedAudioProcessorEditor::~WrappedAudioProcessorEditor()

@@ -13,8 +13,6 @@
 #include <JuceHeader.h>
 #include "GainMatrix.h"
 
-using Matrix = std::vector<std::vector<float>>;
-
 class ScopedGILGuard {
 public:
     ScopedGILGuard() {
@@ -169,8 +167,49 @@ public:
         return false;
     }
     
+    PyObject* makeProgressCallback(std::function<void(float)> cppCallback) {
+        DBG("Calling make Progress Callback");
+        
+        struct CallbackData {
+            std::function<void(float)> callback;
+        };
+        
+        auto* data = new CallbackData {cppCallback};
+        
+        PyObject* capsule = PyCapsule_New(data,
+                                          nullptr,
+                                          [](PyObject* capsule)
+        {
+            delete static_cast<CallbackData*>(PyCapsule_GetPointer(capsule, nullptr));
+        });
+        
+        static PyMethodDef def = {
+            "progress_callback",
+            [](PyObject* self, PyObject* args) -> PyObject* {
+                DBG("Entered...");
+                auto* data = static_cast<CallbackData*>(PyCapsule_GetPointer(self, nullptr));
+                if (!data) return nullptr;
+                
+                double value;
+                if (!PyArg_ParseTuple(args, "d", &value))
+                    return nullptr;
+                
+                float currentProgress = static_cast<float>(value);
+                DBG("Current Progress: " << currentProgress);
+                
+                data->callback(static_cast<float>(value));
+                Py_RETURN_NONE;
+            },
+            METH_VARARGS,
+            nullptr
+        };
+        
+        return PyCFunction_New(&def, capsule);
+    }
+    
     bool runScript(const std::string& valueTreeXML,
-                   GainMatrix& gainsMatrix)
+                   GainMatrix& gainsMatrix,
+                   std::function<void(float)> progressCallback = nullptr)
     {
         ScopedGILGuard gil;
         
@@ -179,13 +218,22 @@ public:
             DBG("Entered run script");
             
             PyObject* func  = loadFunction(receiveParametersModule);
-            PyObject* args  = PyTuple_Pack(1, PyUnicode_FromString(valueTreeXML.c_str()));
+            
+            if (!progressCallback) DBG("Progress callback is Null");
+            PyObject* pyProgressCallback = progressCallback
+                ? makeProgressCallback(progressCallback)
+                : Py_None;
+                        
+            Py_INCREF(pyProgressCallback);
+            
+            PyObject* args = PyTuple_Pack(2, PyUnicode_FromString(valueTreeXML.c_str()), pyProgressCallback);
             
             DBG("Calling function...");
             PyObject* matrixCoefficients = PyObject_CallObject(func, args);
             
             Py_DECREF(args);
             Py_DECREF(func);
+            Py_DECREF(pyProgressCallback);
             
             if (!matrixCoefficients) {
                 PyErr_Print();
@@ -218,7 +266,8 @@ class PythonThread : public juce::Thread {
   
 public:
     
-    using OnDoneCallback = std::function<void()>;
+    using OnDoneCallback        = std::function<void()>;
+    using OnProgressCallback    = std::function<void(float)>;
     
     PythonThread(PythonInterpreter& pyReference,
                  GainMatrix& gainsMatrix)
@@ -234,9 +283,12 @@ public:
         stopThread(1000);
     }
     
-    void setOnDoneCallback(OnDoneCallback callback)
-    {
+    void setOnDoneCallback(OnDoneCallback callback) {
         onDone = std::move(callback);
+    }
+    
+    void setOnProgressCallback(OnProgressCallback callback) {
+        onProgress = std::move(callback);
     }
     
     void run() override
@@ -247,7 +299,15 @@ public:
             return;
         }
         
-        bool success = pyRef.runScript(valueTreeXML, gainsMatrixRef);
+        bool success = pyRef.runScript(valueTreeXML,gainsMatrixRef,
+                                       [this](float progress){
+            if (onProgress) {
+                juce::MessageManager::callAsync([this, progress]() {
+                    onProgress(progress);
+                });
+            }
+        });
+        
         DBG("Ran script...");
         if (success && onDone) {
             juce::MessageManager::callAsync([this]() {
@@ -265,10 +325,13 @@ public:
         this->valueTreeXML = valueTreeXML;
     }
     
+    juce::Value progress;
+    
 private:
     PythonInterpreter& pyRef;
     GainMatrix& gainsMatrixRef;
     std::string valueTreeXML;
     
-    OnDoneCallback onDone;
+    OnDoneCallback      onDone;
+    OnProgressCallback  onProgress;
 };

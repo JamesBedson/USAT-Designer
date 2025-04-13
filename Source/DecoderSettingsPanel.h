@@ -15,7 +15,7 @@
 //==============================================================================
 /*
 */
-class DecoderSettingsPanel  : public juce::Component
+class DecoderSettingsPanel  : public juce::Component, public juce::Value::Listener
 {
 public:
     DecoderSettingsPanel(USATAudioProcessor&);
@@ -23,6 +23,7 @@ public:
 
     void paint (juce::Graphics&) override;
     void resized() override;
+    void valueChanged(juce::Value& value) override;
 
 private:
     USATAudioProcessor& audioProcessor;
