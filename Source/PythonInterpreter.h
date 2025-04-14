@@ -168,7 +168,6 @@ public:
     }
     
     PyObject* makeProgressCallback(std::function<void(float)> cppCallback) {
-        DBG("Calling make Progress Callback");
         
         struct CallbackData {
             std::function<void(float)> callback;
@@ -186,7 +185,7 @@ public:
         static PyMethodDef def = {
             "progress_callback",
             [](PyObject* self, PyObject* args) -> PyObject* {
-                DBG("Entered...");
+                
                 auto* data = static_cast<CallbackData*>(PyCapsule_GetPointer(self, nullptr));
                 if (!data) return nullptr;
                 
@@ -215,11 +214,8 @@ public:
         
         if (Py_IsInitialized()) {
             
-            DBG("Entered run script");
-            
             PyObject* func  = loadFunction(receiveParametersModule);
             
-            if (!progressCallback) DBG("Progress callback is Null");
             PyObject* pyProgressCallback = progressCallback
                 ? makeProgressCallback(progressCallback)
                 : Py_None;
@@ -227,8 +223,6 @@ public:
             Py_INCREF(pyProgressCallback);
             
             PyObject* args = PyTuple_Pack(2, PyUnicode_FromString(valueTreeXML.c_str()), pyProgressCallback);
-            
-            DBG("Calling function...");
             PyObject* matrixCoefficients = PyObject_CallObject(func, args);
             
             Py_DECREF(args);
@@ -299,14 +293,7 @@ public:
             return;
         }
         
-        bool success = pyRef.runScript(valueTreeXML,gainsMatrixRef,
-                                       [this](float progress){
-            if (onProgress) {
-                juce::MessageManager::callAsync([this, progress]() {
-                    onProgress(progress);
-                });
-            }
-        });
+        bool success = pyRef.runScript(valueTreeXML, gainsMatrixRef, onProgress);
         
         DBG("Ran script...");
         if (success && onDone) {

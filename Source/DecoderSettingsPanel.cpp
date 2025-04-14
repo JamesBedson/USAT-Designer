@@ -13,11 +13,16 @@
 
 //==============================================================================
 DecoderSettingsPanel::DecoderSettingsPanel(USATAudioProcessor& p)
-: audioProcessor(p)
+: audioProcessor(p),
+progressBar(progressValue)
 {
+    p.progressValue.addListener(this);
+    
+    addAndMakeVisible(progressBar);
+    progressBar.setStyle(juce::ProgressBar::Style::linear);
+    
     addAndMakeVisible(decode);
     decode.setButtonText("decode");
-    
     decode.onClick = [this]()
     {
         const auto valueTree    = audioProcessor.stateManager.createGlobalValueTree();
@@ -58,8 +63,13 @@ void DecoderSettingsPanel::resized()
     
     decode.setBounds(0, 0, buttonWidth, buttonHeight);
     decode.setCentrePosition(buttonCentreX, buttonCentreY);
+    
+    const float
+    progressBarWidth    = buttonWidth,
+    progressBarHeight   = buttonHeight;
+    progressBar.setBounds(decode.getRight(), decode.getY(), progressBarWidth, progressBarHeight);
 }
 
 void DecoderSettingsPanel::valueChanged(juce::Value &value) {
-    DBG("Received value: " << value.toString());
+    progressValue = value.getValue();
 }

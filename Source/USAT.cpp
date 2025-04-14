@@ -9,7 +9,8 @@
 */
 
 #include "USAT.h"
-USAT::USAT()
+USAT::USAT(juce::Value& progress)
+: progressValue(progress)
 {
     matrixReady = false;
     pyThread = std::make_unique<PythonThread>(interpreter, gainsMatrix);
@@ -44,7 +45,7 @@ void USAT::computeMatrix(const std::string& valueTreeXML)
         DBG("Called On Progress Callback");
         
         juce::MessageManager::callAsync([this, progress]() {
-            pyThread->progress = progress;
+            progressValue.setValue(progress);
         });
     });
     

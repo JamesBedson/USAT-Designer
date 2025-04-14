@@ -24,7 +24,8 @@ USATAudioProcessor::USATAudioProcessor()
 userParameters(*this, nullptr, juce::Identifier("USAT Designer"),
 #include "ParameterDefinitions.h"
            ),
-stateManager(userParameters)
+stateManager(userParameters),
+decoder(progressValue)
 {
     //decode();
 }

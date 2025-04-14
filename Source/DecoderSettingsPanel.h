@@ -20,16 +20,16 @@ class DecoderSettingsPanel  : public juce::Component, public juce::Value::Listen
 public:
     DecoderSettingsPanel(USATAudioProcessor&);
     ~DecoderSettingsPanel() override;
-
+    
     void paint (juce::Graphics&) override;
     void resized() override;
     void valueChanged(juce::Value& value) override;
-
-private:
-    USATAudioProcessor& audioProcessor;
     
-    juce::TextButton
-    decode;
+private:
+    double progressValue {0.f};
+    USATAudioProcessor& audioProcessor;
+    juce::TextButton    decode;
+    juce::ProgressBar   progressBar;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DecoderSettingsPanel)
 };
