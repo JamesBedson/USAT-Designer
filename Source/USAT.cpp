@@ -44,7 +44,7 @@ void USAT::computeMatrix(const std::string& valueTreeXML)
         DBG("Called On Progress Callback");
         
         juce::MessageManager::callAsync([this, progress]() {
-            pyThread¡->progress = progress;
+            pyThread->progress = progress;
         });
     });
     
