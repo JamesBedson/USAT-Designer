@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Speaker_Layout>
+  <Speaker_1 ID="1" Azimuth="0.0" Elevation="0.0" Distance="1.0"/>
+  <Speaker_2 ID="2" Azimuth="0.0" Elevation="0.0" Distance="1.0"/>
+  <Speaker_3 ID="3" Azimuth="0.0" Elevation="0.0" Distance="1.0"/>
+  <Speaker_4 ID="4" Azimuth="0.0" Elevation="0.0" Distance="1.0"/>
+  <Speaker_5 ID="5" Azimuth="0.0" Elevation="0.0" Distance="1.0"/>
+  <Speaker_6 ID="6" Azimuth="0.0" Elevation="0.0" Distance="1.0"/>
+</Speaker_Layout>
