@@ -32,6 +32,7 @@ public:
     
     // Matrix Processing
     void computeMatrix(const std::string& valueTreeXML);
+    void signalStopPythread();
     const bool decodingMatrixReady();
     
     void prepare(double sampleRate,

@@ -13,32 +13,14 @@
 
 //==============================================================================
 DecoderSettingsPanel::DecoderSettingsPanel(USATAudioProcessor& p)
-: audioProcessor(p),
-progressBar(progressValue)
+: audioProcessor(p)
 {
-    p.progressValue.addListener(this);
-    
-    addAndMakeVisible(progressBar);
-    progressBar.setStyle(juce::ProgressBar::Style::linear);
-    
     addAndMakeVisible(decode);
+    decode.addListener(this);
     decode.setButtonText("decode");
-    decode.onClick = [this]()
-    {
-        const auto valueTree    = audioProcessor.stateManager.createGlobalValueTree();
-        auto file               = audioProcessor.stateManager.presetsDirectory.getChildFile("GlobalValueTree.xml");
-        std::unique_ptr<juce::XmlElement> xml(valueTree.createXml());
-        
-        if (xml != nullptr) {
-            xml->writeTo(file);
-        }
-        
-        audioProcessor.decode();
-    };
 }
 
-DecoderSettingsPanel::~DecoderSettingsPanel()
-{
+DecoderSettingsPanel::~DecoderSettingsPanel(){
 }
 
 void DecoderSettingsPanel::paint (juce::Graphics& g)
@@ -63,13 +45,35 @@ void DecoderSettingsPanel::resized()
     
     decode.setBounds(0, 0, buttonWidth, buttonHeight);
     decode.setCentrePosition(buttonCentreX, buttonCentreY);
-    
-    const float
-    progressBarWidth    = buttonWidth,
-    progressBarHeight   = buttonHeight;
-    progressBar.setBounds(decode.getRight(), decode.getY(), progressBarWidth, progressBarHeight);
 }
 
-void DecoderSettingsPanel::valueChanged(juce::Value &value) {
-    progressValue = value.getValue();
+void DecoderSettingsPanel::buttonClicked(juce::Button *button) {
+    if (button == &decode) {
+        
+        const auto valueTree    = audioProcessor.stateManager.createGlobalValueTree();
+        auto file               = audioProcessor.stateManager.presetsDirectory.getChildFile("GlobalValueTree.xml");
+        std::unique_ptr<juce::XmlElement> xml(valueTree.createXml());
+        
+        if (xml != nullptr) {
+            xml->writeTo(file);
+        }
+        
+        BlockingPopup* popup = new BlockingPopup(&audioProcessor);
+        const float
+        popupWidth  = getWidth() * 0.3f,
+        popupHeight = getHeight() * 0.3f;
+        
+        popup->setSize(popupWidth, popupHeight);
+        
+        juce::DialogWindow::LaunchOptions options;
+        options.content.setOwned(popup);
+        options.dialogTitle                     = "Decoding...";
+        options.escapeKeyTriggersCloseButton    = false;
+        options.useNativeTitleBar               = false;
+        options.resizable                       = false;
+        options.useBottomRightCornerResizer     = false;
+        options.launchAsync();
+        
+        audioProcessor.decode();
+    }
 }

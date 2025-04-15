@@ -77,6 +77,8 @@
               file="Source/DecoderSettingsPanel.cpp"/>
         <FILE id="e493lq" name="DecoderSettingsPanel.h" compile="0" resource="0"
               file="Source/DecoderSettingsPanel.h"/>
+        <FILE id="dtqMt7" name="MatrixComputeWindow.h" compile="0" resource="0"
+              file="Source/MatrixComputeWindow.h"/>
         <FILE id="zcS6di" name="ControlSection.cpp" compile="1" resource="0"
               file="Source/ControlSection.cpp"/>
         <FILE id="HxrFDM" name="ControlSection.h" compile="0" resource="0"

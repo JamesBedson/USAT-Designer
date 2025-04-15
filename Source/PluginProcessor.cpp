@@ -32,6 +32,7 @@ decoder(progressValue)
 
 USATAudioProcessor::~USATAudioProcessor()
 {
+    cancelDecoding();
 }
 
 //==============================================================================
@@ -102,6 +103,11 @@ void USATAudioProcessor::decode()
     // TODO: Do prior check as to whether the channel dimensions will match and ask user whether they want to continue if they don't
     std::string globalValueTree = stateManager.createGlobalValueTree().toXmlString().toStdString();
     decoder.computeMatrix(globalValueTree);
+}
+
+void USATAudioProcessor::cancelDecoding() {
+    DBG("Stopping Thread");
+    decoder.signalStopPythread();
 }
 
 void USATAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)

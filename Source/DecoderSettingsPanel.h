@@ -12,10 +12,14 @@
 
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
+#include "MatrixComputeWindow.h"
 //==============================================================================
 /*
 */
-class DecoderSettingsPanel  : public juce::Component, public juce::Value::Listener
+class DecoderSettingsPanel
+: public juce::Component,
+public juce::Button::Listener
+
 {
 public:
     DecoderSettingsPanel(USATAudioProcessor&);
@@ -23,13 +27,11 @@ public:
     
     void paint (juce::Graphics&) override;
     void resized() override;
-    void valueChanged(juce::Value& value) override;
+    void buttonClicked(juce::Button* button) override;
     
 private:
-    double progressValue {0.f};
     USATAudioProcessor& audioProcessor;
     juce::TextButton    decode;
-    juce::ProgressBar   progressBar;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DecoderSettingsPanel)
 };

@@ -42,7 +42,6 @@ void USAT::computeMatrix(const std::string& valueTreeXML)
     });
     
     pyThread->setOnProgressCallback([this](float progress) {
-        DBG("Called On Progress Callback");
         
         juce::MessageManager::callAsync([this, progress]() {
             progressValue.setValue(progress);
@@ -50,6 +49,11 @@ void USAT::computeMatrix(const std::string& valueTreeXML)
     });
     
     pyThread->startThread();
+}
+
+void USAT::signalStopPythread() {
+    pyThread->signalThreadShouldExit();
+    DBG("Signaled Exit.");
 }
 
 // ==============================================================

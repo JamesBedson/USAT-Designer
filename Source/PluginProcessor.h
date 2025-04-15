@@ -59,6 +59,7 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
     StateManager stateManager;
     void decode();
+    void cancelDecoding();
     
     juce::Value progressValue;
     
