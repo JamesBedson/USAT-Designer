@@ -236,8 +236,7 @@ const juce::String SpeakerLayoutPanel::getText(const int columnNumber,
 
 void SpeakerLayoutPanel::updateSpeakerState(int row, int columnID, float value)
 {
-    //auto speakerToUpdate    = speakerManager->getSpeaker(row + 1);
-    auto coordinateType     = getSpeakerAttributeFromColumn(columnID);
+    auto coordinateType = getSpeakerAttributeFromColumn(columnID);
     speakerManager->modifySpeakerProperty(row + 1, coordinateType, value);
     
 }

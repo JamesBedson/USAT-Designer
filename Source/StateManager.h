@@ -28,20 +28,10 @@ public:
     static const juce::File speakerLayoutDirectory;
     static const juce::File getPythonScript();
     
-    void ensureDirectoryExists(const juce::File& directory)
-    {
-        if (!directory.exists())
-        {
-            auto result = directory.createDirectory();
-            if (result.failed())
-            {
-                DBG("Could not create directory: " + result.getErrorMessage());
-                jassertfalse;
-            }
-        }
-    }
-    
+    void ensureDirectoryExists(const juce::File& directory);
     void initCoefficientsTree();
+    
+    // Value Trees
     const juce::ValueTree createGlobalValueTree() const;
     const juce::ValueTree createEncodingSettingsTree() const;
     const juce::ValueTree createInputAmbisonicsTree() const;

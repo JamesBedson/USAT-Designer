@@ -16,7 +16,6 @@ AmbisonicsSelectorPanel::AmbisonicsSelectorPanel(StateManager& s,
                                                  const UI::FormatType formatType)
 : formatType(formatType)
 {
-    
     orders.addItemList(ProcessingConstants::EncodingOptions::Ambisonics::orderChoices, 1);
     
     if (formatType == UI::FormatType::input) {

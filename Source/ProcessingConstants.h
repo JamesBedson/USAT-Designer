@@ -24,24 +24,26 @@ namespace ProcessingConstants {
     const juce::String  azimuth         = "Azimuth";
     const juce::String  elevation       = "Elevation";
     const juce::String  distance        = "Distance";
-
-    const juce::String  inputTreeType   = "Input_Loudspeaker_Layout";
-    const juce::String  outputTreeType  = "Output_Loudspeaker_Layout";
-
+    
+    const juce::String inputSpeakerLayoutName   = "Input Layout";
+    const juce::String outputSpeakerLayoutName  = "Output Layout";
+    
     }
+
     namespace TreeTags {
     
-    const juce::String inputTreeType            = "Input_Loudspeaker_Layout";
-    const juce::String outputTreeType           = "Output_Loudspeaker_Layout";
-    const juce::String encodingTreeType         = "Encoding_Settings";
-    const juce::String inputAmbisonicsTreeType  = "Input_Ambisonics";
-    const juce::String outputAmbisonicsTreeType = "Output_Ambisonics";
-    const juce::String globalTreeType           = "USAT_State_Parameters";
-    const juce::String coefficientsTreeType     = "Coefficients";
-    const juce::String globalGainMatrixTreeType = "Global_Gain_Matrix";
-    const juce::String channelCountTreeType     = "Channel_Counts";
-    const juce::String gainMatrixTreeType       = "Gain_Matrix";
-    const juce::String mainState                = "Main_State";
+    const juce::String inputSpeakerLayoutID     = "Input_Loudspeaker_Layout";
+    const juce::String outputSpeakerLayoutID    = "Output_Loudspeaker_Layout";
+    const juce::String encodingSettingsID       = "Encoding_Settings";
+    const juce::String inputAmbisonicsID        = "Input_Ambisonics";
+    const juce::String outputAmbisonicsID       = "Output_Ambisonics";
+    const juce::String coefficientsID           = "Coefficients";
+    const juce::String stateParametersID        = "USAT_State_Parameters";
+    const juce::String gainMatrixID             = "Gain_Matrix";
+    const juce::String channelCountsID          = "Channel_Counts";
+    const juce::String matrixCoefficientsID     = "Matrix_Coefficients";
+    const juce::String mainStateID              = "Main_State";
+    
     }
 
     namespace GainMatrixTree {
@@ -56,7 +58,14 @@ namespace ProcessingConstants {
         namespace MatrixCoefficient {
         
         const juce::String baseCoefficientID    = "P";
-        const juce::String terminator           = ";";
+        inline const juce::String getCoefficientID(const int chIn, const int chOut)
+        {
+            juce::String baseName = "P";
+            baseName << chIn;
+            baseName << chOut;
+            return baseName;
+        }
+        
         }
     
     }

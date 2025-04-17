@@ -31,7 +31,10 @@ public:
     
 private:
     USATAudioProcessor& audioProcessor;
-    juce::TextButton    decode;
+    juce::TextButton
+        decode,
+        save,
+        load;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DecoderSettingsPanel)
 };

@@ -115,24 +115,21 @@ void USAT::process(juce::AudioBuffer<float> &buffer,
     }
 }
 
-void USAT::fillMatrixFromValueTree(const juce::ValueTree& globalMatrixTree) {
+void USAT::fillMatrixFromValueTree(const juce::ValueTree& matrixTree) {
     
-    const int inputChannels  = globalMatrixTree.getProperty(ProcessingConstants::GainMatrixTree::ChannelCount::inputChannelCount);
-    const int outputChannels = globalMatrixTree.getProperty(ProcessingConstants::GainMatrixTree::ChannelCount::outputChannelCount);
+    const int inputChannels  = matrixTree.getProperty(ProcessingConstants::GainMatrixTree::ChannelCount::inputChannelCount);
+    const int outputChannels = matrixTree.getProperty(ProcessingConstants::GainMatrixTree::ChannelCount::outputChannelCount);
     
     jassert(inputChannels > 0 && outputChannels > 0);
+    
     gainsMatrix.setNumChannels(inputChannels, outputChannels);
     
     for (int chIn = 0; chIn < inputChannels; chIn++) {
         for (int chOut = 0; chOut < outputChannels; chOut++) {
             
-            juce::String propertyID;
-            propertyID << ProcessingConstants::GainMatrixTree::MatrixCoefficient::baseCoefficientID;
-            propertyID << chIn;
-            propertyID << chOut;
-            
-            const double value = globalMatrixTree.getProperty(propertyID);
-            
+            const auto coefficientID = ProcessingConstants::GainMatrixTree::MatrixCoefficient::getCoefficientID(chIn, chOut);
+            const double value       = matrixTree.getProperty(coefficientID);
+    
             gainsMatrix.assign(chIn, chOut, value);
         }
     }

@@ -30,11 +30,11 @@ stateManager(s)
     layoutName.setJustificationType(juce::Justification::centred);
     
     if (formatType == UI::FormatType::input)
-        layoutName.setText(ProcessingConstants::SpeakerProperties::inputTreeType,
+        layoutName.setText(ProcessingConstants::SpeakerProperties::inputSpeakerLayoutName,
                            juce::NotificationType::dontSendNotification);
     
     else if (formatType == UI::FormatType::output)
-        layoutName.setText(ProcessingConstants::SpeakerProperties::outputTreeType,
+        layoutName.setText(ProcessingConstants::SpeakerProperties::outputSpeakerLayoutName,
                            juce::NotificationType::dontSendNotification);
     
     else
@@ -132,7 +132,6 @@ void LayoutSelectorPanel::buttonClicked(juce::Button* button)
                                                        stateManager,
                                                        formatType
                                                        );
-
             else
                 jassertfalse;
         

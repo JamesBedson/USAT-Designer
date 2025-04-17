@@ -168,7 +168,7 @@ juce::AudioProcessorEditor* USATAudioProcessor::createEditor()
 //==============================================================================
 void USATAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
-    juce::ValueTree mainState {ProcessingConstants::TreeTags::mainState};
+    juce::ValueTree mainState {ProcessingConstants::TreeTags::mainStateID};
     const juce::ValueTree globalTree        = stateManager.createGlobalValueTree();
     mainState.addChild(globalTree, -1, nullptr);
     
@@ -187,10 +187,30 @@ void USATAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
     std::unique_ptr<juce::XmlElement> xmlState  = getXmlFromBinary(data, sizeInBytes);
     
     if (xmlState != nullptr) {
-        juce::ValueTree loadedTree = juce::ValueTree::fromXml(*xmlState);
+        juce::ValueTree mainState = juce::ValueTree::fromXml(*xmlState);
         
-        if (loadedTree.isValid()) {
+        if (mainState.isValid())
+        {
+            auto params = mainState.getChildWithName(ProcessingConstants::TreeTags::stateParametersID);
+    
+            auto encodingSettings   = params.getChildWithName(ProcessingConstants::TreeTags::encodingSettingsID);
+            auto ambisonicsInput    = params.getChildWithName(ProcessingConstants::TreeTags::inputAmbisonicsID);
+            auto ambisonicsOutput   = params.getChildWithName(ProcessingConstants::TreeTags::outputAmbisonicsID);
+            auto speakersInput      = params.getChildWithName(ProcessingConstants::TreeTags::inputSpeakerLayoutID);
+            auto speakersOutput     = params.getChildWithName(ProcessingConstants::TreeTags::outputSpeakerLayoutID);
+            auto coefficients       = params.getChildWithName(ProcessingConstants::TreeTags::coefficientsID);
             
+            stateManager.inputSpeakerManager.recoverStateFromValueTree(speakersInput);
+            stateManager.outputSpeakerManager.recoverStateFromValueTree(speakersOutput);
+            stateManager.coefficientsTree = coefficients.createCopy();
+            
+            auto globalGainMatrix = mainState.getChildWithName(ProcessingConstants::TreeTags::gainMatrixID);
+            
+            if (globalGainMatrix.isValid()) {
+                auto channelCount = globalGainMatrix.getChildWithName(ProcessingConstants::TreeTags::channelCountsID);
+                auto matrix = globalGainMatrix.getChildWithName(ProcessingConstants::TreeTags::coefficientsID);
+                decoder.fillMatrixFromValueTree(matrix);
+            }
         }
     }
 }

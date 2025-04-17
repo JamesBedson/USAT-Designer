@@ -48,8 +48,8 @@ const juce::File StateManager::getPythonScript()
 
 StateManager::StateManager(APVTS& apvts)
 : apvts(apvts),
-inputSpeakerManager(ProcessingConstants::TreeTags::inputTreeType),
-outputSpeakerManager(ProcessingConstants::TreeTags::outputTreeType)
+inputSpeakerManager(ProcessingConstants::TreeTags::inputSpeakerLayoutID),
+outputSpeakerManager(ProcessingConstants::TreeTags::outputSpeakerLayoutID)
 {
     ensureDirectoryExists(presetsDirectory);
     ensureDirectoryExists(speakerLayoutDirectory);
@@ -60,14 +60,23 @@ outputSpeakerManager(ProcessingConstants::TreeTags::outputTreeType)
 }
 
 StateManager::~StateManager()
+{}
+
+void StateManager::ensureDirectoryExists(const juce::File &directory)
 {
-    
+    if (!directory.exists()) {
+        auto result = directory.createDirectory();
+        if (result.failed()) {
+            DBG("Could not create directory: " + result.getErrorMessage());
+            jassertfalse;
+        }
+    }
 }
 
 void StateManager::initCoefficientsTree()
 {
     
-    juce::ValueTree coefficientsTree {ProcessingConstants::TreeTags::coefficientsTreeType};
+    juce::ValueTree coefficientsTree {ProcessingConstants::TreeTags::coefficientsID};
     
     for (juce::String coefficient : ProcessingConstants::Coeffs::coefficientTypes)
     {
@@ -80,7 +89,7 @@ void StateManager::initCoefficientsTree()
 const juce::ValueTree StateManager::createInputAmbisonicsTree() const
 {
     
-    juce::ValueTree ambisonicsTree {ProcessingConstants::TreeTags::inputAmbisonicsTreeType};
+    juce::ValueTree ambisonicsTree {ProcessingConstants::TreeTags::inputAmbisonicsID};
     
     int ambisonicsOrderIn = apvts.getParameterAsValue(ProcessingConstants::EncodingOptions::Ambisonics::orderIn).getValue();
     
@@ -92,7 +101,7 @@ const juce::ValueTree StateManager::createInputAmbisonicsTree() const
 const juce::ValueTree StateManager::createOutputAmbisonicsTree() const
 {
     
-    juce::ValueTree ambisonicsTree {ProcessingConstants::TreeTags::outputAmbisonicsTreeType};
+    juce::ValueTree ambisonicsTree {ProcessingConstants::TreeTags::outputAmbisonicsID};
     
     int ambisonicsOrderOut = apvts.getParameterAsValue(ProcessingConstants::EncodingOptions::Ambisonics::orderOut).getValue();
     
@@ -103,7 +112,7 @@ const juce::ValueTree StateManager::createOutputAmbisonicsTree() const
 
 const juce::ValueTree StateManager::createEncodingSettingsTree() const
 {
-    juce::ValueTree encodingTree {ProcessingConstants::TreeTags::encodingTreeType};
+    juce::ValueTree encodingTree {ProcessingConstants::TreeTags::encodingSettingsID};
     
     int inputType          = apvts.getParameterAsValue(ProcessingConstants::EncodingOptions::inputType).getValue();
     int outputType         = apvts.getParameterAsValue(ProcessingConstants::EncodingOptions::outputType).getValue();
@@ -148,7 +157,7 @@ const juce::ValueTree StateManager::createGlobalValueTree() const
     auto speakerLayoutInTree    = inputSpeakerManager.getSpeakerTree().createCopy();
     auto speakerLayoutOutTree   = outputSpeakerManager.getSpeakerTree().createCopy();
     
-    juce::ValueTree globalTree {ProcessingConstants::TreeTags::globalTreeType};
+    juce::ValueTree globalTree {ProcessingConstants::TreeTags::stateParametersID};
     
     globalTree.addChild(encodingSettingsTree, -1, nullptr);
     globalTree.addChild(ambisonicsInTree, -1, nullptr);
@@ -164,9 +173,9 @@ const juce::ValueTree StateManager::createGainMatrixTree(const GainMatrix& matri
 {
     
     juce::ValueTree
-        globalGainMatrixTree    {ProcessingConstants::TreeTags::globalGainMatrixTreeType},
-        channelCountTree        {ProcessingConstants::TreeTags::channelCountTreeType},
-        matrixTree              {ProcessingConstants::TreeTags::gainMatrixTreeType};
+        globalGainMatrixTree    {ProcessingConstants::TreeTags::gainMatrixID},
+        channelCountTree        {ProcessingConstants::TreeTags::channelCountsID},
+        matrixTree              {ProcessingConstants::TreeTags::matrixCoefficientsID};
     
     auto inputChannels  = matrix.getNumInputChannels();
     auto outputChannels = matrix.getNumOutputChannels();
