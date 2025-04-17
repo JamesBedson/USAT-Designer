@@ -62,6 +62,7 @@ public:
     void cancelDecoding();
     
     juce::Value progressValue;
+    juce::Value statusValue;
     
 private:
     //==============================================================================

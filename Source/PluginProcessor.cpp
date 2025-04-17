@@ -25,7 +25,7 @@ userParameters(*this, nullptr, juce::Identifier("USAT Designer"),
 #include "ParameterDefinitions.h"
            ),
 stateManager(userParameters),
-decoder(progressValue)
+decoder(progressValue, statusValue)
 {
     //decode();
 }

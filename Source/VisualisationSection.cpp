@@ -19,7 +19,6 @@ visPanelBottom(s)
 {
     addAndMakeVisible(visPanelTop);
     addAndMakeVisible(visPanelBottom);
-
 }
 
 VisualisationSection::~VisualisationSection()

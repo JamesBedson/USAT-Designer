@@ -22,7 +22,7 @@ class USAT {
     
 public:
     
-    USAT(juce::Value& progress);
+    USAT(juce::Value& progress, juce::Value& status);
     ~USAT();
     
     enum MatrixDim{
@@ -57,8 +57,8 @@ private:
     
     bool matrixReady;
     PythonInterpreter interpreter;
-    
     std::unique_ptr<PythonThread> pyThread;
     GainMatrix gainsMatrix;
     juce::Value& progressValue;
+    juce::Value& statusValue;
 };
