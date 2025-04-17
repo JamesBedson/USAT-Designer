@@ -48,12 +48,15 @@ const juce::File StateManager::getPythonScript()
 
 StateManager::StateManager(APVTS& apvts)
 : apvts(apvts),
-pluginParameterHandler(apvts)
+inputSpeakerManager(ProcessingConstants::TreeTags::inputTreeType),
+outputSpeakerManager(ProcessingConstants::TreeTags::outputTreeType)
 {
     ensureDirectoryExists(presetsDirectory);
     ensureDirectoryExists(speakerLayoutDirectory);
     ensureDirectoryExists(resourceDirectory);
     ensureDirectoryExists(pythonScriptsDirectory);
+    
+    initCoefficientsTree();
 }
 
 StateManager::~StateManager()
@@ -61,7 +64,21 @@ StateManager::~StateManager()
     
 }
 
-const juce::ValueTree StateManager::createInputAmbisonicsTree() const {
+void StateManager::initCoefficientsTree()
+{
+    
+    juce::ValueTree coefficientsTree {ProcessingConstants::TreeTags::coefficientsTreeType};
+    
+    for (juce::String coefficient : ProcessingConstants::Coeffs::coefficientTypes)
+    {
+        auto it = ProcessingConstants::Coeffs::defaultValues.find(coefficient);
+        auto defaultValue = it->second;
+        coefficientsTree.setProperty(coefficient, defaultValue, nullptr);
+    }
+}
+
+const juce::ValueTree StateManager::createInputAmbisonicsTree() const
+{
     
     juce::ValueTree ambisonicsTree {ProcessingConstants::TreeTags::inputAmbisonicsTreeType};
     
@@ -72,7 +89,8 @@ const juce::ValueTree StateManager::createInputAmbisonicsTree() const {
     return ambisonicsTree;
 }
 
-const juce::ValueTree StateManager::createOutputAmbisonicsTree() const {
+const juce::ValueTree StateManager::createOutputAmbisonicsTree() const
+{
     
     juce::ValueTree ambisonicsTree {ProcessingConstants::TreeTags::outputAmbisonicsTreeType};
     
@@ -121,16 +139,14 @@ const juce::ValueTree StateManager::createEncodingSettingsTree() const
     return encodingTree;
 }
 
-
 const juce::ValueTree StateManager::createGlobalValueTree() const
 {
     // Create Separate ValueTree for APVTS parameters
     auto encodingSettingsTree   = createEncodingSettingsTree();
     auto ambisonicsInTree       = createInputAmbisonicsTree();
     auto ambisonicsOutTree      = createOutputAmbisonicsTree();
-    auto speakerLayoutInTree    = transcodingConfigHandler.speakerManagerInput.getSpeakerTree().createCopy();
-    auto speakerLayoutOutTree   = transcodingConfigHandler.speakerManagerOutput.getSpeakerTree().createCopy();
-    auto coefficientsTree       = pluginParameterHandler.getCoefficientTree().createCopy();
+    auto speakerLayoutInTree    = inputSpeakerManager.getSpeakerTree().createCopy();
+    auto speakerLayoutOutTree   = outputSpeakerManager.getSpeakerTree().createCopy();
     
     juce::ValueTree globalTree {ProcessingConstants::TreeTags::globalTreeType};
     
@@ -144,12 +160,13 @@ const juce::ValueTree StateManager::createGlobalValueTree() const
     return globalTree;
 }
 
-const juce::ValueTree StateManager::createGainMatrixTree(const GainMatrix& matrix) const {
+const juce::ValueTree StateManager::createGainMatrixTree(const GainMatrix& matrix) const
+{
     
     juce::ValueTree
-        globalGainMatrixTree,
-        channelCountTree,
-        matrixTree;
+        globalGainMatrixTree    {ProcessingConstants::TreeTags::globalGainMatrixTreeType},
+        channelCountTree        {ProcessingConstants::TreeTags::channelCountTreeType},
+        matrixTree              {ProcessingConstants::TreeTags::gainMatrixTreeType};
     
     auto inputChannels  = matrix.getNumInputChannels();
     auto outputChannels = matrix.getNumOutputChannels();
@@ -167,7 +184,6 @@ const juce::ValueTree StateManager::createGainMatrixTree(const GainMatrix& matri
             
             coefficientID << juce::String(chIn);
             coefficientID << juce::String(chOut);
-            coefficientID << ProcessingConstants::GainMatrixTree::MatrixCoefficient::terminator;
             
             matrixTree.setProperty(coefficientID, matrixValue, nullptr);
         }

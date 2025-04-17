@@ -18,10 +18,10 @@ SpeakerLayoutPanel::SpeakerLayoutPanel(StateManager& s,
 stateManager(s)
 {
     if (formatType == UI::FormatType::input)
-        speakerManager = &(stateManager.transcodingConfigHandler.speakerManagerInput);
+        speakerManager = &(stateManager.inputSpeakerManager);
     
     else if (formatType == UI::FormatType::output)
-        speakerManager = &(stateManager.transcodingConfigHandler.speakerManagerOutput);
+        speakerManager = &(stateManager.outputSpeakerManager);
     else
         jassertfalse;
     

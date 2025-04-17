@@ -102,12 +102,12 @@ void USATAudioProcessor::decode()
 {
     // TODO: Do prior check as to whether the channel dimensions will match and ask user whether they want to continue if they don't
     std::string globalValueTree = stateManager.createGlobalValueTree().toXmlString().toStdString();
-    decoder.computeMatrix(globalValueTree);
-    
-    const auto matrix           = decoder.getGainMatrixInstance();
-    auto decodingMatrixTree     = stateManager.createGainMatrixTree(matrix);
-    
-    stateManager.debugValueTree(decodingMatrixTree);
+    decoder.computeMatrix(globalValueTree, [this]() {
+        
+        const auto matrix           = decoder.getGainMatrixInstance();
+        auto decodingMatrixTree     = stateManager.createGainMatrixTree(matrix);
+        stateManager.debugValueTree(decodingMatrixTree);
+    });
 }
 
 void USATAudioProcessor::cancelDecoding() {
@@ -168,13 +168,31 @@ juce::AudioProcessorEditor* USATAudioProcessor::createEditor()
 //==============================================================================
 void USATAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
+    juce::ValueTree mainState {ProcessingConstants::TreeTags::mainState};
+    const juce::ValueTree globalTree        = stateManager.createGlobalValueTree();
+    mainState.addChild(globalTree, -1, nullptr);
     
+    if (decoder.decodingMatrixReady()) {
+        const juce::ValueTree gainMatrixTree = stateManager.createGainMatrixTree(decoder.getGainMatrixInstance());
+        mainState.addChild(gainMatrixTree, -1, nullptr);
+    }
+    
+    std::unique_ptr<juce::XmlElement> xml (mainState.createXml());
+    if (xml)
+        copyXmlToBinary(*xml, destData);
 }
 
 void USATAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
-    // You should use this method to restore your parameters from this memory block,
-    // whose contents will have been created by the getStateInformation() call.
+    std::unique_ptr<juce::XmlElement> xmlState  = getXmlFromBinary(data, sizeInBytes);
+    
+    if (xmlState != nullptr) {
+        juce::ValueTree loadedTree = juce::ValueTree::fromXml(*xmlState);
+        
+        if (loadedTree.isValid()) {
+            
+        }
+    }
 }
 
 //==============================================================================

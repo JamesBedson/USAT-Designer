@@ -31,7 +31,9 @@ public:
     };
     
     // Matrix Processing
-    void computeMatrix(const std::string& valueTreeXML);
+    void computeMatrix(const std::string& valueTreeXML,
+                       std::function<void()> onComplete);
+    
     void signalStopPythread();
     const bool decodingMatrixReady();
     
@@ -45,6 +47,8 @@ public:
                  int numOutputChannelsFromHost);
     
     const GainMatrix& getGainMatrixInstance() const;
+    
+    void fillMatrixFromValueTree(const juce::ValueTree&);
     
 private:    
     const int getMatrixChannelCountIn();
@@ -60,6 +64,7 @@ private:
     bool matrixReady;
     PythonInterpreter interpreter;
     std::unique_ptr<PythonThread> pyThread;
+    
     GainMatrix gainsMatrix;
     juce::Value& progressValue;
     juce::Value& statusValue;

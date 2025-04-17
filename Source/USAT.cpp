@@ -32,15 +32,20 @@ const bool USAT::decodingMatrixReady()
 
 // GAINS ========================================================================
 
-void USAT::computeMatrix(const std::string& valueTreeXML)
+void USAT::computeMatrix(const std::string& valueTreeXML,
+                         std::function<void()> onComplete)
 {
     matrixReady = false;
     pyThread->setNewValueTree(valueTreeXML);
     
-    pyThread->setOnDoneCallback([this]()
+    pyThread->setOnDoneCallback([this, onComplete]()
     {
         matrixReady = true;
         DBG("Matrix is done!");
+        
+        if (onComplete) {
+            juce::MessageManager::callAsync(onComplete);
+        }
     });
     
     pyThread->setOnProgressCallback([this](float progress) {
@@ -107,6 +112,29 @@ void USAT::process(juce::AudioBuffer<float> &buffer,
         
         for (int ch = 0; ch < numOutputChannels; ++ch)
             buffer.copyFrom(ch, 0, tempOutputBuffer, ch, 0, numSamples);
+    }
+}
+
+void USAT::fillMatrixFromValueTree(const juce::ValueTree& globalMatrixTree) {
+    
+    const int inputChannels  = globalMatrixTree.getProperty(ProcessingConstants::GainMatrixTree::ChannelCount::inputChannelCount);
+    const int outputChannels = globalMatrixTree.getProperty(ProcessingConstants::GainMatrixTree::ChannelCount::outputChannelCount);
+    
+    jassert(inputChannels > 0 && outputChannels > 0);
+    gainsMatrix.setNumChannels(inputChannels, outputChannels);
+    
+    for (int chIn = 0; chIn < inputChannels; chIn++) {
+        for (int chOut = 0; chOut < outputChannels; chOut++) {
+            
+            juce::String propertyID;
+            propertyID << ProcessingConstants::GainMatrixTree::MatrixCoefficient::baseCoefficientID;
+            propertyID << chIn;
+            propertyID << chOut;
+            
+            const double value = globalMatrixTree.getProperty(propertyID);
+            
+            gainsMatrix.assign(chIn, chOut, value);
+        }
     }
 }
 

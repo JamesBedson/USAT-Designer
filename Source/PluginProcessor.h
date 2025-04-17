@@ -12,7 +12,6 @@
 #include "ProcessingConstants.h"
 #include "USAT.h"
 #include "StateManager.h"
-#include "ParameterParser.h"
 
 
 //==============================================================================

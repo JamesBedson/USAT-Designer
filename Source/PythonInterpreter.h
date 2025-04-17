@@ -334,7 +334,6 @@ public:
     
     void run() override
     {
-        decodingDone.reset();
         
         if (valueTreeXML.empty()) {
             DBG("Value Tree does not contain info.");
@@ -355,12 +354,7 @@ public:
             DBG("Python Execution failed.");
         }
         
-        decodingDone.signal();
         signalThreadShouldExit();
-    }
-    
-    bool waitForDecodingToFinish() {
-        return decodingDone.wait();
     }
     
     void setNewValueTree(const std::string& valueTreeXML) {
@@ -377,6 +371,4 @@ private:
     OnDoneCallback      onDone;
     OnProgressCallback  onProgress;
     OnStatusCallback    onStatus;
-    
-    juce::WaitableEvent decodingDone;
 };

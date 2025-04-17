@@ -16,7 +16,7 @@ ParameterPanel::ParameterPanel(StateManager& s)
 : stateManager(s)
 {
     
-    auto coefficientTree = s.pluginParameterHandler.getCoefficientTree();
+    auto coefficientTree = s.coefficientsTree;
     
     energy.setValue(coefficientTree.getProperty(ProcessingConstants::Coeffs::energy));
     radialIntensity.setValue(coefficientTree.getProperty(ProcessingConstants::Coeffs::radialIntensity));
@@ -40,7 +40,7 @@ ParameterPanel::ParameterPanel(StateManager& s)
     addAndMakeVisible(totalGainsQuadratic);
     
     energy.onValueChange = [&]() {
-        auto coefficientTree = s.pluginParameterHandler.getCoefficientTree();
+        auto coefficientTree = s.coefficientsTree;
         coefficientTree.setProperty(ProcessingConstants::Coeffs::energy,
                                     energy.getValue(),
                                     nullptr
@@ -48,7 +48,7 @@ ParameterPanel::ParameterPanel(StateManager& s)
     };
 
     radialIntensity.onValueChange = [&]() {
-        auto coefficientTree = s.pluginParameterHandler.getCoefficientTree();
+        auto coefficientTree = s.coefficientsTree;
         coefficientTree.setProperty(ProcessingConstants::Coeffs::radialIntensity,
                                     radialIntensity.getValue(),
                                     nullptr
@@ -56,7 +56,7 @@ ParameterPanel::ParameterPanel(StateManager& s)
     };
 
     pressure.onValueChange = [&]() {
-        auto coefficientTree = s.pluginParameterHandler.getCoefficientTree();
+        auto coefficientTree = s.coefficientsTree;
         coefficientTree.setProperty(ProcessingConstants::Coeffs::pressure,
                                     pressure.getValue(),
                                     nullptr
@@ -64,7 +64,7 @@ ParameterPanel::ParameterPanel(StateManager& s)
     };
 
     transverseVelocity.onValueChange = [&]() {
-        auto coefficientTree = s.pluginParameterHandler.getCoefficientTree();
+        auto coefficientTree = s.coefficientsTree;
         coefficientTree.setProperty(ProcessingConstants::Coeffs::transverseVelocity,
                                     transverseVelocity.getValue(),
                                     nullptr
@@ -72,7 +72,7 @@ ParameterPanel::ParameterPanel(StateManager& s)
     };
 
     radialVelocity.onValueChange = [&]() {
-        auto coefficientTree = s.pluginParameterHandler.getCoefficientTree();
+        auto coefficientTree = s.coefficientsTree;
         coefficientTree.setProperty(ProcessingConstants::Coeffs::radialVelocity,
                                     radialVelocity.getValue(),
                                     nullptr
@@ -80,7 +80,7 @@ ParameterPanel::ParameterPanel(StateManager& s)
     };
 
     inPhaseQuadratic.onValueChange = [&]() {
-        auto coefficientTree = s.pluginParameterHandler.getCoefficientTree();
+        auto coefficientTree = s.coefficientsTree;
         coefficientTree.setProperty(ProcessingConstants::Coeffs::inPhaseQuadratic,
                                     inPhaseQuadratic.getValue(),
                                     nullptr
@@ -88,7 +88,7 @@ ParameterPanel::ParameterPanel(StateManager& s)
     };
 
     inPhaseLinear.onValueChange = [&]() {
-        auto coefficientTree = s.pluginParameterHandler.getCoefficientTree();
+        auto coefficientTree = s.coefficientsTree;
         coefficientTree.setProperty(ProcessingConstants::Coeffs::inPhaseLinear,
                                     inPhaseLinear.getValue(),
                                     nullptr
@@ -96,7 +96,7 @@ ParameterPanel::ParameterPanel(StateManager& s)
     };
 
     symmetryLinear.onValueChange = [&]() {
-        auto coefficientTree = s.pluginParameterHandler.getCoefficientTree();
+        auto coefficientTree = s.coefficientsTree;
         coefficientTree.setProperty(ProcessingConstants::Coeffs::symmetryLinear,
                                     symmetryLinear.getValue(),
                                     nullptr
@@ -104,7 +104,7 @@ ParameterPanel::ParameterPanel(StateManager& s)
     };
 
     totalGainsLinear.onValueChange = [&]() {
-        auto coefficientTree = s.pluginParameterHandler.getCoefficientTree();
+        auto coefficientTree = s.coefficientsTree;
         coefficientTree.setProperty(ProcessingConstants::Coeffs::totalGainsLinear,
                                     totalGainsLinear.getValue(),
                                     nullptr
@@ -112,7 +112,7 @@ ParameterPanel::ParameterPanel(StateManager& s)
     };
 
     totalGainsQuadratic.onValueChange = [&]() {
-        auto coefficientTree = s.pluginParameterHandler.getCoefficientTree();
+        auto coefficientTree = s.coefficientsTree;
         coefficientTree.setProperty(ProcessingConstants::Coeffs::totalGainsQuadratic,
                                     totalGainsQuadratic.getValue(),
                                     nullptr

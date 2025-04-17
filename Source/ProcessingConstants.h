@@ -38,6 +38,10 @@ namespace ProcessingConstants {
     const juce::String outputAmbisonicsTreeType = "Output_Ambisonics";
     const juce::String globalTreeType           = "USAT_State_Parameters";
     const juce::String coefficientsTreeType     = "Coefficients";
+    const juce::String globalGainMatrixTreeType = "Global_Gain_Matrix";
+    const juce::String channelCountTreeType     = "Channel_Counts";
+    const juce::String gainMatrixTreeType       = "Gain_Matrix";
+    const juce::String mainState                = "Main_State";
     }
 
     namespace GainMatrixTree {

@@ -12,8 +12,6 @@
 #include <JuceHeader.h>
 #include "ProcessingConstants.h"
 #include "SpeakerManager.h"
-#include "TranscodingConfigHandler.h"
-#include "PluginParameterHandler.h"
 #include "GainMatrix.h"
 
 using APVTS = juce::AudioProcessorValueTreeState;
@@ -23,6 +21,7 @@ class StateManager {
 public:
     StateManager(APVTS& apvts);
     ~StateManager();
+    
     static const juce::File presetsDirectory;
     static const juce::File resourceDirectory;
     static const juce::File pythonScriptsDirectory;
@@ -42,6 +41,7 @@ public:
         }
     }
     
+    void initCoefficientsTree();
     const juce::ValueTree createGlobalValueTree() const;
     const juce::ValueTree createEncodingSettingsTree() const;
     const juce::ValueTree createInputAmbisonicsTree() const;
@@ -50,9 +50,10 @@ public:
     
     void debugValueTree(const juce::ValueTree& tree) const;
     
-    APVTS&                      apvts;
-    PluginParameterHandler      pluginParameterHandler;
-    TranscodingConfigHandler    transcodingConfigHandler;
+    APVTS&          apvts;
+    SpeakerManager  inputSpeakerManager;
+    SpeakerManager  outputSpeakerManager;
+    juce::ValueTree coefficientsTree;
     
 private:
     

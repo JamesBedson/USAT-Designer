@@ -184,10 +184,10 @@ void LayoutSelectorPanel::showExportDialog()
                 DBG("Chosen file: " + fileToSave.getFullPathName());
                 
                 formatType == UI::FormatType::input ?
-                stateManager.transcodingConfigHandler.speakerManagerInput
+                stateManager.outputSpeakerManager
                     .saveCurrentLayoutToXML(fileToSave)
                 :
-                stateManager.transcodingConfigHandler.speakerManagerOutput
+                stateManager.outputSpeakerManager
                     .saveCurrentLayoutToXML(fileToSave);
             }
             
@@ -226,10 +226,10 @@ void LayoutSelectorPanel::showImportDialog()
                 DBG("Chosen file: " + fileToLoad.getFullPathName());
 
                 formatType == UI::FormatType::input ?
-                    stateManager.transcodingConfigHandler.speakerManagerInput
+                    stateManager.inputSpeakerManager
                     .loadValueTreeFromXML(fileToLoad)
                     :
-                    stateManager.transcodingConfigHandler.speakerManagerOutput
+                    stateManager.outputSpeakerManager
                     .loadValueTreeFromXML(fileToLoad);
             }
 

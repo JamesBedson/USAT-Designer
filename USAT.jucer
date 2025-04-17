@@ -5,11 +5,15 @@
               companyName="James_UPF">
   <MAINGROUP id="eTEwYW" name="USAT">
     <GROUP id="{75454686-D724-A001-9E08-39DABE220BEF}" name="Source">
+      <GROUP id="{6DC1898D-4BF4-8425-78D1-5CB9243978E9}" name="Utils">
+        <FILE id="gd1Un8" name="GainMatrix.h" compile="0" resource="0" file="Source/GainMatrix.h"/>
+        <FILE id="ZTz29p" name="MatrixMultiplication.h" compile="0" resource="0"
+              file="Source/MatrixMultiplication.h"/>
+        <FILE id="BuSR7P" name="ProcessingConstants.h" compile="0" resource="0"
+              file="Source/ProcessingConstants.h"/>
+        <FILE id="Kb62wX" name="UIConstants.h" compile="0" resource="0" file="Source/UIConstants.h"/>
+      </GROUP>
       <GROUP id="{FE193262-12D5-8FBB-1721-F7BE1067D01E}" name="State">
-        <FILE id="fSra6w" name="TranscodingConfigHandler.cpp" compile="1" resource="0"
-              file="Source/TranscodingConfigHandler.cpp"/>
-        <FILE id="LQqosa" name="TranscodingConfigHandler.h" compile="0" resource="0"
-              file="Source/TranscodingConfigHandler.h"/>
         <FILE id="tkxXQe" name="SpeakerManager.cpp" compile="1" resource="0"
               file="Source/SpeakerManager.cpp"/>
         <FILE id="X1E6eG" name="SpeakerManager.h" compile="0" resource="0"
@@ -17,33 +21,15 @@
         <FILE id="FviHkd" name="StateManager.cpp" compile="1" resource="0"
               file="Source/StateManager.cpp"/>
         <FILE id="ETkKAE" name="StateManager.h" compile="0" resource="0" file="Source/StateManager.h"/>
-        <FILE id="YAfgqE" name="PluginParameterHandler.cpp" compile="1" resource="0"
-              file="Source/PluginParameterHandler.cpp"/>
-        <FILE id="ckCB1o" name="PluginParameterHandler.h" compile="0" resource="0"
-              file="Source/PluginParameterHandler.h"/>
+        <FILE id="cjus4y" name="ParameterDefinitions.h" compile="0" resource="0"
+              file="Source/ParameterDefinitions.h"/>
       </GROUP>
-      <FILE id="ltLpFh" name="ParameterParser.cpp" compile="1" resource="0"
-            file="Source/ParameterParser.cpp"/>
-      <FILE id="GF6Dcu" name="ParameterParser.h" compile="0" resource="0"
-            file="Source/ParameterParser.h"/>
-      <FILE id="BuSR7P" name="ProcessingConstants.h" compile="0" resource="0"
-            file="Source/ProcessingConstants.h"/>
-      <FILE id="cjus4y" name="ParameterDefinitions.h" compile="0" resource="0"
-            file="Source/ParameterDefinitions.h"/>
-      <FILE id="NKLt9m" name="USAT.cpp" compile="1" resource="0" file="Source/USAT.cpp"/>
-      <FILE id="nGSQt3" name="USAT.h" compile="0" resource="0" file="Source/USAT.h"/>
-      <FILE id="wDAqn8" name="PythonInterpreter.h" compile="0" resource="0"
-            file="Source/PythonInterpreter.h"/>
-      <FILE id="Lwsx9C" name="PluginProcessor.cpp" compile="1" resource="0"
-            file="Source/PluginProcessor.cpp"/>
-      <FILE id="gd1Un8" name="GainMatrix.h" compile="0" resource="0" file="Source/GainMatrix.h"/>
-      <FILE id="ZTz29p" name="MatrixMultiplication.h" compile="0" resource="0"
-            file="Source/MatrixMultiplication.h"/>
-      <FILE id="DiCCZE" name="PluginProcessor.h" compile="0" resource="0"
-            file="Source/PluginProcessor.h"/>
-      <FILE id="V08EvH" name="PluginEditor.cpp" compile="1" resource="0"
-            file="Source/PluginEditor.cpp"/>
-      <FILE id="IM9YcK" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
+      <GROUP id="{FAB4E2E9-A79E-D07A-18D9-BC1460D0B037}" name="Decoding">
+        <FILE id="wDAqn8" name="PythonInterpreter.h" compile="0" resource="0"
+              file="Source/PythonInterpreter.h"/>
+        <FILE id="NKLt9m" name="USAT.cpp" compile="1" resource="0" file="Source/USAT.cpp"/>
+        <FILE id="nGSQt3" name="USAT.h" compile="0" resource="0" file="Source/USAT.h"/>
+      </GROUP>
       <GROUP id="{93CD12DE-13EC-0D1D-50F7-FCE85BCCF0EC}" name="UI">
         <GROUP id="{54A54E2D-0526-F839-C5BE-00B936AB4E97}" name="Speaker Layout ">
           <FILE id="OBC9vG" name="SpeakerLayoutPanel.cpp" compile="1" resource="0"
@@ -53,44 +39,54 @@
           <FILE id="FqPno9" name="SpeakerLayoutWindow.h" compile="0" resource="0"
                 file="Source/SpeakerLayoutWindow.h"/>
         </GROUP>
-        <FILE id="aCswjv" name="AmbisonicsSelectorPanel.cpp" compile="1" resource="0"
-              file="Source/AmbisonicsSelectorPanel.cpp"/>
-        <FILE id="wYdxEN" name="AmbisonicsSelectorPanel.h" compile="0" resource="0"
-              file="Source/AmbisonicsSelectorPanel.h"/>
-        <FILE id="ZmxNKS" name="LayoutSelectorPanel.cpp" compile="1" resource="0"
-              file="Source/LayoutSelectorPanel.cpp"/>
-        <FILE id="AUo9vU" name="LayoutSelectorPanel.h" compile="0" resource="0"
-              file="Source/LayoutSelectorPanel.h"/>
-        <FILE id="gvksZg" name="VisualisationPanel.cpp" compile="1" resource="0"
-              file="Source/VisualisationPanel.cpp"/>
-        <FILE id="Lwsbwz" name="VisualisationPanel.h" compile="0" resource="0"
-              file="Source/VisualisationPanel.h"/>
-        <FILE id="w5m3T1" name="ParameterPanel.cpp" compile="1" resource="0"
-              file="Source/ParameterPanel.cpp"/>
-        <FILE id="rmvRhk" name="ParameterPanel.h" compile="0" resource="0"
-              file="Source/ParameterPanel.h"/>
-        <FILE id="c2jha5" name="FormatSelectorPanel.cpp" compile="1" resource="0"
-              file="Source/FormatSelectorPanel.cpp"/>
-        <FILE id="JFL8kK" name="FormatSelectorPanel.h" compile="0" resource="0"
-              file="Source/FormatSelectorPanel.h"/>
-        <FILE id="h4tKMJ" name="DecoderSettingsPanel.cpp" compile="1" resource="0"
-              file="Source/DecoderSettingsPanel.cpp"/>
-        <FILE id="e493lq" name="DecoderSettingsPanel.h" compile="0" resource="0"
-              file="Source/DecoderSettingsPanel.h"/>
-        <FILE id="dtqMt7" name="MatrixComputeWindow.h" compile="0" resource="0"
-              file="Source/MatrixComputeWindow.h"/>
-        <FILE id="zcS6di" name="ControlSection.cpp" compile="1" resource="0"
-              file="Source/ControlSection.cpp"/>
-        <FILE id="HxrFDM" name="ControlSection.h" compile="0" resource="0"
-              file="Source/ControlSection.h"/>
-        <FILE id="LPy0SF" name="Header.cpp" compile="1" resource="0" file="Source/Header.cpp"/>
-        <FILE id="vm6KGy" name="Header.h" compile="0" resource="0" file="Source/Header.h"/>
-        <FILE id="rSYHIY" name="VisualisationSection.cpp" compile="1" resource="0"
-              file="Source/VisualisationSection.cpp"/>
-        <FILE id="Jv4AAl" name="VisualisationSection.h" compile="0" resource="0"
-              file="Source/VisualisationSection.h"/>
-        <FILE id="Kb62wX" name="UIConstants.h" compile="0" resource="0" file="Source/UIConstants.h"/>
+        <GROUP id="{697366FD-BF2C-4934-FD0D-0B7701941AF4}" name="Sections">
+          <GROUP id="{2F38C913-40EA-36FD-14CE-7B5EC92A97FC}" name="Format">
+            <FILE id="c2jha5" name="FormatSelectorPanel.cpp" compile="1" resource="0"
+                  file="Source/FormatSelectorPanel.cpp"/>
+            <FILE id="JFL8kK" name="FormatSelectorPanel.h" compile="0" resource="0"
+                  file="Source/FormatSelectorPanel.h"/>
+            <FILE id="aCswjv" name="AmbisonicsSelectorPanel.cpp" compile="1" resource="0"
+                  file="Source/AmbisonicsSelectorPanel.cpp"/>
+            <FILE id="wYdxEN" name="AmbisonicsSelectorPanel.h" compile="0" resource="0"
+                  file="Source/AmbisonicsSelectorPanel.h"/>
+            <FILE id="ZmxNKS" name="LayoutSelectorPanel.cpp" compile="1" resource="0"
+                  file="Source/LayoutSelectorPanel.cpp"/>
+            <FILE id="AUo9vU" name="LayoutSelectorPanel.h" compile="0" resource="0"
+                  file="Source/LayoutSelectorPanel.h"/>
+          </GROUP>
+          <FILE id="LPy0SF" name="Header.cpp" compile="1" resource="0" file="Source/Header.cpp"/>
+          <FILE id="vm6KGy" name="Header.h" compile="0" resource="0" file="Source/Header.h"/>
+          <FILE id="zcS6di" name="ControlSection.cpp" compile="1" resource="0"
+                file="Source/ControlSection.cpp"/>
+          <FILE id="HxrFDM" name="ControlSection.h" compile="0" resource="0"
+                file="Source/ControlSection.h"/>
+          <FILE id="w5m3T1" name="ParameterPanel.cpp" compile="1" resource="0"
+                file="Source/ParameterPanel.cpp"/>
+          <FILE id="rmvRhk" name="ParameterPanel.h" compile="0" resource="0"
+                file="Source/ParameterPanel.h"/>
+          <FILE id="gvksZg" name="VisualisationPanel.cpp" compile="1" resource="0"
+                file="Source/VisualisationPanel.cpp"/>
+          <FILE id="Lwsbwz" name="VisualisationPanel.h" compile="0" resource="0"
+                file="Source/VisualisationPanel.h"/>
+          <FILE id="rSYHIY" name="VisualisationSection.cpp" compile="1" resource="0"
+                file="Source/VisualisationSection.cpp"/>
+          <FILE id="Jv4AAl" name="VisualisationSection.h" compile="0" resource="0"
+                file="Source/VisualisationSection.h"/>
+          <FILE id="h4tKMJ" name="DecoderSettingsPanel.cpp" compile="1" resource="0"
+                file="Source/DecoderSettingsPanel.cpp"/>
+          <FILE id="e493lq" name="DecoderSettingsPanel.h" compile="0" resource="0"
+                file="Source/DecoderSettingsPanel.h"/>
+          <FILE id="dtqMt7" name="MatrixComputeWindow.h" compile="0" resource="0"
+                file="Source/MatrixComputeWindow.h"/>
+        </GROUP>
       </GROUP>
+      <FILE id="Lwsx9C" name="PluginProcessor.cpp" compile="1" resource="0"
+            file="Source/PluginProcessor.cpp"/>
+      <FILE id="DiCCZE" name="PluginProcessor.h" compile="0" resource="0"
+            file="Source/PluginProcessor.h"/>
+      <FILE id="V08EvH" name="PluginEditor.cpp" compile="1" resource="0"
+            file="Source/PluginEditor.cpp"/>
+      <FILE id="IM9YcK" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
     </GROUP>
   </MAINGROUP>
   <MODULES>
