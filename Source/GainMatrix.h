@@ -46,7 +46,7 @@ public:
         }
     }
     
-    float get(int rowIdx, int columnIdx) {
+    const float get(int rowIdx, int columnIdx) const {
         if (rowIdx >= 0 && rowIdx < buffer.size()) {
             
             if (columnIdx >= 0 && columnIdx < buffer[rowIdx].size())

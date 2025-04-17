@@ -82,6 +82,7 @@ const juce::ValueTree StateManager::createOutputAmbisonicsTree() const {
     
     return ambisonicsTree;
 }
+
 const juce::ValueTree StateManager::createEncodingSettingsTree() const
 {
     juce::ValueTree encodingTree {ProcessingConstants::TreeTags::encodingTreeType};
@@ -124,7 +125,6 @@ const juce::ValueTree StateManager::createEncodingSettingsTree() const
 const juce::ValueTree StateManager::createGlobalValueTree() const
 {
     // Create Separate ValueTree for APVTS parameters
-    
     auto encodingSettingsTree   = createEncodingSettingsTree();
     auto ambisonicsInTree       = createInputAmbisonicsTree();
     auto ambisonicsOutTree      = createOutputAmbisonicsTree();
@@ -142,6 +142,39 @@ const juce::ValueTree StateManager::createGlobalValueTree() const
     globalTree.addChild(coefficientsTree, -1, nullptr);
     
     return globalTree;
+}
+
+const juce::ValueTree StateManager::createGainMatrixTree(const GainMatrix& matrix) const {
+    
+    juce::ValueTree
+        globalGainMatrixTree,
+        channelCountTree,
+        matrixTree;
+    
+    auto inputChannels  = matrix.getNumInputChannels();
+    auto outputChannels = matrix.getNumOutputChannels();
+    jassert(inputChannels > 0 && outputChannels > 0);
+    
+    channelCountTree.setProperty(ProcessingConstants::GainMatrixTree::ChannelCount::inputChannelCount, inputChannels, nullptr);
+    channelCountTree.setProperty(ProcessingConstants::GainMatrixTree::ChannelCount::outputChannelCount, outputChannels, nullptr);
+    globalGainMatrixTree.addChild(channelCountTree, -1, nullptr);
+    
+    for (int chIn = 0; chIn < inputChannels; chIn++) {
+        for (int chOut = 0; chOut < outputChannels; chOut++) {
+            
+            auto matrixValue            = matrix.get(chIn, chOut);
+            juce::String coefficientID  = ProcessingConstants::GainMatrixTree::MatrixCoefficient::baseCoefficientID;
+            
+            coefficientID << juce::String(chIn);
+            coefficientID << juce::String(chOut);
+            coefficientID << ProcessingConstants::GainMatrixTree::MatrixCoefficient::terminator;
+            
+            matrixTree.setProperty(coefficientID, matrixValue, nullptr);
+        }
+    }
+    
+    globalGainMatrixTree.addChild(matrixTree, -1, nullptr);
+    return globalGainMatrixTree;
 }
 
 void StateManager::debugValueTree(const juce::ValueTree& tree) const {

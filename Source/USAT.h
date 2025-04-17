@@ -44,6 +44,8 @@ public:
                  int numInputChannelsFromHost,
                  int numOutputChannelsFromHost);
     
+    const GainMatrix& getGainMatrixInstance() const;
+    
 private:    
     const int getMatrixChannelCountIn();
     const int getMatrixChannelCountOut();

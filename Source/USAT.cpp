@@ -9,6 +9,7 @@
 */
 
 #include "USAT.h"
+
 USAT::USAT(juce::Value& progress, juce::Value& status)
 : progressValue(progress),
 statusValue(status)
@@ -55,7 +56,6 @@ void USAT::computeMatrix(const std::string& valueTreeXML)
             statusValue.setValue(juce::String(status));
         });
     });
-    
     
     pyThread->startThread();
 }
@@ -108,4 +108,8 @@ void USAT::process(juce::AudioBuffer<float> &buffer,
         for (int ch = 0; ch < numOutputChannels; ++ch)
             buffer.copyFrom(ch, 0, tempOutputBuffer, ch, 0, numSamples);
     }
+}
+
+const GainMatrix& USAT::getGainMatrixInstance() const {
+    return gainsMatrix;
 }

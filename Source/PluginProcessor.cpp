@@ -103,6 +103,11 @@ void USATAudioProcessor::decode()
     // TODO: Do prior check as to whether the channel dimensions will match and ask user whether they want to continue if they don't
     std::string globalValueTree = stateManager.createGlobalValueTree().toXmlString().toStdString();
     decoder.computeMatrix(globalValueTree);
+    
+    const auto matrix           = decoder.getGainMatrixInstance();
+    auto decodingMatrixTree     = stateManager.createGainMatrixTree(matrix);
+    
+    stateManager.debugValueTree(decodingMatrixTree);
 }
 
 void USATAudioProcessor::cancelDecoding() {
@@ -163,9 +168,7 @@ juce::AudioProcessorEditor* USATAudioProcessor::createEditor()
 //==============================================================================
 void USATAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
-    // You should use this method to store your parameters in the memory block.
-    // You could do that either as raw data, or use the XML or ValueTree classes
-    // as intermediaries to make it easy to save and load complex data.
+    
 }
 
 void USATAudioProcessor::setStateInformation (const void* data, int sizeInBytes)

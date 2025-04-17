@@ -14,6 +14,7 @@
 #include "SpeakerManager.h"
 #include "TranscodingConfigHandler.h"
 #include "PluginParameterHandler.h"
+#include "GainMatrix.h"
 
 using APVTS = juce::AudioProcessorValueTreeState;
 
@@ -45,6 +46,8 @@ public:
     const juce::ValueTree createEncodingSettingsTree() const;
     const juce::ValueTree createInputAmbisonicsTree() const;
     const juce::ValueTree createOutputAmbisonicsTree() const;
+    const juce::ValueTree createGainMatrixTree(const GainMatrix& matrix) const;
+    
     void debugValueTree(const juce::ValueTree& tree) const;
     
     APVTS&                      apvts;
