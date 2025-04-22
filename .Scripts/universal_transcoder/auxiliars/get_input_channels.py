@@ -91,7 +91,7 @@ def get_input_channels_ambisonics(cloud_points: MyCoordinates, order: int) -> Np
         input_channels (numpy Array): LxM matrix of channel gains for input layout
     """
     cloud_points_sph = cloud_points.sph_deg()
-    input_channels = np.zeros([cloud_points_sph.shape[0], (order + 1) ** 2])
+    input_channels = np.zeros([cloud_points_sph.shape[0], (order + 1) ** 2]) # np.zeros([L, M])
 
     for i in range(cloud_points_sph.shape[0]):
         virtual = MyCoordinates.point(

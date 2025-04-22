@@ -102,6 +102,7 @@ class State:
 
         # Energy vector
         energy = energy_calculation(S)
+        
         # Radial intensity vector
         radial_i = radial_I_calculation(
             self.cloud_points,
@@ -115,14 +116,17 @@ class State:
             S,
             self.output_layout,
         )
+
         # Pressure vector
         pressure = pressure_calculation(S)
+        
         # Radial velocity vector
         radial_v = radial_V_calculation(
             self.cloud_points,
             S,
             self.output_layout,
         )
+        
         # Transversal velocity vector
         transverse_v = transversal_V_calculation(
             self.cloud_points,
@@ -131,14 +135,17 @@ class State:
         )
         # In_phase vector
         in_phase_quad, in_phase_lin = self._in_phase_1(S)
+        
         # Symmetry vector
         symmetric_gains = self._rearrange_gains(
             self.output_layout, self.cloud_points, S
         )
+        
         sparsity_quad, sparsity_lin = self._sparsity(S)
         asymmetry_quad, asymmetry_lin = self._symmetry_differences(S, symmetric_gains)
         asymmetry_quad = jnp.real(asymmetry_quad)
         asymmetry_lin = jnp.real(asymmetry_lin)
+        
         # Minimize gains
         total_gains_lin = jnp.sum(
             jnp.abs(flatten_transcoding_matrix)
@@ -182,24 +189,6 @@ class State:
             + self.cmingquad * C_min_gains_quad
             + self.csparsequad * C_sparse_quad
             + self.csparselin * C_sparse_lin
-        )
-
-        self._print(
-            cost_value,
-            C_e,
-            C_ir,
-            C_it,
-            C_p,
-            C_vr,
-            C_vt,
-            C_ph_quad,
-            C_sym_quad,
-            C_ph_lin,
-            C_sym_lin,
-            C_min_gains_lin,
-            C_min_gains_quad,
-            C_sparse_lin,
-            C_sparse_quad,
         )
 
         return cost_value

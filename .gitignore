@@ -2,3 +2,5 @@
 /JuceLibraryCode/
 /Resources/
 .DS_Store
+/.Scripts/.venv
+/.Scripts/__pycache__
