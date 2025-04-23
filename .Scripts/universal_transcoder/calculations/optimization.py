@@ -62,7 +62,7 @@ def optimize(info: Dict[str, Any]) -> NpArray:
     Args:
         info (dict): All the info needed for the optimization given as the following:
             dictionary = {
-                "input_matrix_optimization": input,     # Input matrix that encodes in input format LxM
+                "input_matrix_optimization": input,     # Input matrix that encodes in input format: G(LxM)
                 "cloud_optimization": cloud,            # Cloud of points sampling the sphere (L)
                 "output_layout": output_layout,         # Output layout of speakers to decode (P speakers)
                 "coefficients": {                       # List of coefficients to the cost function

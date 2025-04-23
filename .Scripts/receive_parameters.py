@@ -14,8 +14,10 @@ from universal_transcoder.auxiliars.get_input_channels import (
 )
 
 from universal_transcoder.auxiliars.get_cloud_points import (
-    get_all_sphere_points, 
-    get_equi_t_design_points
+    get_all_sphere_points,
+    get_equi_circumference_points,
+    get_equi_t_design_points,
+    mix_clouds_of_points
 )
 #################################################################################
 
@@ -90,18 +92,97 @@ def parse_coefficients(coefficients_xml: ET.Element) -> dict[str, float]:
 
     return coefficients
 
+def get_num_ambisonics_channels(int: order) -> int:
+    return (order + 1) ** 2
 
-def get_ambisonics_matrix(order: int, 
-                          path_to_t_design: Union[os.PathLike, str]) -> tuple:
+def get_ambisonics_enc_matrix(order: int, 
+                            path_to_t_design: Union[os.PathLike, str]) -> tuple:
 
-    cloud_optimization  = get_equi_t_design_points(path_to_t_design, False)
-    matrix              = get_input_channels_ambisonics(cloud_optimization, order)
-    name                = f"{order}OA"
+    '''
+    1. Obtains cloud of points with directions sampling the sphere 
+    2. Creates the encoding matrix G for ambisonics
+
+    Args: 
+        order(int): ambisonics order
+        path_to_t_design(Union[os.PathLike, str]): Path to file containing the sampling points within the unit sphere
+
+    Returns:
+        point_cloud_optimization: Cloud points
+        G: Encoding matrix
+
+    '''
+
+    point_cloud_optimization    = get_equi_t_design_points(path_to_t_design, False)
+    G                           = get_input_channels_ambisonics(point_cloud_optimization, order)
     
-    return cloud_optimization, matrix
+    return point_cloud_optimization, G
 
+def get_ambisonics_output(order: int) -> MyCoordinates:
 
-def create_ambisonics_enc(parameter_dict: dict, order: int):
+    basepath = Path(__file__).resolve().parent
+    path_to_t_design = (
+        basepath /
+        "universal_transcoder" /
+        "encoders" /
+        "t-design" /
+        "des.3.60.10.txt"
+    )
+
+    list_of_cloud_points = [
+        
+        get_equi_t_design_points(
+            path_to_t_design, 
+            False
+            ), 
+        
+        get_equi_circumference_points(
+            get_num_ambisonics_channels(order), 
+            False
+            )
+
+        ]
+
+    list_of_weights = [1,1]
+    ambisonics_output, _ = mix_clouds_of_points(
+        list_of_cloud_points=list_of_cloud_points,
+        list_of_weights=list_of_weights,
+        discard_lower_hemisphere=True
+    ) 
+    
+    return ambisonics_output
+
+def get_speaker_enc_matrix(speaker_layout: MyCoordinates,
+                        path_to_t_design: Union[os.PathLike, str]) -> tuple:
+    '''
+    1. Obtains cloud of points with directions sampling the sphere
+    2. Creates the encoding matrix G for speaker layouts
+
+    Args:
+        speaker_layout (MyCoordinates): Layout describing the position of each speaker
+        path_to_t_design(Union[os.PathLike, str]): Path to file containing the sampling points within the unit sphere 
+
+    Returns:
+        point_cloud_optimization: Cloud points 
+        G: Encoding Matrix
+    '''
+
+    point_cloud_optimization    = get_equi_t_design_points(path_to_t_design, False)
+    G                           = get_input_channels_vbap(point_cloud_optimization, speaker_layout)
+
+    return point_cloud_optimization, G
+
+def create_encoding_matrix(format: str, parameter_dict: dict, layout_data: Union[int, MyCoordinates]) -> dict:
+    '''
+    1. Obtains the sampling points and VBAP encoding matrix G
+    2. Sets information for plots
+
+    Args: 
+        parameter_dict(dict): Dictionary containing encoding and decoding settings in order to call the USAT optimization code
+        speaker_layout(MyCoordinates): Layout describing the position of each speaker
+
+    Return:
+        parameter_dict (dict): dictionary containing all encoding and decoding settings in order to call the USAT optimization code
+    '''
     basepath = Path(__file__).resolve().parent
     path_to_t_design = (
         basepath /
@@ -111,19 +192,41 @@ def create_ambisonics_enc(parameter_dict: dict, order: int):
         "des.3.56.9.txt"
     )
 
-    cloud_optimization, matrix  = get_ambisonics_matrix(order, path_to_t_design)
-    cloud_plots                 = get_all_sphere_points(1, False)
+    cloud_plots = get_all_sphere_points(1, plot_show=False).discard_lower_hemisphere()
 
-    parameter_dict["cloud_optimization"]        = cloud_optimization
+    if format == AMBISONICS:
+        point_cloud_optimization, G = get_ambisonics_enc_matrix(layout_data, path_to_t_design)
+        input_matrix_plots          = get_input_channels_ambisonics(cloud_plots, layout_data)
+    
+    elif format == SPEAKER_LAYOUT:
+        point_cloud_optimization, G = get_speaker_enc_matrix(layout_data, path_to_t_design)
+        input_matrix_plots          = get_input_channels_vbap(cloud_plots, layout_data)
+
+    else:
+        raise ValueError("Invalid Format.", format)
+
+    parameter_dict["cloud_optimization"]        = point_cloud_optimization
     parameter_dict["cloud_plots"]               = cloud_plots
-    parameter_dict["input_matrix_plots"]        = get_input_channels_ambisonics(cloud_plots, order)
-    parameter_dict["input_matrix_optimization"] = matrix
+    parameter_dict["input_matrix_plots"]        = input_matrix_plots
+    parameter_dict["input_matrix_optimization"] = G
 
     return parameter_dict
 
 
 def parse_encoding_settings(usat_parameter_settings_xml: ET.Element) -> dict:
+    '''
+    Function that extracts the USAT transcoding parameter settings in XML format, and calls the appropriate function to:
+    1. Create the encoding matrix G 
+    2. Create the speaker matrix ?
+    3. Return the appropriate parameter dictionary used to call the USAT algorithm
+
+    Args:
+        usat_parameter_setings (ET.Element): XML tree with USAT parameter settings
+    Returns:
+        parameter_dict (dict): dictionary containing all encoding and decoding settings in order to call the USAT optimization code
+    '''
     
+    # Parse encoding settings
     encoding_settings_xml = usat_parameter_settings_xml.find("Encoding_Settings")
     assert(encoding_settings_xml is not None)
 
@@ -138,6 +241,7 @@ def parse_encoding_settings(usat_parameter_settings_xml: ET.Element) -> dict:
     #############################################
     # INPUT
 
+
     if input_type == AMBISONICS:
         input_ambisonics_xml = usat_parameter_settings_xml.find(INPUT_AMBISONICS)
         assert(input_ambisonics_xml is not None)
@@ -145,15 +249,21 @@ def parse_encoding_settings(usat_parameter_settings_xml: ET.Element) -> dict:
         order = input_ambisonics_xml.get(AMBISONICS_ORDER_IN)
         assert(order is not None)
 
-        parameter_dict = create_ambisonics_enc(parameter_dict, int(order))
-
+        parameter_dict = create_encoding_matrix(format=input_type, 
+                                                parameter_dict=parameter_dict, 
+                                                layout_data=order
+                                                )
 
     elif input_type == SPEAKER_LAYOUT:
         input_speaker_layout_xml = usat_parameter_settings_xml.find(INPUT_SPEAKER_LAYOUT)
         assert(input_speaker_layout_xml is not None)
         
         input_speaker_layout = create_speaker_layout(input_speaker_layout_xml)
-        parameter_dict["input_matrix_optimization"] = input_speaker_layout
+        
+        parameter_dict = create_encoding_matrix(format=input_type,
+                                                parameter_dict=parameter_dict,
+                                                layout_data=input_speaker_layout
+                                                )
 
     else:
         raise AssertionError("Not valid format")
@@ -161,21 +271,18 @@ def parse_encoding_settings(usat_parameter_settings_xml: ET.Element) -> dict:
 
     #############################################
     # OUTPUT
-    print(output_type)
     if output_type == AMBISONICS:
         output_ambisonics_xml = usat_parameter_settings_xml.find(OUTPUT_AMBISONICS)
         assert(output_ambisonics_xml is not None)
 
         order = output_ambisonics_xml.get(AMBISONICS_ORDER_OUT)
         assert(order is not None)
-        parameter_dict["output_layout"] = create_ambisonics_enc(parameter_dict, int(order))
+        parameter_dict["output_layout"] = get_ambisonics_output(order)
     
     elif output_type == SPEAKER_LAYOUT:
         output_speaker_layout_xml = usat_parameter_settings_xml.find(OUTPUT_SPEAKER_LAYOUT)
         assert(output_speaker_layout_xml is not None)
-
-        output_speaker_layout = create_speaker_layout(output_speaker_layout_xml)
-        parameter_dict["output_layout"] = output_speaker_layout
+        parameter_dict["output_layout"] = create_speaker_layout(output_speaker_layout_xml)
 
     else:
         raise AssertionError("Not valid format")
