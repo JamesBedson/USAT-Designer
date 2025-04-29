@@ -1,4 +1,5 @@
 # ENCODING
+USAT_STATE_PARAMETERS   = "USAT_State_Parameters"
 ENCODING_SETTINGS       = "Encoding_Settings"
 INPUT_TYPE              = "InputType"
 OUTPUT_TYPE             = "OutputType"
