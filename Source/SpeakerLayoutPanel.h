@@ -13,6 +13,7 @@
 #include <JuceHeader.h>
 #include "StateManager.h"
 #include "UIConstants.h"
+#include "CustomLNF.h"
 //==============================================================================
 /*
 */
@@ -76,6 +77,9 @@ private:
     addSpeaker,
     removeSpeaker;
     
+    juce::Image background;
+    
+    CustomLNF lookAndFeel;
     StateManager& stateManager;
     SpeakerManager* speakerManager;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SpeakerLayoutPanel)
@@ -90,6 +94,7 @@ public:
     : owner(layoutPanel) {
         setEditable(true);
         setJustificationType(juce::Justification::centred);
+        
     }
     
     void mouseDown (const juce::MouseEvent& event) override {
@@ -109,11 +114,9 @@ public:
     
     void paint(juce::Graphics& g) override {
         
-        g.setColour(juce::Colours::transparentBlack);
-        g.fillAll();
-        
         if (!isBeingEdited()) {
             g.setColour(juce::Colours::white);
+            g.setFont(UI::Fonts::getMainFontWithSize(12.f));
             g.drawFittedText(getText(),
                              getLocalBounds(),
                              juce::Justification::centred,

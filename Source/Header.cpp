@@ -17,7 +17,7 @@ Header::Header(StateManager& s)
 {
     addAndMakeVisible(pluginName);
     pluginName.setText("usat designer.", juce::dontSendNotification);
-    pluginName.setFont(juce::Font(juce::FontOptions {"Futura", 40.f, juce::Font::plain}));
+    pluginName.setFont(UI::Fonts::getMainFontWithSize(40.f));
 }
 
 Header::~Header()
@@ -34,8 +34,8 @@ void Header::resized()
     auto boundsReduced = getLocalBounds().reduced(5.f);
     
     const float
-    width = boundsReduced.getWidth() * 0.5f,
-    height = boundsReduced.getHeight();
+    width   = boundsReduced.getWidth() * 0.5f,
+    height  = boundsReduced.getHeight();
     pluginName.setBounds(boundsReduced.getX(), boundsReduced.getY(), width, height);
     
 }

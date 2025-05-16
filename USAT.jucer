@@ -92,23 +92,25 @@
             file="Source/PluginEditor.cpp"/>
       <FILE id="IM9YcK" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
       <GROUP id="{211D73B9-0D2F-8ED5-F8CB-10753C90DF7F}" name="Assets">
-        <FILE id="bFHHX1" name="advanced highlighted@3x.png" compile="0" resource="1"
+        <FILE id="uLnCAQ" name="advanced highlighted@3x.png" compile="0" resource="1"
               file="Assets/advanced highlighted@3x.png"/>
-        <FILE id="BqCdQP" name="advanced@3x.png" compile="0" resource="1" file="Assets/advanced@3x.png"/>
-        <FILE id="D6kG5A" name="background@3x.png" compile="0" resource="1"
+        <FILE id="mGfKw5" name="advanced@3x.png" compile="0" resource="1" file="Assets/advanced@3x.png"/>
+        <FILE id="XmCh2i" name="background@3x.png" compile="0" resource="1"
               file="Assets/background@3x.png"/>
-        <FILE id="nXebKb" name="decode section@3x.png" compile="0" resource="1"
+        <FILE id="kMjwZ2" name="decode section@3x.png" compile="0" resource="1"
               file="Assets/decode section@3x.png"/>
-        <FILE id="PHfTGa" name="format section@3x.png" compile="0" resource="1"
+        <FILE id="eip8Vb" name="format section@3x.png" compile="0" resource="1"
               file="Assets/format section@3x.png"/>
-        <FILE id="pQs4hl" name="parameter section@3x.png" compile="0" resource="1"
+        <FILE id="YHz0a3" name="formatSelectBackground@3x.png" compile="0"
+              resource="1" file="Assets/formatSelectBackground@3x.png"/>
+        <FILE id="QN9q6b" name="parameter section@3x.png" compile="0" resource="1"
               file="Assets/parameter section@3x.png"/>
-        <FILE id="bl6v8H" name="placeholder@3x.png" compile="0" resource="1"
+        <FILE id="rWfpxC" name="placeholder@3x.png" compile="0" resource="1"
               file="Assets/placeholder@3x.png"/>
-        <FILE id="NmjMBS" name="simple highlighted@3x.png" compile="0" resource="1"
+        <FILE id="Ms3KVl" name="simple highlighted@3x.png" compile="0" resource="1"
               file="Assets/simple highlighted@3x.png"/>
-        <FILE id="H3IcPv" name="simple@3x.png" compile="0" resource="1" file="Assets/simple@3x.png"/>
-        <FILE id="AiH7Os" name="vis section@3x.png" compile="0" resource="1"
+        <FILE id="hri3eX" name="simple@3x.png" compile="0" resource="1" file="Assets/simple@3x.png"/>
+        <FILE id="mrwC7S" name="vis section@3x.png" compile="0" resource="1"
               file="Assets/vis section@3x.png"/>
       </GROUP>
     </GROUP>

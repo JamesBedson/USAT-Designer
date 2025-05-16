@@ -15,16 +15,39 @@
 LayoutSelectorPanel::LayoutSelectorPanel(StateManager& s,
                                          const UI::FormatType formatType)
 : formatType(formatType),
-stateManager(s)
+stateManager(s),
+background(juce::ImageCache::getFromMemory(BinaryData::formatSelectBackground3x_png, BinaryData::formatSelectBackground3x_pngSize))
 {
     addAndMakeVisible(editLayout);
     addAndMakeVisible(exportLayout);
     addAndMakeVisible(loadLayout);
+    
     addAndMakeVisible(layoutName);
+    addAndMakeVisible(channelsLabel);
+    addAndMakeVisible(formatLabel);
+    
+    layoutName.setFont(juce::Font(juce::FontOptions{"Futura", 15.f, juce::Font::italic}));
+    layoutName.setMouseCursor(juce::MouseCursor::IBeamCursor);
+    layoutName.setColour(juce::Label::backgroundColourId, UI::ColourDefinitions::darkhighlightColour.withLightness(UI::ColourDefinitions::lightnessFactor));
+    layoutName.setColour(juce::Label::textColourId, UI::ColourDefinitions::outlineColour.darker());
+    
+    formatLabel.setFont(UI::Fonts::getMainFontWithSize(19.f));
+    formatLabel.setJustificationType(juce::Justification::horizontallyCentred);
+    formatLabel.setColour(juce::Label::textColourId, UI::ColourDefinitions::accentColour);
+  
+    setFormatText();
     
     editLayout.setButtonText("edit");
     exportLayout.setButtonText("export");
     loadLayout.setButtonText("import");
+    
+    editLayout.setMouseCursor(juce::MouseCursor::PointingHandCursor);
+    exportLayout.setMouseCursor(juce::MouseCursor::PointingHandCursor);
+    loadLayout.setMouseCursor(juce::MouseCursor::PointingHandCursor);
+    
+    editLayout.setLookAndFeel(&lookAndFeel);
+    exportLayout.setLookAndFeel(&lookAndFeel);
+    loadLayout.setLookAndFeel(&lookAndFeel);
     
     layoutName.setEditable(true);
     layoutName.setJustificationType(juce::Justification::centred);
@@ -47,62 +70,73 @@ stateManager(s)
 
 LayoutSelectorPanel::~LayoutSelectorPanel()
 {
+    editLayout.setLookAndFeel(nullptr);
+    exportLayout.setLookAndFeel(nullptr);
+    loadLayout.setLookAndFeel(nullptr);
     delete layoutWindow;
 }
 
 void LayoutSelectorPanel::paint (juce::Graphics& g)
 {
-    g.setColour (juce::Colours::white);
-    g.setFont (juce::FontOptions (14.0f));
+    g.drawImage(background, getLocalBounds().toFloat());
 }
 
 void LayoutSelectorPanel::resized()
 {
+    auto reducedBounds = getLocalBounds().reduced(10.f, 10.f);
+    
     const float
-    panelWidth      = getWidth(),
-    panelHeight     = getHeight(),
+    panelWidth      = reducedBounds.getWidth(),
+    panelHeight     = reducedBounds.getHeight(),
     padding         = (panelWidth + panelHeight) * UI::SpeakerLayoutPanelFactors::paddingFactor,
     buttonWidth     = panelWidth / 3.f - 3 * padding,
-    buttonHeight    = panelHeight / 3.f - 2 * padding;
+    componentHeight = panelHeight * UI::AmbisonicsSelectorPanelFactors::comboBoxHeightFactor;
     
     const float
-    labelCentreX    = getLocalBounds().getCentreX(),
-    labelY          = padding + panelHeight * UI::SpeakerLayoutPanelFactors::labelYPosFactor,
-    labelWidth      = panelWidth * UI::SpeakerLayoutPanelFactors::labelWidthFactor,
-    labelHeight     = panelHeight * UI::SpeakerLayoutPanelFactors::labelHeightFactor;
-    
-    layoutName.setBounds(0, 0, labelWidth, labelHeight);
-    layoutName.setCentrePosition(labelCentreX, labelY);
-    
-    const float
-    editX   = padding,
-    editY   = getLocalBounds().getBottom() - buttonHeight;
+    editX   = reducedBounds.getX(),
+    editY   = reducedBounds.getBottom() - componentHeight;
     
     editLayout.setBounds(editX,
                          editY,
                          buttonWidth,
-                         buttonHeight
+                         componentHeight
                          );
     
     const float
-    saveX = getLocalBounds().getCentreX() - buttonWidth / 2.f,
+    saveX = reducedBounds.getCentreX() - buttonWidth / 2.f,
     saveY = editLayout.getY();
     
     exportLayout.setBounds(saveX,
                          saveY,
                          buttonWidth,
-                         buttonHeight
+                         componentHeight
                          );
     
     const float
-    loadX = getLocalBounds().getRight() - buttonWidth - padding,
+    loadX = reducedBounds.getRight() - buttonWidth,
     loadY = editLayout.getY();
     
     loadLayout.setBounds(loadX,
                          loadY,
                          buttonWidth,
-                         buttonHeight
+                         componentHeight
                          );
+    
+    const float
+    xLabels     = reducedBounds.getX(),
+    yLabels     = reducedBounds.getY(),
+    labelWidth  = reducedBounds.getWidth(),
+    yOffset     = 15.f;
+    
+    formatLabel.setSize(labelWidth, componentHeight);
+    formatLabel.setTopLeftPosition(xLabels, yLabels);
+    
+    const float
+    centreX = reducedBounds.getCentreX(),
+    centreY = reducedBounds.getCentreY();
+    layoutName.setSize(labelWidth, componentHeight);
+    layoutName.setCentrePosition(centreX, centreY);
+    
 }
 
 void LayoutSelectorPanel::buttonClicked(juce::Button* button)
@@ -129,7 +163,7 @@ void LayoutSelectorPanel::buttonClicked(juce::Button* button)
             else
                 jassertfalse;
         
-            layoutWindow->centreWithSize(600, 400);
+            layoutWindow->centreWithSize(400, 300);
             layoutWindow->setVisible(true);
         }
     }

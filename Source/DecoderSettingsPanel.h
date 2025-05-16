@@ -39,6 +39,7 @@ private:
     
     juce::Image sectionBackground;
     CustomLNF lookAndFeel;
+    DecodeButtonLNF decodeLNF;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DecoderSettingsPanel)
 };

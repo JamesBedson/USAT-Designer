@@ -20,16 +20,24 @@ sectionBackground(juce::ImageCache::getFromMemory(BinaryData::parameter_section3
     addAndMakeVisible(parameterPanel);
     addAndMakeVisible(parameterTypeSwitch);
     addAndMakeVisible(parameterStyleSwitch);
-    addAndMakeVisible(leftArrow);
-    addAndMakeVisible(rightArrow);
+    addAndMakeVisible(firstPageButton);
+    addAndMakeVisible(secondPageButton);
     addAndMakeVisible(simple);
     addAndMakeVisible(advanced);
     
-    leftArrow.setLookAndFeel(&lookAndFeel);
-    rightArrow.setLookAndFeel(&lookAndFeel);
+    firstPageButton.setLookAndFeel(&lookAndFeel);
+    secondPageButton.setLookAndFeel(&lookAndFeel);
+    
+    firstPageButton.setButtonText("1");
+    secondPageButton.setButtonText("2");
     
     parameterStyleSwitch.setClickingTogglesState(true);
     parameterStyleSwitch.setToggleState(true, juce::dontSendNotification);
+    parameterStyleSwitch.setMouseCursor(juce::MouseCursor::PointingHandCursor);
+    
+    firstPageButton.setEnabled(false);
+    secondPageButton.setEnabled(true);
+    
     
     // Preload images
     auto advancedImg = juce::ImageCache::getFromMemory(BinaryData::advanced3x_png,
@@ -57,37 +65,40 @@ sectionBackground(juce::ImageCache::getFromMemory(BinaryData::parameter_section3
     advanced.setFont(juce::Font(juce::FontOptions {"Futura", 15.f, juce::Font::plain}));
     advanced.setJustificationType(juce::Justification::centredLeft);
     
-    leftArrow.onClick = [&]() {
+    firstPageButton.setMouseCursor(juce::MouseCursor::PointingHandCursor);
+    secondPageButton.setMouseCursor(juce::MouseCursor::PointingHandCursor);
+    
+    firstPageButton.onClick = [&]() {
         parameterPanel.setAdvancedParameterPage(ParameterPanel::ParameterSelectorChoice::Advanced_1);
-        rightArrow.setEnabled(true);
-        leftArrow.setEnabled(false);
+        secondPageButton.setEnabled(true);
+        firstPageButton.setEnabled(false);
     };
     
-    rightArrow.onClick = [&]() {
+    secondPageButton.onClick = [&]() {
         parameterPanel.setAdvancedParameterPage(ParameterPanel::ParameterSelectorChoice::Advanced_2);
-        leftArrow.setEnabled(true);
-        rightArrow.setEnabled(false);
+        firstPageButton.setEnabled(true);
+        secondPageButton.setEnabled(false);
     };
     
     parameterStyleSwitch.onClick = [&]() {
         auto advancedModeActive = parameterStyleSwitch.getToggleState();
         
         if (advancedModeActive) {
-            leftArrow.setEnabled(true);
-            leftArrow.setVisible(true);
+            firstPageButton.setEnabled(true);
+            firstPageButton.setVisible(true);
             
-            rightArrow.setEnabled(true);
-            rightArrow.setVisible(true);
+            secondPageButton.setEnabled(true);
+            secondPageButton.setVisible(true);
             
             parameterPanel.setAdvancedParameterPage(ParameterPanel::ParameterSelectorChoice::Advanced_1);
         }
         
         else {
-            leftArrow.setEnabled(false);
-            leftArrow.setVisible(false);
+            firstPageButton.setEnabled(false);
+            firstPageButton.setVisible(false);
             
-            rightArrow.setEnabled(false);
-            rightArrow.setVisible(false);
+            secondPageButton.setEnabled(false);
+            secondPageButton.setVisible(false);
             
             parameterPanel.setSimpleParameterPage();
         }
@@ -97,22 +108,22 @@ sectionBackground(juce::ImageCache::getFromMemory(BinaryData::parameter_section3
 
 ControlSection::~ControlSection()
 {
-    leftArrow.setLookAndFeel(nullptr);
-    rightArrow.setLookAndFeel(nullptr);
+    firstPageButton.setLookAndFeel(nullptr);
+    secondPageButton.setLookAndFeel(nullptr);
 }
 
 void ControlSection::paint (juce::Graphics& g)
 {
     g.drawImage(sectionBackground, getLocalBounds().toFloat());
     g.setColour(juce::Colours::white);
-    g.drawLine(simple.getRight() + 5.f,
+    g.drawLine(simple.getRight() + 10.f,
                simple.getBounds().getCentreY(),
-               parameterStyleSwitch.getX() - 5.f,
+               parameterStyleSwitch.getX() - 10.f,
                parameterStyleSwitch.getBounds().getCentreY(), 1.f);
     
-    g.drawLine(advanced.getX() - 5.f,
+    g.drawLine(advanced.getX() - 10.f,
                advanced.getBounds().getCentreY(),
-               parameterStyleSwitch.getRight() + 5.f,
+               parameterStyleSwitch.getRight() + 10.f,
                parameterStyleSwitch.getBounds().getCentreY(), 1.f);
     /*
     juce::Rectangle<int> toggleButtonBounds {
@@ -159,8 +170,8 @@ void ControlSection::resized()
     panelCentreX    = getLocalBounds().getCentreX();
     
     const float
-    toggleButtonWidth   = 50.f,
-    toggleButtonHeight  = panelHeight * UI::ControlSectionFactors::topSwitchHeightFactor;
+    toggleButtonWidth   = 50.f * 0.7f,
+    toggleButtonHeight  = panelHeight * UI::ControlSectionFactors::topSwitchHeightFactor * 0.7f;
     
     juce::Rectangle<int> toggleButtonBounds {
         getLocalBounds().getX(),
@@ -218,11 +229,11 @@ void ControlSection::resized()
     arrowButtonY        = arrowPanelBounds.getY(),
     arrowButtonHeight   = arrowPanelBounds.getHeight() * 0.7f;
     
-    leftArrow.setSize(arrowButtonWidth, arrowButtonHeight);
-    leftArrow.setTopRightPosition(leftArrowRightCoord, arrowButtonY);
+    firstPageButton.setSize(arrowButtonWidth, arrowButtonHeight);
+    firstPageButton.setTopRightPosition(leftArrowRightCoord, arrowButtonY);
     
-    rightArrow.setSize(arrowButtonWidth, arrowButtonHeight);
-    rightArrow.setTopLeftPosition(rightArrowLeftCoord, arrowButtonY);
+    secondPageButton.setSize(arrowButtonWidth, arrowButtonHeight);
+    secondPageButton.setTopLeftPosition(rightArrowLeftCoord, arrowButtonY);
     
     parameterStyleSwitch.setToggleState(true, juce::dontSendNotification);
     parameterPanel.setAdvancedParameterPage(ParameterPanel::ParameterSelectorChoice::Advanced_1);

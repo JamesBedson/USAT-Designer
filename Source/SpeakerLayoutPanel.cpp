@@ -15,6 +15,7 @@
 SpeakerLayoutPanel::SpeakerLayoutPanel(StateManager& s,
                                        UI::FormatType formatType)
 : formatType(formatType),
+background(juce::ImageCache::getFromMemory(BinaryData::background3x_png, BinaryData::background3x_pngSize)),
 stateManager(s)
 {
     if (formatType == UI::FormatType::input)
@@ -29,15 +30,34 @@ stateManager(s)
     
     addAndMakeVisible(addSpeaker);
     addSpeaker.addListener(this);
-    addSpeaker.setButtonText("Add Speaker");
+    addSpeaker.setButtonText("add speaker");
+    addSpeaker.setMouseCursor(juce::MouseCursor::PointingHandCursor);
+    addSpeaker.setLookAndFeel(&lookAndFeel);
+    
+    table.setLookAndFeel(&lookAndFeel);
+    table.setColour(juce::TableListBox::backgroundColourId, UI::ColourDefinitions::backgroundColour);
+    table.setColour(juce::TableListBox::textColourId, UI::ColourDefinitions::outlineColour);
+    table.setColour(juce::TableListBox::outlineColourId, UI::ColourDefinitions::outlineColour);
+    
+    auto& header = table.getHeader();
+    header.setColour(juce::TableHeaderComponent::backgroundColourId, UI::ColourDefinitions::darkhighlightColour);
+    header.setColour(juce::TableHeaderComponent::textColourId, UI::ColourDefinitions::outlineColour);
+    header.setColour(juce::TableHeaderComponent::outlineColourId, juce::Colours::transparentBlack);
+    header.setColour(juce::TableHeaderComponent::highlightColourId, UI::ColourDefinitions::accentColour);
     
     addAndMakeVisible(removeSpeaker);
     removeSpeaker.addListener(this);
-    removeSpeaker.setButtonText("Remove Speaker");
+    removeSpeaker.setButtonText("remove speaker");
+    removeSpeaker.setMouseCursor(juce::MouseCursor::PointingHandCursor);
+    removeSpeaker.setLookAndFeel(&lookAndFeel);
+    
 }
 
 SpeakerLayoutPanel::~SpeakerLayoutPanel()
 {
+    table.setLookAndFeel(nullptr);
+    addSpeaker.setLookAndFeel(nullptr);
+    removeSpeaker.setLookAndFeel(nullptr);
 }
 
 void SpeakerLayoutPanel::initTable()
@@ -48,22 +68,31 @@ void SpeakerLayoutPanel::initTable()
                     juce::Colours::white
                     );
     
-    table.getHeader().addColumn(ProcessingConstants::SpeakerProperties::ID,
+    /*
+     void TableHeaderComponent::addColumn (const String& columnName,
+                                           int columnId,
+                                           int width,
+                                           int minimumWidth,
+                                           int maximumWidth,
+                                           int propertyFlags,
+                                           int insertIndex)
+     */
+    table.getHeader().addColumn(ProcessingConstants::SpeakerProperties::tableChannelID,
                                 1,
                                 1
                                 );
     
-    table.getHeader().addColumn(ProcessingConstants::SpeakerProperties::azimuth,
+    table.getHeader().addColumn(ProcessingConstants::SpeakerProperties::tableAzimuth,
                                 2,
                                 1
                                 );
     
-    table.getHeader().addColumn(ProcessingConstants::SpeakerProperties::elevation,
+    table.getHeader().addColumn(ProcessingConstants::SpeakerProperties::tableElevation,
                                 3,
                                 1
                                 );
     
-    table.getHeader().addColumn(ProcessingConstants::SpeakerProperties::distance,
+    table.getHeader().addColumn(ProcessingConstants::SpeakerProperties::tableDistance,
                                 4,
                                 1
                                 );
@@ -75,23 +104,31 @@ void SpeakerLayoutPanel::initTable()
 
 void SpeakerLayoutPanel::paint (juce::Graphics& g)
 {
-    g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
-
-    g.setColour (juce::Colours::grey);
-    g.drawRect (getLocalBounds(), 1);
-
-    g.setColour (juce::Colours::white);
-    g.setFont (juce::FontOptions (14.0f));
-    g.drawText ("SpeakerLayoutPanel", getLocalBounds(),
-                juce::Justification::centred, true);   // draw some placeholder text
+    auto bounds = getLocalBounds();
+    
+    const float
+    xTable = bounds.getX();
+    
+    juce::Rectangle<float> buttonBounds;
+    buttonBounds.setX(xTable);
+    buttonBounds.setY(table.getBounds().getBottom());
+    buttonBounds.setWidth(bounds.getWidth());
+    buttonBounds.setHeight(bounds.getHeight() * 0.1f);
+    
+    g.setColour(UI::ColourDefinitions::darkhighlightColour.withLightness(UI::ColourDefinitions::lightnessFactor));
+    g.fillRect(buttonBounds);
 }
 
 void SpeakerLayoutPanel::resized()
 {
     auto bounds = getLocalBounds();
-    bounds.removeFromRight(getWidth() * (1.f - UI::SpeakerLayoutPanelFactors::tableWidthFactor));
-    bounds.removeFromBottom(getHeight() * (1.f - UI::SpeakerLayoutPanelFactors::tableHeightFactor));
-    table.setBounds(bounds);
+    const float
+    xTable      = bounds.getX(),
+    yTable      = bounds.getY(),
+    tableHeight = bounds.getHeight() * 0.9f,
+    tableWidth  = bounds.getWidth();
+    
+    table.setBounds(xTable, yTable, tableWidth, tableHeight);
     
     const float
     columnWidth = table.getWidth() / 4.f;
@@ -99,27 +136,21 @@ void SpeakerLayoutPanel::resized()
     for (int i = 1; i <= 4; i++)
         table.getHeader().setColumnWidth(i, columnWidth);
     
-    const float
-    addSpeakerX     = table.getX(),
-    addSpeakerY     = table.getBottom(),
-    buttonWidth     = table.getWidth() / 2.f,
-    buttonHeight    = getHeight() - table.getHeight();
+    juce::Rectangle<float> buttonBounds;
+    buttonBounds.setX(xTable);
+    buttonBounds.setY(table.getBounds().getBottom());
+    buttonBounds.setWidth(bounds.getWidth());
+    buttonBounds.setHeight(bounds.getHeight() * 0.1f);
     
-    addSpeaker.setBounds(addSpeakerX,
-                     addSpeakerY,
-                     buttonWidth,
-                     buttonHeight
-                     );
+    addSpeaker.setBounds(buttonBounds.getX(),
+                         buttonBounds.getY(),
+                         buttonBounds.getWidth() * 0.5f,
+                         buttonBounds.getHeight());
     
-    const float
-    removeSpeakerX = addSpeaker.getRight(),
-    removeSpeakerY = addSpeaker.getY();
-    
-    removeSpeaker.setBounds(removeSpeakerX,
-                            removeSpeakerY,
-                            buttonWidth,
-                            buttonHeight
-                            );
+    removeSpeaker.setBounds(addSpeaker.getRight(),
+                            buttonBounds.getY(),
+                            buttonBounds.getWidth() * 0.5f,
+                            buttonBounds.getHeight());
     
     speakerIDSelected == 0 ? removeSpeaker.setEnabled(false) : void();
 }
@@ -137,24 +168,26 @@ void SpeakerLayoutPanel::paintCell(juce::Graphics& g,
                                    bool rowIsSelected)
 {
     juce::String text;
-    if (columnId == 1) {
+    if (columnId == 1)
+    {
         text << rowNumber + 1;
     }
-    
-    else {
+    else
+    {
         auto coordinate = getSpeakerAttributeFromColumn(columnId);
-        text            = getText(columnId, rowNumber, coordinate);
+        g.setFont(UI::Fonts::getMainFontWithSize(12.f));
+        text = getText(columnId, rowNumber, coordinate);
     }
-    
-    g.setColour(juce::Colours::white);
+
+    // Draw cell text
+    g.setColour(UI::ColourDefinitions::outlineColour);
+    g.setFont(UI::Fonts::getMainFontWithSize(12.f));
     g.drawText(text,
                2,
                0,
                width - 4,
                height,
                juce::Justification::centred);
-    
-    
 }
 
 void SpeakerLayoutPanel::paintRowBackground(juce::Graphics& g,
@@ -163,15 +196,26 @@ void SpeakerLayoutPanel::paintRowBackground(juce::Graphics& g,
                                             int height,
                                             bool rowIsSelected)
 {
+    // Fill background based on selection
     if (rowNumber == speakerIDSelected - 1) {
-        DBG("Painting Selected colour for: " << rowNumber + 1);
-        g.fillAll(juce::Colours::lightblue);
+        g.fillAll(UI::ColourDefinitions::accentColour);
+    } else {
+        g.fillAll(UI::ColourDefinitions::darkhighlightColour.withLightness(UI::ColourDefinitions::lightnessFactor));
     }
-        
-    else {
-        DBG("Updating Colour for non selected ID: " << rowNumber + 1);
-        g.fillAll(juce::Colours::transparentBlack);
+
+    // Draw vertical lines between columns
+    g.setColour(UI::ColourDefinitions::outlineColour.withAlpha(0.3f));
+    /*
+    int x = 0;
+    for (int i = 1; i <= 3; ++i) // Draw 3 lines between 4 columns
+    {
+        int colWidth = table.getHeader().getColumnWidth(i);
+        x += colWidth;
+        g.drawLine((float)x, 0.0f, (float)x, (float)height);
     }
+*/
+    // Optional: Draw a horizontal line below each row
+    g.drawLine(0.0f, (float)height - 1.0f, (float)width, (float)height - 1.0f);
 }
 
 void SpeakerLayoutPanel::buttonClicked(juce::Button* button)

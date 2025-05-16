@@ -38,7 +38,7 @@ headerHeightFactor      = 0.1f,
 bodyHeightFactor        = 1.f - headerHeightFactor,
 bodyWidthFactor         = 0.5f,
 
-formatHeightFactor      = 0.425f,
+formatHeightFactor      = 0.4f,
 controlHeightFactor     = (1 - formatHeightFactor),
 
 visPanelHeightFactor    = 0.8f,
@@ -56,10 +56,9 @@ parameterPanelHeightFactor  = 1.f - topSwitchHeightFactor - bottomSwitchHeightFa
 namespace ParameterPanelFactors {
 
 static constexpr float
-sliderWidthFactor   = 0.28f,
+sliderWidthFactor   = 0.32f,
 sliderHeightFactor  = 0.45f,
 spacingFactorY      = 0.05f;
-
 }
 
 namespace VisualisationSectionFactors {
@@ -106,7 +105,8 @@ namespace AmbisonicsSelectorPanelFactors {
 static constexpr float
 paddingFactor           = 0.01f,
 comboBoxHeightFactor    = 0.2f,
-comboBoxWidthFactor     = 0.8f,
+comboBoxWidthFactor     = 0.6f,
+ordersWidthFactor       = 1.f - comboBoxWidthFactor,
 ordersYPosFactor        = 0.35f;
 
 }
@@ -115,9 +115,12 @@ namespace ColourDefinitions {
 
 const juce::Colour
 outlineColour   = juce::Colours::white,
-accentColour    = juce::Colour(0xFF900000),
+accentColour    = juce::Colour(0xFFDA4C0F),
 backgroundColour = juce::Colour(0xFF0A0D0F),
-darkhighlightColour = juce::Colour(0xFF111215);
+darkhighlightColour = juce::Colour(0xFF15191F);
+
+static constexpr float
+lightnessFactor = 0.15f;
 
 }
 
@@ -126,6 +129,18 @@ namespace Geometry {
 const float
 cornerRoundingFactor = 0.47f,
 lineThickness = 1.f;
+
+}
+
+namespace Fonts {
+
+inline const juce::Font getMainFont() {
+    return juce::Font( juce::FontOptions {"Futura", 12.f, juce::Font::plain} );
+}
+
+inline const juce::Font getMainFontWithSize(const float fontSize) {
+    return juce::Font( juce::FontOptions {"Futura", fontSize, juce::Font::plain} );
+}
 
 }
 

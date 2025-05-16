@@ -21,7 +21,8 @@ using Attachment = juce::AudioProcessorValueTreeState::SliderAttachment;
 
 class SliderPanel  :
 public juce::Component,
-public juce::Slider::Listener
+public juce::Slider::Listener,
+public juce::Label::Listener
 {
     
 public:
@@ -30,15 +31,21 @@ public:
         addAndMakeVisible(slider);
         addAndMakeVisible(textLabel);
         addAndMakeVisible(valueLabel);
+        
         slider.addListener(this);
+        valueLabel.addListener(this);
+        slider.setMouseCursor(juce::MouseCursor::UpDownResizeCursor);
+        valueLabel.setMouseCursor(juce::MouseCursor::IBeamCursor);
     }
     ~SliderPanel() override {
         slider.removeListener(this);
+        valueLabel.removeListener(this);
     }
 
     void paint (juce::Graphics& g) override;
     void resized() override;
     void sliderValueChanged(juce::Slider* slider) override;
+    void labelTextChanged (juce::Label* labelThatHasChanged) override;
     
     juce::Slider slider;
     juce::Label textLabel;

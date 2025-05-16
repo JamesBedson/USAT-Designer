@@ -24,10 +24,14 @@ namespace ProcessingConstants {
     const juce::String  azimuth         = "Azimuth";
     const juce::String  elevation       = "Elevation";
     const juce::String  distance        = "Distance";
-    
     const juce::String inputSpeakerLayoutName   = "Input Layout";
     const juce::String outputSpeakerLayoutName  = "Output Layout";
     
+    // Table Column Names
+    const juce::String tableChannelID   = "channel";
+    const juce::String tableAzimuth     = "azimuth";
+    const juce::String tableElevation   = "elevation";
+    const juce::String tableDistance    = "distance";
     }
 
     namespace TreeTags {

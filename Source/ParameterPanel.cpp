@@ -44,13 +44,13 @@ ParameterPanel::ParameterPanel(StateManager& s)
         
         const auto labelText = labelTexts[i];
         textLabel->setText(labelText, juce::dontSendNotification);
-        textLabel->setFont( juce::Font(juce::FontOptions {"Futura", 11.f, juce::Font::bold}));
+        textLabel->setFont( juce::Font(juce::FontOptions {"Futura", 13.5f, juce::Font::bold}));
         
         float value = slider->getValue();
         juce::String valueText(value, 2);
         valueLabel->setText(valueText, juce::dontSendNotification);
-        
-        valueLabel->setFont(juce::Font(juce::FontOptions {"Futura", 11.f, juce::Font::bold}));
+        valueLabel->setFont(juce::Font(juce::FontOptions {"Futura", 13.5f, juce::Font::bold}));
+        valueLabel->setEditable(true);
     }
 }
 
@@ -71,16 +71,16 @@ void ParameterPanel::paint (juce::Graphics& g)
                 reducedBounds.toFloat());
     //g.setColour(UI::ColourDefinitions::accentColour);
     //g.drawRoundedRectangle(reducedBounds.toFloat(), 15.f, UI::Geometry::lineThickness);
-    
+    /*
+    g.setColour(juce::Colours::white);
+    for (auto* panel : sliderPanels) {
+        g.drawRect(panel->getBounds());
+    }
+    */
 }
 
 void ParameterPanel::resized()
 {
-    const float
-    panelHeight     = getHeight(),
-    panelWidth      = getWidth() * 0.6f,
-    sliderHeight    = static_cast<float>(panelHeight) / 9.f;
-    
 }
 
 void ParameterPanel::setSimpleParameterPage() {
@@ -176,25 +176,29 @@ void SliderPanel::resized() {
     const float
     panelWidth      = reducedBounds.getWidth(),
     panelHeight     = reducedBounds.getHeight(),
-    sliderWidth     = panelWidth * 0.5f,
+    sliderWidth     = panelWidth * 0.4f,
     sliderHeight    = panelHeight,
-    labelWidth      = panelWidth * 0.5f,
+    labelWidth      = panelWidth * 0.6f,
     labelHeight     = panelHeight * 0.5f;
     
+    slider.setSize(sliderWidth, sliderHeight);
+    slider.setTopRightPosition(reducedBounds.getTopRight().getX(), reducedBounds.getTopRight().getY());
+    /*
     slider.setBounds(reducedBounds.getCentreX(),
                      reducedBounds.getY(),
                      sliderWidth,
                      sliderHeight
                      );
-
-    textLabel.setBounds(reducedBounds.getX(),
-                        reducedBounds.getY(),
+     
+     */
+    textLabel.setBounds(reducedBounds.getX() + 5.f,
+                        reducedBounds.getY() + 10.f,
                         labelWidth,
                         labelHeight
                         );
     
-    valueLabel.setBounds(textLabel.getX(),
-                         textLabel.getBottom(),
+    valueLabel.setBounds(textLabel.getX() + 5.f,
+                         textLabel.getBottom() - 10.f,
                          labelWidth,
                          labelHeight);
     
@@ -210,5 +214,12 @@ void SliderPanel::sliderValueChanged(juce::Slider *s) {
         juce::String valueText(value, 2);
         valueLabel.setText(valueText, juce::dontSendNotification);
         //valueLabel.repaint();
+    }
+}
+
+void SliderPanel::labelTextChanged(juce::Label *l) {
+    if (l == &valueLabel) {
+        auto value = valueLabel.getTextValue().getValue();
+        slider.setValue(value);
     }
 }

@@ -10,6 +10,78 @@
 
 #pragma once
 #include "UIConstants.h"
+
+class DecodeButtonLNF : public juce::LookAndFeel_V4 {
+
+public:
+    void drawButtonBackground (juce::Graphics& g,
+                               juce::Button& button,
+                               const juce::Colour& backgroundColour,
+                               bool shouldDrawButtonAsHighlighted,
+                               bool shouldDrawButtonAsDown) override
+    {
+        auto cornerSize = button.getHeight() * UI::Geometry::cornerRoundingFactor;
+        auto bounds     = button.getLocalBounds().toFloat().reduced (0.5f, 0.5f);
+
+        auto baseColour = UI::ColourDefinitions::darkhighlightColour;
+
+        if (shouldDrawButtonAsHighlighted) {
+            baseColour = UI::ColourDefinitions::darkhighlightColour
+            .withLightness(UI::ColourDefinitions::lightnessFactor);
+            
+            g.setColour(baseColour);
+            g.fillRoundedRectangle(bounds, cornerSize);
+            
+            g.setColour(UI::ColourDefinitions::accentColour);
+            g.drawRoundedRectangle(bounds, cornerSize, 1.f);
+            
+        }
+        
+        else {
+            baseColour = UI::ColourDefinitions::accentColour;
+            g.setColour(baseColour);
+            g.drawRoundedRectangle(bounds, cornerSize, 1.f);
+        }
+    }
+    
+    void drawButtonText (juce::Graphics& g, juce::TextButton& button,
+                         bool shouldDrawButtonAsHighlighted,
+                         bool shouldDrawButtonAsDown) override
+    {
+        juce::Font font (getTextButtonFont (button, button.getHeight()));
+        g.setFont (font);
+        
+        if (shouldDrawButtonAsDown) {
+            g.setColour(UI::ColourDefinitions::outlineColour.darker());
+        }
+        
+        else {
+            g.setColour (button.findColour (button.getToggleState() ? juce::TextButton::textColourOnId
+                                                                    : juce::TextButton::textColourOffId)
+                               .withMultipliedAlpha (button.isEnabled() ? 1.0f : 0.5f));
+        }
+
+        const int yIndent       = juce::jmin (4, button.proportionOfHeight (0.3f));
+        const int cornerSize    = juce::jmin (button.getHeight(), button.getWidth()) / 2;
+
+        const int fontHeight    = juce::roundToInt (font.getHeight() * 0.6f);
+        const int leftIndent    = juce::jmin (fontHeight, 2 + cornerSize / (button.isConnectedOnLeft() ? 4 : 2));
+        const int rightIndent   = juce::jmin (fontHeight, 2 + cornerSize / (button.isConnectedOnRight() ? 4 : 2));
+        const int textWidth     = button.getWidth() - leftIndent - rightIndent;
+
+        if (textWidth > 0)
+            g.drawFittedText (button.getButtonText(),
+                              leftIndent, yIndent, textWidth, button.getHeight() - yIndent * 2,
+                              juce::Justification::centred, 2);
+    }
+    
+    juce::Font getTextButtonFont (juce::TextButton&, int buttonHeight) override
+    {
+        return UI::Fonts::getMainFontWithSize(17.f);;
+    }
+    
+};
+
 class CustomLNF : public juce::LookAndFeel_V4 {
 
 public:
@@ -42,6 +114,11 @@ public:
         g.fillPath (path);
     }
     
+    juce::Font getTextButtonFont (juce::TextButton&, int buttonHeight) override
+    {
+        return UI::Fonts::getMainFontWithSize(14.f);;
+    }
+    
     void positionComboBoxText (juce::ComboBox& box, juce::Label& label) override
     {
         label.setBounds (8, 1,
@@ -70,8 +147,7 @@ public:
         if (isHighlighted)
             g.fillAll(UI::ColourDefinitions::darkhighlightColour.withLightness(0.15f));
 
-        juce::Font font("Futura", 15.0f, juce::Font::plain);
-        g.setFont(font);
+        g.setFont(UI::Fonts::getMainFontWithSize(15.f));
 
         g.setColour(UI::ColourDefinitions::outlineColour);
         g.drawText(text, area.reduced(4), juce::Justification::centredLeft, true);
@@ -80,7 +156,7 @@ public:
     // Optional: change menu font globally
     juce::Font getPopupMenuFont() override
     {
-        return juce::Font("Futura", 15.0f, juce::Font::plain);
+        return UI::Fonts::getMainFontWithSize(15.f);
     }
     
     void drawButtonBackground (juce::Graphics& g,
@@ -90,43 +166,100 @@ public:
                                bool shouldDrawButtonAsDown) override
     {
         auto cornerSize = button.getHeight() * UI::Geometry::cornerRoundingFactor;
-        auto bounds = button.getLocalBounds().toFloat().reduced (0.5f, 0.5f);
+        auto bounds     = button.getLocalBounds().toFloat().reduced (0.5f, 0.5f);
 
-        auto baseColour = backgroundColour.withMultipliedSaturation (button.hasKeyboardFocus (true) ? 1.3f : 0.9f)
-                                          .withMultipliedAlpha (button.isEnabled() ? 1.0f : 0.5f);
+        auto baseColour = UI::ColourDefinitions::darkhighlightColour;
 
-        if (shouldDrawButtonAsDown || shouldDrawButtonAsHighlighted)
-            baseColour = baseColour.contrasting (shouldDrawButtonAsDown ? 0.2f : 0.05f);
-
-        g.setColour (baseColour);
-
-        auto flatOnLeft   = button.isConnectedOnLeft();
-        auto flatOnRight  = button.isConnectedOnRight();
-        auto flatOnTop    = button.isConnectedOnTop();
-        auto flatOnBottom = button.isConnectedOnBottom();
-
-        if (flatOnLeft || flatOnRight || flatOnTop || flatOnBottom)
-        {
-            juce::Path path;
-            path.addRoundedRectangle (bounds.getX(), bounds.getY(),
-                                      bounds.getWidth(), bounds.getHeight(),
-                                      cornerSize, cornerSize,
-                                      ! (flatOnLeft  || flatOnTop),
-                                      ! (flatOnRight || flatOnTop),
-                                      ! (flatOnLeft  || flatOnBottom),
-                                      ! (flatOnRight || flatOnBottom));
-
-            g.fillPath (path);
-
-            g.setColour (button.findColour (juce::ComboBox::outlineColourId));
-            g.strokePath (path, juce::PathStrokeType (1.0f));
+        if (shouldDrawButtonAsHighlighted) {
+            baseColour = UI::ColourDefinitions::darkhighlightColour
+            .withLightness(UI::ColourDefinitions::lightnessFactor);
+            
+            g.setColour(baseColour);
+            g.fillRoundedRectangle(bounds, cornerSize);
+            
+            g.setColour(UI::ColourDefinitions::outlineColour);
+            g.drawRoundedRectangle(bounds, cornerSize, 1.f);
+            
         }
-        else
-        {
-
-            g.setColour (UI::ColourDefinitions::outlineColour);
-            g.drawRoundedRectangle (bounds, cornerSize, 1.0f);
+        
+        else {
+            baseColour = UI::ColourDefinitions::outlineColour;
+            g.setColour(baseColour);
+            g.drawRoundedRectangle(bounds, cornerSize, 1.f);
         }
+    }
+    
+    void drawButtonText (juce::Graphics& g, juce::TextButton& button,
+                         bool shouldDrawButtonAsHighlighted,
+                         bool shouldDrawButtonAsDown) override
+    {
+        juce::Font font (getTextButtonFont (button, button.getHeight()));
+        g.setFont (font);
+        
+        if (shouldDrawButtonAsDown) {
+            g.setColour(UI::ColourDefinitions::outlineColour.darker());
+        }
+        
+        else {
+            g.setColour (button.findColour (button.getToggleState() ? juce::TextButton::textColourOnId
+                                                                    : juce::TextButton::textColourOffId)
+                               .withMultipliedAlpha (button.isEnabled() ? 1.0f : 0.5f));
+
+        }
+
+        const int yIndent       = juce::jmin (4, button.proportionOfHeight (0.3f));
+        const int cornerSize    = juce::jmin (button.getHeight(), button.getWidth()) / 2;
+
+        const int fontHeight    = juce::roundToInt (font.getHeight() * 0.6f);
+        const int leftIndent    = juce::jmin (fontHeight, 2 + cornerSize / (button.isConnectedOnLeft() ? 4 : 2));
+        const int rightIndent   = juce::jmin (fontHeight, 2 + cornerSize / (button.isConnectedOnRight() ? 4 : 2));
+        const int textWidth     = button.getWidth() - leftIndent - rightIndent;
+
+        if (textWidth > 0)
+            g.drawFittedText (button.getButtonText(),
+                              leftIndent, yIndent, textWidth, button.getHeight() - yIndent * 2,
+                              juce::Justification::centred, 2);
+    }
+    
+    void drawTableHeaderBackground (juce::Graphics& g, juce::TableHeaderComponent& header) override
+    {
+        auto r              = header.getLocalBounds();
+        auto outlineColour  = header.findColour (juce::TableHeaderComponent::outlineColourId);
+
+        g.setColour (outlineColour);
+        g.fillRect (r.removeFromBottom (1));
+
+        g.setColour (header.findColour (juce::TableHeaderComponent::backgroundColourId));
+        g.fillRect (r);
+
+        g.setColour (outlineColour);
+
+        for (int i = header.getNumColumns (true); --i >= 0;)
+            g.fillRect (header.getColumnPosition (i).removeFromRight (1));
+    }
+    
+    void drawTableHeaderColumn (juce::Graphics& g,
+                                juce::TableHeaderComponent& header,
+                                const juce::String& columnName,
+                                int columnId,
+                                int width,
+                                int height,
+                                bool isMouseOver,
+                                bool isMouseDown,
+                                int columnFlags) override
+    {
+        auto highlightColour = UI::ColourDefinitions::darkhighlightColour;
+        if (isMouseDown)
+            g.fillAll (highlightColour);
+        else if (isMouseOver)
+            g.fillAll (highlightColour.withMultipliedAlpha (0.625f));
+
+        juce::Rectangle<int> area (width, height);
+        area.reduce (4, 0);
+
+        g.setColour (UI::ColourDefinitions::outlineColour);
+        g.setFont (UI::Fonts::getMainFontWithSize(14.f));
+        g.drawFittedText (columnName, area, juce::Justification::centredLeft, 1);
     }
     
     void drawRotarySlider (juce::Graphics& g,
@@ -225,6 +358,21 @@ public:
                 g.fillEllipse (juce::Rectangle<float> (thumbWidth, thumbWidth).withCentre (thumbPoint));
             }
         }
+    }
+    
+    void drawScrollbar (juce::Graphics& g, juce::ScrollBar& scrollbar, int x, int y, int width, int height,
+                                        bool isScrollbarVertical, int thumbStartPosition, int thumbSize, bool isMouseOver, [[maybe_unused]] bool isMouseDown) override
+    {
+        juce::Rectangle<int> thumbBounds;
+
+        if (isScrollbarVertical)
+            thumbBounds = { x, thumbStartPosition, width, thumbSize };
+        else
+            thumbBounds = { thumbStartPosition, y, thumbSize, height };
+
+        auto c = UI::ColourDefinitions::accentColour;
+        g.setColour (isMouseOver ? c.brighter (0.25f) : c);
+        g.fillRoundedRectangle (thumbBounds.reduced (1).toFloat(), 4.0f);
     }
     
 private:

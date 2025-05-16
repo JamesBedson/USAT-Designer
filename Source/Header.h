@@ -12,6 +12,7 @@
 
 #include <JuceHeader.h>
 #include "StateManager.h"
+#include "UIConstants.h"
 
 //==============================================================================
 /*

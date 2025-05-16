@@ -87,7 +87,7 @@ void RasterComponent::resized()
 {
     
     juce::Rectangle<int> bounds = getBounds();
-    const auto paddedBounds = bounds.reduced(20);
+    const auto paddedBounds     = bounds.reduced(20);
 
     const int
     windowWidth     = paddedBounds.getWidth(),

@@ -24,8 +24,9 @@ ambisonicsSelectorPanel(s, formatType)
     
     comboBox.setLookAndFeel(&lookAndFeel);
     comboBox.addListener(this);
-    comboBox.addItem("Speaker Layout", 1);
-    comboBox.addItem("Ambisonics", 2);
+    comboBox.setMouseCursor(juce::MouseCursor::PointingHandCursor);
+    comboBox.addItem("speaker layout", 1);
+    comboBox.addItem("ambisonics", 2);
     
     if (formatType == UI::FormatType::input) {
         comboBoxAttachment = std::make_unique<APVTS::ComboBoxAttachment>
@@ -57,6 +58,7 @@ void FormatSelectorPanel::paint (juce::Graphics& g)
     else
         g.drawRoundedRectangle(ambisonicsSelectorPanel.getBounds().toFloat(), 15.f, UI::Geometry::lineThickness);
      */
+    
 }
 
 void FormatSelectorPanel::resized()
@@ -85,7 +87,8 @@ void FormatSelectorPanel::resized()
     
     layoutSelectorPanel.setBounds(selectorPanelX,
                                   selectorPanelY,
-                                  selectorPanelWidth, selectorPanelHeight
+                                  selectorPanelWidth,
+                                  selectorPanelHeight
                                   );
     
     ambisonicsSelectorPanel.setBounds(selectorPanelX,

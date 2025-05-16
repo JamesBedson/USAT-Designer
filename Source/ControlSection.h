@@ -32,7 +32,7 @@ private:
     StateManager& stateManager;
     
     juce::ToggleButton parameterTypeSwitch;
-    juce::TextButton leftArrow, rightArrow;
+    juce::TextButton firstPageButton, secondPageButton;
     juce::ImageButton parameterStyleSwitch;
     
     juce::Label simple, advanced;

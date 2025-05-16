@@ -14,10 +14,12 @@
 //==============================================================================
 AmbisonicsSelectorPanel::AmbisonicsSelectorPanel(StateManager& s,
                                                  const UI::FormatType formatType)
-: formatType(formatType)
+: formatType(formatType),
+background(juce::ImageCache::getFromMemory(BinaryData::formatSelectBackground3x_png, BinaryData::formatSelectBackground3x_pngSize))
 {
     orders.setLookAndFeel(&lookAndFeel);
     orders.addItemList(ProcessingConstants::EncodingOptions::Ambisonics::orderChoices, 1);
+    orders.addListener(this);
     
     if (formatType == UI::FormatType::input) {
         comboBoxAttachment = std::make_unique<APVTS::ComboBoxAttachment>
@@ -34,32 +36,72 @@ AmbisonicsSelectorPanel::AmbisonicsSelectorPanel(StateManager& s,
     }
     
     addAndMakeVisible(orders);
+    addAndMakeVisible(orderLabel);
+    addAndMakeVisible(channelsLabel);
+    addAndMakeVisible(formatLabel);
+    
+    orders.setMouseCursor(juce::MouseCursor::PointingHandCursor);
+    
+    orderLabel.setText("order", juce::dontSendNotification);
+    orderLabel.setFont(UI::Fonts::getMainFontWithSize(14.f));
+    
+    channelsLabel.setFont(UI::Fonts::getMainFontWithSize(14.f));
+    setChannelConfigText();
+    
+    formatLabel.setFont(UI::Fonts::getMainFontWithSize(19.f));
+    formatLabel.setJustificationType(juce::Justification::horizontallyCentred);
+    formatLabel.setColour(juce::Label::textColourId, UI::ColourDefinitions::accentColour);
+    setFormatLabelText();
     //orders.setText("Ambisonics Order");
 }
 
 AmbisonicsSelectorPanel::~AmbisonicsSelectorPanel()
 {
     orders.setLookAndFeel(nullptr);
+    orders.removeListener(this);
 }
 
 void AmbisonicsSelectorPanel::paint (juce::Graphics& g)
 {
-    g.setColour (juce::Colours::white);
-    g.setFont (juce::FontOptions (14.0f));
+    g.drawImage(background, getLocalBounds().toFloat());
 }
 
 void AmbisonicsSelectorPanel::resized()
 {
+    auto reducedBounds = getLocalBounds().reduced(10.f, 10.f);
     const float
-    panelHeight     = getHeight(),
-    panelWidth      = getWidth(),
-    padding         = panelHeight * UI::AmbisonicsSelectorPanelFactors::paddingFactor,
+    panelWidth      = reducedBounds.getWidth(),
+    panelHeight     = reducedBounds.getHeight(),
     comboBoxWidth   = panelWidth * UI::AmbisonicsSelectorPanelFactors::comboBoxWidthFactor,
     comboBoxHeight  = panelHeight * UI::AmbisonicsSelectorPanelFactors::comboBoxHeightFactor,
-    comboBoxCentreX = getLocalBounds().getCentreX(),
-    comboBoxCentreY = padding + panelHeight * UI::AmbisonicsSelectorPanelFactors::ordersYPosFactor;
+    comboBoxRightX  = reducedBounds.getRight(),
+    comboBoxRightY  = reducedBounds.getBottom() - comboBoxHeight;
     
-    orders.setBounds(0, 0, comboBoxWidth, comboBoxHeight);
-    orders.setCentrePosition(comboBoxCentreX, comboBoxCentreY);
+    orders.setSize(comboBoxWidth, comboBoxHeight);
+    orders.setTopRightPosition(comboBoxRightX, comboBoxRightY);
     
+    const float
+    ordersLabelWidth = panelWidth * UI::AmbisonicsSelectorPanelFactors::ordersWidthFactor;
+    
+    orderLabel.setSize(ordersLabelWidth, comboBoxHeight);
+    orderLabel.setTopLeftPosition(reducedBounds.getX(), orders.getY());
+    
+    const float
+    componentWidth  = panelWidth,
+    formatX         = reducedBounds.getX(),
+    formatY         = reducedBounds.getY();
+    
+    formatLabel.setSize(componentWidth, comboBoxHeight);
+    formatLabel.setTopLeftPosition(formatX, formatY);
+    
+    const float
+    channelsLabelOffsetY = 35.f;
+    
+    channelsLabel.setSize(componentWidth, comboBoxHeight);
+    channelsLabel.setTopLeftPosition(formatX, formatY + channelsLabelOffsetY);
+    
+}
+
+void AmbisonicsSelectorPanel::comboBoxChanged(juce::ComboBox *comboBoxThatHasChanged) {
+    setChannelConfigText();
 }
