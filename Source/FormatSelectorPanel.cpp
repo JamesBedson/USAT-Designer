@@ -22,6 +22,7 @@ ambisonicsSelectorPanel(s, formatType)
     addChildComponent(layoutSelectorPanel);
     addChildComponent(ambisonicsSelectorPanel);
     
+    comboBox.setLookAndFeel(&lookAndFeel);
     comboBox.addListener(this);
     comboBox.addItem("Speaker Layout", 1);
     comboBox.addItem("Ambisonics", 2);
@@ -43,41 +44,44 @@ ambisonicsSelectorPanel(s, formatType)
 
 FormatSelectorPanel::~FormatSelectorPanel()
 {
+    comboBox.setLookAndFeel(nullptr);
 }
 
 void FormatSelectorPanel::paint (juce::Graphics& g)
 {
-    g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));   // clear the background
-
-    g.setColour (juce::Colours::grey);
-    g.drawRect (getLocalBounds(), 1);   // draw an outline around the component
-
-    g.setColour (juce::Colours::white);
-    g.setFont (juce::FontOptions (14.0f));
-    g.drawText ("FormatSelectorPanel", getLocalBounds(),
-                juce::Justification::centred, true);   // draw some placeholder text
+    g.setColour(UI::ColourDefinitions::outlineColour);
+    /*
+    if (layoutSelectorPanel.isVisible())
+        g.drawRoundedRectangle(layoutSelectorPanel.getBounds().toFloat(), 15.f, UI::Geometry::lineThickness);
+    
+    else
+        g.drawRoundedRectangle(ambisonicsSelectorPanel.getBounds().toFloat(), 15.f, UI::Geometry::lineThickness);
+     */
 }
 
 void FormatSelectorPanel::resized()
 {
+    const auto boundsReduced = getLocalBounds().reduced(20);
     const float
-    panelWidth      = getWidth(),
-    panelHeight     = getHeight(),
-    padding         = (panelWidth + panelHeight) * UI::FormatSelectionFactors::paddingFactor,
-    comboBoxWidth   = panelWidth - 2.f * padding,
-    comboBoxHeight  = panelHeight * UI::FormatSelectionFactors::comboBoxHeightFactor;
+    panelWidth      = boundsReduced.getWidth(),
+    panelHeight     = boundsReduced.getHeight(),
+    windowX         = boundsReduced.getX(),
+    windowY         = boundsReduced.getY(),
+    comboBoxWidth   = panelWidth,
+    comboBoxHeight  = panelHeight * UI::FormatPanelFactors::comboBoxHeightFactor;
     
-    comboBox.setBounds(padding,
-                       padding,
+    comboBox.setBounds(windowX,
+                       windowY,
                        comboBoxWidth,
                        comboBoxHeight
                        );
     
     const float
-    selectorPanelX = padding,
-    selectorPanelY = comboBox.getBottom() + padding,
-    selectorPanelWidth = comboBoxWidth,
-    selectorPanelHeight = panelHeight - comboBoxHeight - 3.f * padding;
+    padding             = 20,
+    selectorPanelX      = windowX,
+    selectorPanelY      = comboBox.getBottom() + padding,
+    selectorPanelWidth  = comboBoxWidth,
+    selectorPanelHeight = panelHeight - comboBoxHeight - padding;
     
     layoutSelectorPanel.setBounds(selectorPanelX,
                                   selectorPanelY,
@@ -101,11 +105,13 @@ void FormatSelectorPanel::comboBoxChanged(juce::ComboBox *comboBoxThatHasChanged
             case 1:
                 ambisonicsSelectorPanel.setVisible(false);
                 layoutSelectorPanel.setVisible(true);
+                paintLayoutSelector = true;
                 break;
                 
             case 2:
                 layoutSelectorPanel.setVisible(false);
                 ambisonicsSelectorPanel.setVisible(true);
+                paintLayoutSelector = true;
                 break;
         }
     }

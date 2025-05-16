@@ -13,6 +13,7 @@
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
 #include "MatrixComputeWindow.h"
+#include "CustomLNF.h"
 //==============================================================================
 /*
 */
@@ -35,6 +36,9 @@ private:
         decode,
         save,
         load;
+    
+    juce::Image sectionBackground;
+    CustomLNF lookAndFeel;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DecoderSettingsPanel)
 };

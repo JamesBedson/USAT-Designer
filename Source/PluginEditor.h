@@ -16,6 +16,7 @@
 #include "ControlSection.h"
 #include "VisualisationSection.h"
 #include "DecoderSettingsPanel.h"
+#include "FormatSection.h"
 
 //==============================================================================
 
@@ -34,7 +35,10 @@ private:
     Header                  header;
     ControlSection          controlSection;
     VisualisationSection    visualisationSection;
-    DecoderSettingsPanel    decoderPanel;
+    DecoderSettingsPanel    decodeSection;
+    FormatSection           formatSection;
+    
+    juce::Image background;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(RasterComponent)
 };
@@ -52,6 +56,5 @@ private:
     
     RasterComponent     rasterComponent;
     USATAudioProcessor& audioProcessor;
-    
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (WrappedAudioProcessorEditor)
 };

@@ -15,210 +15,200 @@
 ParameterPanel::ParameterPanel(StateManager& s)
 : stateManager(s)
 {
-    
-    auto coefficientTree = s.coefficientsTree;
-    
-    energy.setValue(coefficientTree.getProperty(ProcessingConstants::Coeffs::energy));
-    radialIntensity.setValue(coefficientTree.getProperty(ProcessingConstants::Coeffs::radialIntensity));
-    pressure.setValue(coefficientTree.getProperty(ProcessingConstants::Coeffs::pressure));
-    transverseVelocity.setValue(coefficientTree.getProperty(ProcessingConstants::Coeffs::transverseVelocity));
-    inPhaseQuadratic.setValue(coefficientTree.getProperty(ProcessingConstants::Coeffs::inPhaseQuadratic));
-    inPhaseLinear.setValue(coefficientTree.getProperty(ProcessingConstants::Coeffs::inPhaseLinear));
-    symmetryLinear.setValue(coefficientTree.getProperty(ProcessingConstants::Coeffs::symmetryLinear));
-    totalGainsLinear.setValue(coefficientTree.getProperty(ProcessingConstants::Coeffs::totalGainsLinear));
-    totalGainsQuadratic.setValue(coefficientTree.getProperty(ProcessingConstants::Coeffs::totalGainsQuadratic));
-    
-    addAndMakeVisible(energy);
-    addAndMakeVisible(radialIntensity);
-    addAndMakeVisible(pressure);
-    addAndMakeVisible(transverseVelocity);
-    addAndMakeVisible(radialVelocity);
-    addAndMakeVisible(inPhaseQuadratic);
-    addAndMakeVisible(inPhaseLinear);
-    addAndMakeVisible(symmetryLinear);
-    addAndMakeVisible(totalGainsLinear);
-    addAndMakeVisible(totalGainsQuadratic);
-    
-    energy.onValueChange = [&]() {
-        auto coefficientTree = s.coefficientsTree;
-        coefficientTree.setProperty(ProcessingConstants::Coeffs::energy,
-                                    energy.getValue(),
-                                    nullptr
-                                    );
-    };
-
-    radialIntensity.onValueChange = [&]() {
-        auto coefficientTree = s.coefficientsTree;
-        coefficientTree.setProperty(ProcessingConstants::Coeffs::radialIntensity,
-                                    radialIntensity.getValue(),
-                                    nullptr
-                                    );
-    };
-
-    pressure.onValueChange = [&]() {
-        auto coefficientTree = s.coefficientsTree;
-        coefficientTree.setProperty(ProcessingConstants::Coeffs::pressure,
-                                    pressure.getValue(),
-                                    nullptr
-                                    );
-    };
-
-    transverseVelocity.onValueChange = [&]() {
-        auto coefficientTree = s.coefficientsTree;
-        coefficientTree.setProperty(ProcessingConstants::Coeffs::transverseVelocity,
-                                    transverseVelocity.getValue(),
-                                    nullptr
-                                    );
-    };
-
-    radialVelocity.onValueChange = [&]() {
-        auto coefficientTree = s.coefficientsTree;
-        coefficientTree.setProperty(ProcessingConstants::Coeffs::radialVelocity,
-                                    radialVelocity.getValue(),
-                                    nullptr
-                                    );
-    };
-
-    inPhaseQuadratic.onValueChange = [&]() {
-        auto coefficientTree = s.coefficientsTree;
-        coefficientTree.setProperty(ProcessingConstants::Coeffs::inPhaseQuadratic,
-                                    inPhaseQuadratic.getValue(),
-                                    nullptr
-                                    );
-    };
-
-    inPhaseLinear.onValueChange = [&]() {
-        auto coefficientTree = s.coefficientsTree;
-        coefficientTree.setProperty(ProcessingConstants::Coeffs::inPhaseLinear,
-                                    inPhaseLinear.getValue(),
-                                    nullptr
-                                    );
-    };
-
-    symmetryLinear.onValueChange = [&]() {
-        auto coefficientTree = s.coefficientsTree;
-        coefficientTree.setProperty(ProcessingConstants::Coeffs::symmetryLinear,
-                                    symmetryLinear.getValue(),
-                                    nullptr
-                                    );
-    };
-
-    totalGainsLinear.onValueChange = [&]() {
-        auto coefficientTree = s.coefficientsTree;
-        coefficientTree.setProperty(ProcessingConstants::Coeffs::totalGainsLinear,
-                                    totalGainsLinear.getValue(),
-                                    nullptr
-                                    );
-    };
-
-    totalGainsQuadratic.onValueChange = [&]() {
-        auto coefficientTree = s.coefficientsTree;
-        coefficientTree.setProperty(ProcessingConstants::Coeffs::totalGainsQuadratic,
-                                    totalGainsQuadratic.getValue(),
-                                    nullptr
-                                    );
-    };
-    
-    addAndMakeVisible(energyLabel);
-    addAndMakeVisible(radialIntensityLabel);
-    addAndMakeVisible(pressureLabel);
-    addAndMakeVisible(transverseVelocityLabel);
-    addAndMakeVisible(radialVelocityLabel);
-    addAndMakeVisible(inPhaseQuadraticLabel);
-    addAndMakeVisible(inPhaseLinearLabel);
-    addAndMakeVisible(symmetryLinearLabel);
-    addAndMakeVisible(totalGainsQuadraticLabel);
-    addAndMakeVisible(totalGainsLinearLabel);
-    addAndMakeVisible(totalGainsQuadraticLabel);
-    
-    energyLabel.setText(ProcessingConstants::Coeffs::energy, juce::dontSendNotification);
-    radialIntensityLabel.setText(ProcessingConstants::Coeffs::radialIntensity, juce::dontSendNotification);
-    pressureLabel.setText(ProcessingConstants::Coeffs::pressure, juce::dontSendNotification);
-    transverseVelocityLabel.setText(ProcessingConstants::Coeffs::transverseVelocity, juce::dontSendNotification);
-    radialVelocityLabel.setText(ProcessingConstants::Coeffs::radialVelocity, juce::dontSendNotification);
-    inPhaseQuadraticLabel.setText(ProcessingConstants::Coeffs::inPhaseQuadratic, juce::dontSendNotification);
-    inPhaseLinearLabel.setText(ProcessingConstants::Coeffs::inPhaseLinear, juce::dontSendNotification);
-    symmetryLinearLabel.setText(ProcessingConstants::Coeffs::symmetryLinear, juce::dontSendNotification);
-    totalGainsQuadraticLabel.setText(ProcessingConstants::Coeffs::totalGainsQuadratic, juce::dontSendNotification);
-    totalGainsLinearLabel.setText(ProcessingConstants::Coeffs::totalGainsLinear, juce::dontSendNotification);
-    
-    energy.setTextBoxStyle(juce::Slider::TextBoxRight, false, 100, 20);
-    radialIntensity.setTextBoxStyle(juce::Slider::TextBoxRight, false, 100, 20);
-    pressure.setTextBoxStyle(juce::Slider::TextBoxRight, false, 100, 20);
-    transverseVelocity.setTextBoxStyle(juce::Slider::TextBoxRight, false, 100, 20);
-    radialVelocity.setTextBoxStyle(juce::Slider::TextBoxRight, false, 100, 20);
-    inPhaseQuadratic.setTextBoxStyle(juce::Slider::TextBoxRight, false, 100, 20);
-    inPhaseLinear.setTextBoxStyle(juce::Slider::TextBoxRight, false, 100, 20);
-    symmetryLinear.setTextBoxStyle(juce::Slider::TextBoxRight, false, 100, 20);
-    totalGainsQuadratic.setTextBoxStyle(juce::Slider::TextBoxRight, false, 100, 20);
-    totalGainsLinear.setTextBoxStyle(juce::Slider::TextBoxRight, false, 100, 20);
-
-    energyLabel.attachToComponent(&energy, true);
-    radialIntensityLabel.attachToComponent(&radialIntensity, true);
-    pressureLabel.attachToComponent(&pressure, true);
-    transverseVelocityLabel.attachToComponent(&transverseVelocity, true);
-    radialVelocityLabel.attachToComponent(&radialVelocity, true);
-    inPhaseQuadraticLabel.attachToComponent(&inPhaseQuadratic, true);
-    inPhaseLinearLabel.attachToComponent(&inPhaseLinear, true);
-    symmetryLinearLabel.attachToComponent(&symmetryLinear, true);
-    totalGainsQuadraticLabel.attachToComponent(&totalGainsQuadratic, true);
-    totalGainsLinearLabel.attachToComponent(&totalGainsLinear, true);
-    
-    energy.setSliderStyle(juce::Slider::SliderStyle::LinearHorizontal);
-    radialIntensity.setSliderStyle(juce::Slider::SliderStyle::LinearHorizontal);
-    pressure.setSliderStyle(juce::Slider::SliderStyle::LinearHorizontal);
-    transverseVelocity.setSliderStyle(juce::Slider::SliderStyle::LinearHorizontal);
-    radialVelocity.setSliderStyle(juce::Slider::SliderStyle::LinearHorizontal);
-    inPhaseQuadratic.setSliderStyle(juce::Slider::SliderStyle::LinearHorizontal);
-    inPhaseLinear.setSliderStyle(juce::Slider::SliderStyle::LinearHorizontal);
-    symmetryLinear.setSliderStyle(juce::Slider::SliderStyle::LinearHorizontal);
-    totalGainsLinear.setSliderStyle(juce::Slider::SliderStyle::LinearHorizontal);
-    totalGainsQuadratic.setSliderStyle(juce::Slider::SliderStyle::LinearHorizontal);
-    
-    energy.setTextBoxIsEditable(true);
-    radialIntensity.setTextBoxIsEditable(true);
-    pressure.setTextBoxIsEditable(true);
-    transverseVelocity.setTextBoxIsEditable(true);
-    inPhaseQuadratic.setTextBoxIsEditable(true);
-    inPhaseLinear.setTextBoxIsEditable(true);
-    symmetryLinear.setTextBoxIsEditable(true);
-    totalGainsLinear.setTextBoxIsEditable(true);
-    totalGainsQuadratic.setTextBoxIsEditable(true);
-    
+        
+    for (int i = 0; i < sliderPanels.size(); i++)
+    {
+        auto* sliderPanel = sliderPanels[i];
+        addAndMakeVisible(sliderPanel);
+        
+        auto* slider        = &(sliderPanel->slider);
+        auto* textLabel     = &(sliderPanel->textLabel);
+        auto* valueLabel    = &(sliderPanel->valueLabel);
+        
+        const auto propertyName = ProcessingConstants::Coeffs::coefficientTypes[i];
+        auto& coefficientsTree  = s.coefficientsTree;
+        
+        slider->onValueChange = [&, slider, propertyName]() {
+            float value     = slider->getValue();
+            stateManager.coefficientsTree.setProperty(propertyName,
+                                        value,
+                                        nullptr
+                                        );
+        };
+        
+        slider->setLookAndFeel(&lookAndFeel);
+        slider->setValue(coefficientsTree.getProperty(propertyName));
+        slider->setTextBoxStyle(juce::Slider::NoTextBox, false, 100, 20);
+        slider->setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
+        slider->setTextBoxIsEditable(true);
+        
+        const auto labelText = labelTexts[i];
+        textLabel->setText(labelText, juce::dontSendNotification);
+        textLabel->setFont( juce::Font(juce::FontOptions {"Futura", 11.f, juce::Font::bold}));
+        
+        float value = slider->getValue();
+        juce::String valueText(value, 2);
+        valueLabel->setText(valueText, juce::dontSendNotification);
+        
+        valueLabel->setFont(juce::Font(juce::FontOptions {"Futura", 11.f, juce::Font::bold}));
+    }
 }
+
 
 ParameterPanel::~ParameterPanel()
 {
+    for (auto* sliderPanel : sliderPanels) {
+        auto* slider = &(sliderPanel->slider);
+        slider->setLookAndFeel(nullptr);
+    }
 }
 
 void ParameterPanel::paint (juce::Graphics& g)
 {
-
-    g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));   // clear the background
-
-    g.setColour (juce::Colours::grey);
-    g.drawRect (getLocalBounds(), 1);   // draw an outline around the component
-
-    g.setColour (juce::Colours::white);
-    g.setFont (juce::FontOptions (14.0f));
+    juce::Rectangle<int> reducedBounds = getLocalBounds();
+    g.drawImage(juce::Image(juce::ImageCache::getFromMemory(BinaryData::placeholder3x_png,
+                                                            BinaryData::placeholder3x_pngSize)),
+                reducedBounds.toFloat());
+    //g.setColour(UI::ColourDefinitions::accentColour);
+    //g.drawRoundedRectangle(reducedBounds.toFloat(), 15.f, UI::Geometry::lineThickness);
+    
 }
 
 void ParameterPanel::resized()
 {
     const float
-    panelHeight             = getHeight(),
-    panelWidth              = getWidth() * 0.6f,
-    sliderHeight  = static_cast<float>(panelHeight) / 9.f;
+    panelHeight     = getHeight(),
+    panelWidth      = getWidth() * 0.6f,
+    sliderHeight    = static_cast<float>(panelHeight) / 9.f;
     
-    energy.setBounds(140, 0, panelWidth, sliderHeight);
-    radialIntensity.setBounds(140, energy.getBottom(), panelWidth, sliderHeight);
-    pressure.setBounds(140, radialIntensity.getBottom(), panelWidth, sliderHeight);
-    transverseVelocity.setBounds(140, pressure.getBottom(), panelWidth, sliderHeight);
-    inPhaseQuadratic.setBounds(140, transverseVelocity.getBottom(), panelWidth, sliderHeight);
-    inPhaseLinear.setBounds(140, inPhaseQuadratic.getBottom(), panelWidth, sliderHeight);
-    symmetryLinear.setBounds(140, inPhaseLinear.getBottom(), panelWidth, sliderHeight);
-    totalGainsLinear.setBounds(140, symmetryLinear.getBottom(), panelWidth, sliderHeight);
-    totalGainsQuadratic.setBounds(140, totalGainsLinear.getBottom(), panelWidth, sliderHeight);
+}
+
+void ParameterPanel::setSimpleParameterPage() {
+    for (auto* sliderPanel : sliderPanels) {
+        sliderPanel->setVisible(false);
+    }
+}
+
+void ParameterPanel::setAdvancedParameterPage(const ParameterSelectorChoice &advancedChoice)
+{
+    int mid = static_cast<int>(sliderPanels.size()) / 2;
     
+    auto slidersFirstHalf   = std::vector<SliderPanel*>(sliderPanels.begin(),
+                                                        sliderPanels.begin() + mid
+                                                        );
     
+    auto slidersSecondHalf  = std::vector<SliderPanel*>(sliderPanels.begin() + mid,
+                                                        sliderPanels.end()
+                                                        );
+    
+    std::vector<SliderPanel*> sliderPanelsToUse;
+    
+    if (advancedChoice == ParameterSelectorChoice::Advanced_1) {
+        DBG("Selected first page");
+        sliderPanelsToUse = slidersFirstHalf;
+        for (int i = 0; i < slidersFirstHalf.size(); i++) {
+            auto* activeSliderPanel         = slidersFirstHalf[i];
+            auto* deactivatedSliderPanel    = slidersSecondHalf[i];
+            
+            activeSliderPanel->setVisible(true);
+            deactivatedSliderPanel->setVisible(false);
+        }
+    }
+    
+    else if (advancedChoice == ParameterSelectorChoice::Advanced_2) {
+        DBG("Selected second page");
+        sliderPanelsToUse = slidersSecondHalf;
+        for (int i = 0; i < slidersFirstHalf.size(); i++) {
+            auto* activeSliderPanel         = slidersSecondHalf[i];
+            auto* deactivatedSliderPanel    = slidersFirstHalf[i];
+
+            activeSliderPanel->setVisible(true);
+            deactivatedSliderPanel->setVisible(false);
+        }
+    }
+    
+    else
+        jassertfalse;
+    
+    juce::Rectangle<int> reducedBounds = getLocalBounds().reduced(10.f);
+
+    const int
+    numCols = 3;
+    
+    const float
+    startX      = (float) reducedBounds.getX(),
+    startY      = (float) reducedBounds.getY(),
+    totalWidth  = (float) reducedBounds.getWidth(),
+    panelWidth  = totalWidth * UI::ParameterPanelFactors::sliderWidthFactor,
+    panelHeight = (float) reducedBounds.getHeight() * UI::ParameterPanelFactors::sliderHeightFactor;
+
+    const float
+    colCenters[numCols] = {
+        startX,
+        static_cast<float>(reducedBounds.getCentreX()) - panelWidth * 0.5f,
+        reducedBounds.getRight() - panelWidth
+    };
+    
+    // Now layout sliders in pairs vertically
+    for (int i = 0; i + 1 < slidersFirstHalf.size(); i += 2)
+    {
+        int col = static_cast<int>(i / 2);
+        if (col >= numCols) break;  // just in case
+
+        const float x = colCenters[col];
+    
+        sliderPanelsToUse[i]->setBounds(x,
+                                startY,
+                                panelWidth,
+                                panelHeight);
+        
+        sliderPanelsToUse[i + 1]->setBounds(x,
+                                           reducedBounds.getBottom() - panelHeight,
+                                           panelWidth,
+                                           panelHeight);
+    }
+}
+
+void SliderPanel::resized() {
+    
+    auto reducedBounds = getLocalBounds();
+    
+    const float
+    panelWidth      = reducedBounds.getWidth(),
+    panelHeight     = reducedBounds.getHeight(),
+    sliderWidth     = panelWidth * 0.5f,
+    sliderHeight    = panelHeight,
+    labelWidth      = panelWidth * 0.5f,
+    labelHeight     = panelHeight * 0.5f;
+    
+    slider.setBounds(reducedBounds.getCentreX(),
+                     reducedBounds.getY(),
+                     sliderWidth,
+                     sliderHeight
+                     );
+
+    textLabel.setBounds(reducedBounds.getX(),
+                        reducedBounds.getY(),
+                        labelWidth,
+                        labelHeight
+                        );
+    
+    valueLabel.setBounds(textLabel.getX(),
+                         textLabel.getBottom(),
+                         labelWidth,
+                         labelHeight);
+    
+}
+
+void SliderPanel::paint(juce::Graphics &g) {
+
+}
+
+void SliderPanel::sliderValueChanged(juce::Slider *s) {
+    if (s == &slider) {
+        float value = s->getValue();
+        juce::String valueText(value, 2);
+        valueLabel.setText(valueText, juce::dontSendNotification);
+        //valueLabel.repaint();
+    }
 }

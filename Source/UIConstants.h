@@ -22,8 +22,8 @@ enum FormatType {
 namespace SizeLimits {
 
 static constexpr double
-maximumWidth {1200.0},
-maximumHeight {800.0},
+maximumWidth {1000},
+maximumHeight {600},
 minimumWidth    = maximumWidth / 4.0,
 minimumHeight   = maximumHeight / 4.0;
 
@@ -34,21 +34,31 @@ margin          = maximumWidth * 0.01f;
 namespace RasterComponentFactors {
 
 static constexpr float
+headerHeightFactor      = 0.1f,
+bodyHeightFactor        = 1.f - headerHeightFactor,
+bodyWidthFactor         = 0.5f,
 
-headerHeightFactor          = 0.1f,
-bodyHeightFactor            = 0.7f,
-decPanelHeightFactor        = 1.f - headerHeightFactor - bodyHeightFactor,
-controlWidthFactor          = 0.45f,
-visPanelWidthFactor         = 1.f - controlWidthFactor;
+formatHeightFactor      = 0.425f,
+controlHeightFactor     = (1 - formatHeightFactor),
 
+visPanelHeightFactor    = 0.8f,
+decPanelHeightFactor    = (1 - visPanelHeightFactor);
 }
 
 namespace ControlSectionFactors {
 
 static constexpr float
-formatWidthFactor   = 0.5f,
-formatHeightFactor  = 0.3f,
-paramsHeightFactor  = 1.f - formatHeightFactor;
+topSwitchHeightFactor       = 0.1f,
+bottomSwitchHeightFactor    = 0.1f,
+parameterPanelHeightFactor  = 1.f - topSwitchHeightFactor - bottomSwitchHeightFactor * 1.5f;
+}
+
+namespace ParameterPanelFactors {
+
+static constexpr float
+sliderWidthFactor   = 0.28f,
+sliderHeightFactor  = 0.45f,
+spacingFactorY      = 0.05f;
 
 }
 
@@ -59,7 +69,14 @@ paddingFactor = 0.05f;
 
 }
 
-namespace FormatSelectionFactors {
+namespace FormatSectionFactors {
+
+static constexpr float
+selectorWidthFactor = 0.5f;
+
+}
+
+namespace FormatPanelFactors {
 
 static constexpr float
 paddingFactor           = 0.02f,
@@ -94,4 +111,23 @@ ordersYPosFactor        = 0.35f;
 
 }
 
+namespace ColourDefinitions {
+
+const juce::Colour
+outlineColour   = juce::Colours::white,
+accentColour    = juce::Colour(0xFF900000),
+backgroundColour = juce::Colour(0xFF0A0D0F),
+darkhighlightColour = juce::Colour(0xFF111215);
+
 }
+
+namespace Geometry {
+
+const float
+cornerRoundingFactor = 0.47f,
+lineThickness = 1.f;
+
+}
+
+}
+

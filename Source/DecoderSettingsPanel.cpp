@@ -13,26 +13,23 @@
 
 //==============================================================================
 DecoderSettingsPanel::DecoderSettingsPanel(USATAudioProcessor& p)
-: audioProcessor(p)
+: audioProcessor(p),
+sectionBackground(juce::ImageCache::getFromMemory(BinaryData::decode_section3x_png, BinaryData::decode_section3x_pngSize))
 {
     addAndMakeVisible(decode);
+    decode.setLookAndFeel(&lookAndFeel);
     decode.addListener(this);
     decode.setButtonText("decode");
 }
 
-DecoderSettingsPanel::~DecoderSettingsPanel(){
+DecoderSettingsPanel::~DecoderSettingsPanel()
+{
+    decode.setLookAndFeel(nullptr);
 }
 
 void DecoderSettingsPanel::paint (juce::Graphics& g)
 {
-    
-    g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));   // clear the background
-
-    g.setColour (juce::Colours::grey);
-    g.drawRect (getLocalBounds(), 1);   // draw an outline around the component
-
-    g.setColour (juce::Colours::white);
-    g.setFont (juce::FontOptions (14.0f));
+    g.drawImage(sectionBackground, getLocalBounds().toFloat(), juce::RectanglePlacement::stretchToFit);
 }
 
 void DecoderSettingsPanel::resized()

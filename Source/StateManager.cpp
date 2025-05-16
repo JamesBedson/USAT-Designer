@@ -49,7 +49,8 @@ const juce::File StateManager::getPythonScript()
 StateManager::StateManager(APVTS& apvts)
 : apvts(apvts),
 inputSpeakerManager(ProcessingConstants::TreeTags::inputSpeakerLayoutID),
-outputSpeakerManager(ProcessingConstants::TreeTags::outputSpeakerLayoutID)
+outputSpeakerManager(ProcessingConstants::TreeTags::outputSpeakerLayoutID),
+coefficientsTree(ProcessingConstants::TreeTags::coefficientsID)
 {
     ensureDirectoryExists(presetsDirectory);
     ensureDirectoryExists(speakerLayoutDirectory);
@@ -75,15 +76,14 @@ void StateManager::ensureDirectoryExists(const juce::File &directory)
 
 void StateManager::initCoefficientsTree()
 {
-    
-    juce::ValueTree coefficientsTree {ProcessingConstants::TreeTags::coefficientsID};
-    
+        
     for (juce::String coefficient : ProcessingConstants::Coeffs::coefficientTypes)
     {
         auto it = ProcessingConstants::Coeffs::defaultValues.find(coefficient);
         auto defaultValue = it->second;
         coefficientsTree.setProperty(coefficient, defaultValue, nullptr);
     }
+
 }
 
 const juce::ValueTree StateManager::createInputAmbisonicsTree() const
@@ -156,6 +156,7 @@ const juce::ValueTree StateManager::createGlobalValueTree() const
     auto ambisonicsOutTree      = createOutputAmbisonicsTree();
     auto speakerLayoutInTree    = inputSpeakerManager.getSpeakerTree().createCopy();
     auto speakerLayoutOutTree   = outputSpeakerManager.getSpeakerTree().createCopy();
+    auto coeffTree              = coefficientsTree.createCopy();
     
     juce::ValueTree globalTree {ProcessingConstants::TreeTags::stateParametersID};
     
@@ -164,7 +165,7 @@ const juce::ValueTree StateManager::createGlobalValueTree() const
     globalTree.addChild(ambisonicsOutTree, -1, nullptr);
     globalTree.addChild(speakerLayoutInTree, -1, nullptr);
     globalTree.addChild(speakerLayoutOutTree, -1, nullptr);
-    globalTree.addChild(coefficientsTree, -1, nullptr);
+    globalTree.addChild(coeffTree, -1, nullptr);
     
     return globalTree;
 }

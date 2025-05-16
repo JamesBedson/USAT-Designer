@@ -15,7 +15,7 @@ USAT::USAT(juce::Value& progress, juce::Value& status)
 statusValue(status)
 {
     matrixReady = false;
-    pyThread = std::make_unique<PythonThread>(interpreter, gainsMatrix);
+    //pyThread = std::make_unique<PythonThread>(interpreter, gainsMatrix);
 }
 
 USAT::~USAT()
@@ -76,12 +76,14 @@ void USAT::prepare(double sampleRate,
                    int numInputChannelsInHost,
                    int numOutputChannelsInHost)
 {
-    tempOutputBuffer.setSize(currentChannelCountOut, samplesPerBlock);
-    tempOutputBuffer.clear();
+    if (currentChannelCountOut > 0) {
+        tempOutputBuffer.setSize(currentChannelCountOut, samplesPerBlock);
+        tempOutputBuffer.clear();
 
-    if (!gainsMatrix.verifyMatrixDimensions(numInputChannelsInHost, numOutputChannelsInHost)) {
-        // TODO: Handle Input and Output Dimension Mismatch. Dialog Box or something
-    };
+        if (!gainsMatrix.verifyMatrixDimensions(numInputChannelsInHost, numOutputChannelsInHost)) {
+            // TODO: Handle Input and Output Dimension Mismatch. Dialog Box or something
+        };
+    }
 }
 
 
@@ -120,7 +122,7 @@ void USAT::fillMatrixFromValueTree(const juce::ValueTree& matrixTree) {
     const int inputChannels  = matrixTree.getProperty(ProcessingConstants::GainMatrixTree::ChannelCount::inputChannelCount);
     const int outputChannels = matrixTree.getProperty(ProcessingConstants::GainMatrixTree::ChannelCount::outputChannelCount);
     
-    jassert(inputChannels > 0 && outputChannels > 0);
+    //jassert(inputChannels > 0 && outputChannels > 0);
     
     gainsMatrix.setNumChannels(inputChannels, outputChannels);
     

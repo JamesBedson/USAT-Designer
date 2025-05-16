@@ -92,7 +92,7 @@ def parse_coefficients(coefficients_xml: ET.Element) -> dict[str, float]:
 
     return coefficients
 
-def get_num_ambisonics_channels(int: order) -> int:
+def get_num_ambisonics_channels(order: int) -> int:
     return (order + 1) ** 2
 
 def get_ambisonics_enc_matrix(order: int, 
@@ -251,7 +251,7 @@ def parse_encoding_settings(usat_parameter_settings_xml: ET.Element) -> dict:
 
         parameter_dict = create_encoding_matrix(format=input_type, 
                                                 parameter_dict=parameter_dict, 
-                                                layout_data=order
+                                                layout_data=int(order)
                                                 )
 
     elif input_type == SPEAKER_LAYOUT:
@@ -277,7 +277,7 @@ def parse_encoding_settings(usat_parameter_settings_xml: ET.Element) -> dict:
 
         order = output_ambisonics_xml.get(AMBISONICS_ORDER_OUT)
         assert(order is not None)
-        parameter_dict["output_layout"] = get_ambisonics_output(order)
+        parameter_dict["output_layout"] = get_ambisonics_output(int(order))
     
     elif output_type == SPEAKER_LAYOUT:
         output_speaker_layout_xml = usat_parameter_settings_xml.find(OUTPUT_SPEAKER_LAYOUT)
@@ -301,7 +301,7 @@ def parse_encoding_settings(usat_parameter_settings_xml: ET.Element) -> dict:
 
     return parameter_dict
 
-'''def start_decoding(xml_string: str):
+def start_decoding(xml_string: str):
 
     usat_state_parameters_xml   = ET.fromstring(xml_string)
     optimization_dict           = parse_encoding_settings(usat_state_parameters_xml)
@@ -316,19 +316,24 @@ def parse_encoding_settings(usat_parameter_settings_xml: ET.Element) -> dict:
     print("Number of Output Channels:", gain_matrix.shape[1])
     
     return gain_matrix.tolist()
-'''
-def start_decoding(xml_string: str, progress_callback=None):
+
+def start_decoding(xml_string: str, 
+                   progress_callback=None, 
+                   status_callback=None):
     import time
-    print("Callback function code")
     matrix = [[0, 0], [0, 0]]
 
-    for i in range(10):
+    for i in range(1, 11):
         time.sleep(0.5)
+        if status_callback:
+            status_callback(f"Processing {i+1}/10")
+
         if progress_callback:
             progress_callback(i / 10)
+
         else:
             print("Error callback!")
-            
+
     return matrix
 #################################################################################
 def main():

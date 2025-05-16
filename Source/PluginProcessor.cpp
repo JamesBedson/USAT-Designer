@@ -32,7 +32,7 @@ decoder(progressValue, statusValue)
 
 USATAudioProcessor::~USATAudioProcessor()
 {
-    cancelDecoding();
+    //cancelDecoding();
 }
 
 //==============================================================================
@@ -202,13 +202,17 @@ void USATAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
             
             stateManager.inputSpeakerManager.recoverStateFromValueTree(speakersInput);
             stateManager.outputSpeakerManager.recoverStateFromValueTree(speakersOutput);
-            stateManager.coefficientsTree = coefficients.createCopy();
             
+            if (!coefficients.isValid())
+                stateManager.initCoefficientsTree();
+            else
+                stateManager.coefficientsTree = coefficients.createCopy();
+                        
             auto globalGainMatrix = mainState.getChildWithName(ProcessingConstants::TreeTags::gainMatrixID);
             
             if (globalGainMatrix.isValid()) {
-                auto channelCount = globalGainMatrix.getChildWithName(ProcessingConstants::TreeTags::channelCountsID);
-                auto matrix = globalGainMatrix.getChildWithName(ProcessingConstants::TreeTags::coefficientsID);
+                auto channelCount   = globalGainMatrix.getChildWithName(ProcessingConstants::TreeTags::channelCountsID);
+                auto matrix         = globalGainMatrix.getChildWithName(ProcessingConstants::TreeTags::coefficientsID);
                 decoder.fillMatrixFromValueTree(matrix);
             }
         }

@@ -12,9 +12,9 @@
 
 #include <JuceHeader.h>
 #include "StateManager.h"
-#include "FormatSelectorPanel.h"
 #include "ParameterPanel.h"
 #include "UIConstants.h"
+#include "CustomLNF.h"
 
 //==============================================================================
 /*
@@ -31,11 +31,16 @@ public:
 private:
     StateManager& stateManager;
     
-    FormatSelectorPanel
-    inputSelector,
-    outputSelector;
+    juce::ToggleButton parameterTypeSwitch;
+    juce::TextButton leftArrow, rightArrow;
+    juce::ImageButton parameterStyleSwitch;
     
+    juce::Label simple, advanced;
     ParameterPanel
     parameterPanel;
+    
+    juce::Image sectionBackground;
+    CustomLNF lookAndFeel;
+    
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ControlSection)
 };

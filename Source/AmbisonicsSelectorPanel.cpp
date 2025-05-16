@@ -16,6 +16,7 @@ AmbisonicsSelectorPanel::AmbisonicsSelectorPanel(StateManager& s,
                                                  const UI::FormatType formatType)
 : formatType(formatType)
 {
+    orders.setLookAndFeel(&lookAndFeel);
     orders.addItemList(ProcessingConstants::EncodingOptions::Ambisonics::orderChoices, 1);
     
     if (formatType == UI::FormatType::input) {
@@ -38,16 +39,11 @@ AmbisonicsSelectorPanel::AmbisonicsSelectorPanel(StateManager& s,
 
 AmbisonicsSelectorPanel::~AmbisonicsSelectorPanel()
 {
+    orders.setLookAndFeel(nullptr);
 }
 
 void AmbisonicsSelectorPanel::paint (juce::Graphics& g)
 {
-
-    g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));   // clear the background
-
-    g.setColour (juce::Colours::grey);
-    g.drawRect (getLocalBounds(), 1);   // draw an outline around the component
-
     g.setColour (juce::Colours::white);
     g.setFont (juce::FontOptions (14.0f));
 }

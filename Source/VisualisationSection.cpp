@@ -15,7 +15,8 @@
 VisualisationSection::VisualisationSection(StateManager& s)
 : stateManager(s),
 visPanelTop(s),
-visPanelBottom(s)
+visPanelBottom(s),
+sectionBackground(juce::ImageCache::getFromMemory(BinaryData::vis_section3x_png, BinaryData::vis_section3x_pngSize))
 {
     addAndMakeVisible(visPanelTop);
     addAndMakeVisible(visPanelBottom);
@@ -27,22 +28,7 @@ VisualisationSection::~VisualisationSection()
 
 void VisualisationSection::paint (juce::Graphics& g)
 {
-    /* This demo code just fills the component's background and
-       draws some placeholder text to get you started.
-
-       You should replace everything in this method with your own
-       drawing code..
-    */
-
-    g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));   // clear the background
-
-    g.setColour (juce::Colours::grey);
-    g.drawRect (getLocalBounds(), 1);   // draw an outline around the component
-
-    g.setColour (juce::Colours::white);
-    g.setFont (juce::FontOptions (14.0f));
-    g.drawText ("VisualisationSection", getLocalBounds(),
-                juce::Justification::centred, true);   // draw some placeholder text
+    g.drawImage(sectionBackground, getLocalBounds().toFloat(), juce::RectanglePlacement::stretchToFit);
 }
 
 void VisualisationSection::resized()
@@ -73,5 +59,4 @@ void VisualisationSection::resized()
                              visPanelWidth,
                              visPanelHeight
                              );
-    
 }

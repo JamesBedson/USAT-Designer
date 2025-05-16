@@ -15,6 +15,7 @@
 #include "UIConstants.h"
 #include "LayoutSelectorPanel.h"
 #include "AmbisonicsSelectorPanel.h"
+#include "CustomLNF.h"
 //==============================================================================
 /*
 */
@@ -37,6 +38,9 @@ private:
     std::unique_ptr<APVTS::ComboBoxAttachment> comboBoxAttachment;
     LayoutSelectorPanel     layoutSelectorPanel;
     AmbisonicsSelectorPanel ambisonicsSelectorPanel;
+    bool paintLayoutSelector = false;
+    
+    CustomLNF lookAndFeel;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (FormatSelectorPanel)
 };

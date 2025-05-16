@@ -62,7 +62,7 @@ private:
     ProcessingConstants::PythonParameterNameMap pythonParameterMap;
     
     bool matrixReady;
-    PythonInterpreter interpreter;
+    //PythonInterpreter interpreter;
     std::unique_ptr<PythonThread> pyThread;
     
     GainMatrix gainsMatrix;

@@ -60,6 +60,9 @@
                 file="Source/ControlSection.cpp"/>
           <FILE id="HxrFDM" name="ControlSection.h" compile="0" resource="0"
                 file="Source/ControlSection.h"/>
+          <FILE id="nLpnld" name="FormatSection.cpp" compile="1" resource="0"
+                file="Source/FormatSection.cpp"/>
+          <FILE id="lxlvBV" name="FormatSection.h" compile="0" resource="0" file="Source/FormatSection.h"/>
           <FILE id="w5m3T1" name="ParameterPanel.cpp" compile="1" resource="0"
                 file="Source/ParameterPanel.cpp"/>
           <FILE id="rmvRhk" name="ParameterPanel.h" compile="0" resource="0"
@@ -78,6 +81,7 @@
                 file="Source/DecoderSettingsPanel.h"/>
           <FILE id="dtqMt7" name="MatrixComputeWindow.h" compile="0" resource="0"
                 file="Source/MatrixComputeWindow.h"/>
+          <FILE id="Peg8sp" name="CustomLNF.h" compile="0" resource="0" file="Source/CustomLNF.h"/>
         </GROUP>
       </GROUP>
       <FILE id="Lwsx9C" name="PluginProcessor.cpp" compile="1" resource="0"
@@ -87,6 +91,26 @@
       <FILE id="V08EvH" name="PluginEditor.cpp" compile="1" resource="0"
             file="Source/PluginEditor.cpp"/>
       <FILE id="IM9YcK" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
+      <GROUP id="{211D73B9-0D2F-8ED5-F8CB-10753C90DF7F}" name="Assets">
+        <FILE id="bFHHX1" name="advanced highlighted@3x.png" compile="0" resource="1"
+              file="Assets/advanced highlighted@3x.png"/>
+        <FILE id="BqCdQP" name="advanced@3x.png" compile="0" resource="1" file="Assets/advanced@3x.png"/>
+        <FILE id="D6kG5A" name="background@3x.png" compile="0" resource="1"
+              file="Assets/background@3x.png"/>
+        <FILE id="nXebKb" name="decode section@3x.png" compile="0" resource="1"
+              file="Assets/decode section@3x.png"/>
+        <FILE id="PHfTGa" name="format section@3x.png" compile="0" resource="1"
+              file="Assets/format section@3x.png"/>
+        <FILE id="pQs4hl" name="parameter section@3x.png" compile="0" resource="1"
+              file="Assets/parameter section@3x.png"/>
+        <FILE id="bl6v8H" name="placeholder@3x.png" compile="0" resource="1"
+              file="Assets/placeholder@3x.png"/>
+        <FILE id="NmjMBS" name="simple highlighted@3x.png" compile="0" resource="1"
+              file="Assets/simple highlighted@3x.png"/>
+        <FILE id="H3IcPv" name="simple@3x.png" compile="0" resource="1" file="Assets/simple@3x.png"/>
+        <FILE id="AiH7Os" name="vis section@3x.png" compile="0" resource="1"
+              file="Assets/vis section@3x.png"/>
+      </GROUP>
     </GROUP>
   </MAINGROUP>
   <MODULES>

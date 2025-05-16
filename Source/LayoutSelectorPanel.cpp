@@ -52,12 +52,6 @@ LayoutSelectorPanel::~LayoutSelectorPanel()
 
 void LayoutSelectorPanel::paint (juce::Graphics& g)
 {
-
-    g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
-
-    g.setColour (juce::Colours::grey);
-    g.drawRect (getLocalBounds(), 1);
-
     g.setColour (juce::Colours::white);
     g.setFont (juce::FontOptions (14.0f));
 }

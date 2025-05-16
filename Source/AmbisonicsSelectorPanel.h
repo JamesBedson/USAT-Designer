@@ -13,6 +13,7 @@
 #include <JuceHeader.h>
 #include "UIConstants.h"
 #include "StateManager.h"
+#include "CustomLNF.h"
 //==============================================================================
 /*
 */
@@ -34,5 +35,6 @@ private:
     juce::ComboBox
     orders;
     
+    CustomLNF lookAndFeel;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AmbisonicsSelectorPanel)
 };
