@@ -316,7 +316,7 @@ def start_decoding(xml_string: str):
     print("Number of Output Channels:", gain_matrix.shape[1])
     
     return gain_matrix.tolist()
-
+'''
 def start_decoding(xml_string: str, 
                    progress_callback=None, 
                    status_callback=None):
@@ -335,6 +335,10 @@ def start_decoding(xml_string: str,
             print("Error callback!")
 
     return matrix
+'''
+
+
+
 #################################################################################
 def main():
 

@@ -1,0 +1,66 @@
+Coefficients:
+  energy:
+    Distribution: uniform
+    Range: [0.0, 1.0]
+  
+  radialIntensity:
+    Distribution: uniform
+    Range: [0.0, 1.0]
+  
+  transverseIntensity:
+    Distribution: uniform
+    Range: [0.0, 1.0]
+  
+  pressure:
+    Distribution: uniform
+    Range: [0.0, 1.0]
+  
+  radialVelocity:
+    Distribution: uniform
+    Range: [0.0, 1.0]
+  
+  transverseVelocity:
+    Distribution: uniform
+    Range: [0.0, 1.0]
+  
+  inPhaseQuadratic:
+    Distribution: uniform
+    Range: [0.0, 1.0]
+  
+  symmetryQuadratic:
+    Distribution: uniform
+    Range: [0.0, 1.0]
+  
+  inPhaseLinear:
+    Distribution: uniform
+    Range: [0.0, 1.0]
+  
+  symmetryLinear:
+    Distribution: uniform
+    Range: [0.0, 1.0]
+  
+  totalGainsLinear:
+    Distribution: uniform
+    Range: [0.0, 1.0]
+  
+  totalGainsQuadratic:
+    Distribution: uniform
+    Range: [0.0, 1.0]
+
+InputFormat:
+  FormatChoices: ["Ambisonics", "SpeakerLayout"]
+
+  Ambisonics:
+    Range: [1, 7]
+  
+  SpeakerLayout:
+    Range: ["layout_3_0_2", "layout_5_0_1", "layout_7_0_4"]
+
+OutputFormat:
+  FormatChoices: ["Ambisonics", "SpeakerLayout"]
+
+  Ambisonics:
+    range: [1, 7]
+  
+  speaker_layout:
+    range: ["layout_3_0_2", "layout_5_0_1", "layout_7_0_4"]

@@ -46,3 +46,15 @@ parameter_to_coefficient_key = {
     "symmetryLinear": "symmetry_lin",
     "totalGainsLinear": "total_gains_lin"
 }
+
+# Parameter Sampling
+DISTRIBUTION_RANGE  = "Range"
+DISTRIBUTION        = "Distribution"
+INPUT_FORMAT        = "InputFormat"
+OUTPUT_FORMAT       = "OutputFormat"
+FORMAT_CHOICES      = "FormatChoices"
+
+UNIFORM    = "uniform"
+NORMAL     = "normal"
+CHOICES    = "choice"
+BETA       = "beta"

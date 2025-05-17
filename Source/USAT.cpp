@@ -15,6 +15,8 @@ USAT::USAT(juce::Value& progress, juce::Value& status)
 statusValue(status)
 {
     matrixReady = false;
+    currentChannelCountIn   = 0;
+    currentChannelCountOut  = 0;
     //pyThread = std::make_unique<PythonThread>(interpreter, gainsMatrix);
 }
 
@@ -76,6 +78,9 @@ void USAT::prepare(double sampleRate,
                    int numInputChannelsInHost,
                    int numOutputChannelsInHost)
 {
+    currentChannelCountIn   = numInputChannelsInHost;
+    currentChannelCountOut  = numOutputChannelsInHost;
+    
     if (currentChannelCountOut > 0) {
         tempOutputBuffer.setSize(currentChannelCountOut, samplesPerBlock);
         tempOutputBuffer.clear();
