@@ -1,6 +1,7 @@
 import numpy as np
 import speaker_layouts as sl
 import xml.etree.ElementTree as ET
+import xml.dom.minidom as minidom
 import yaml
 from processing_constants import *
 from typing import Union
@@ -19,7 +20,7 @@ def parse_from_config(yaml_file):
     for coeff_name, coeff_data in coeff_config.items():
         coeff_distribution = coeff_data.get(DISTRIBUTION)
         coeff_range        = coeff_data.get(DISTRIBUTION_RANGE)
-        coeff_value        = get_y_i(coeff_distribution, coeff_range)
+        coeff_value        = round(get_y_i(coeff_distribution, coeff_range),2)
         coeffs[coeff_name] = coeff_value
 
     # FORMATS
@@ -51,9 +52,8 @@ def parse_from_config(yaml_file):
         COEFFICIENTS: coeffs
     }
 
-
 def get_random_x_lambda(config_section):
-    formats         = config_section.get("choices")
+    formats         = config_section.get(FORMAT_CHOICES)
     selected_format = np.random.choice(formats)
 
     if selected_format == AMBISONICS:
@@ -61,9 +61,8 @@ def get_random_x_lambda(config_section):
         selected_value      = np.random.choice(ambisonics_orders)
 
     elif selected_format == SPEAKER_LAYOUT:
-        speaker_layouts_section = config_section.get(SPEAKER_LAYOUT)
-        layout_names            = speaker_layouts_section.get(DISTRIBUTION_RANGE)
-        selected_value          = np.random.choice(layout_names)
+        layout_names        = config_section.get(SPEAKER_LAYOUT).get(DISTRIBUTION_RANGE)
+        selected_value      = np.random.choice(layout_names)
 
     else:
         raise ValueError(f"Unsupported format: {selected_format}")
@@ -135,7 +134,7 @@ def build_xml_config(usat_state_parameters):
     
 def main():
     config_dir_name     = "config" 
-    config_file_name    = "config.yaml"
+    config_file_name    = "test.yaml"
 
     project_dir     = os.path.dirname(os.path.abspath(__file__))
     config_dir      = os.path.join(project_dir, config_dir_name)
@@ -145,8 +144,10 @@ def main():
     usat_state_parameters_xml   = build_xml_config(usat_state_parameters_dict)
     
     xml_bytes   = ET.tostring(usat_state_parameters_xml, encoding="utf-8", method="xml")
-    xml_string  = xml_bytes.decode("utf-8") 
-    print(xml_string)
+    parsed_xml  = minidom.parseString(xml_bytes)
+    pretty_xml  = parsed_xml.toprettyxml(indent="  ")
 
-if __name__ == main:
+    print(pretty_xml)
+
+if __name__ == "__main__":
     main()

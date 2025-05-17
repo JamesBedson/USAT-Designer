@@ -23,3 +23,35 @@
                 inPhaseQuadratic="5.0" symmetryQuadratic="5.0" inPhaseLinear="5.0"
                 symmetryLinear="5.0" totalGainsLinear="5.0" totalGainsQuadratic="5.0"/>
 </USAT_State_Parameters>
+
+<?xml version="1.0" ?>
+<USAT_State_Parameters>
+  <Encoding_Settings InputType="SpeakerLayout" OutputType="SpeakerLayout" AmbisonicsOrderIn="1" AmbisonicsOrderOut="1"/>
+  <Input_Loudspeaker_Layout>
+    <Speaker_1 ID="1" Azimuth="30.0" Elevation="0.0" Distance="1.0"/>
+    <Speaker_2 ID="2" Azimuth="-30.0" Elevation="0.0" Distance="1.0"/>
+    <Speaker_3 ID="3" Azimuth="0.0" Elevation="0.0" Distance="1.0"/>
+    <Speaker_4 ID="4" Azimuth="110.0" Elevation="0.0" Distance="1.0"/>
+    <Speaker_5 ID="5" Azimuth="-110.0" Elevation="0.0" Distance="1.0"/>
+    <Speaker_6 ID="6" Azimuth="150.0" Elevation="0.0" Distance="1.0"/>
+    <Speaker_7 ID="7" Azimuth="-150.0" Elevation="0.0" Distance="1.0"/>
+    <Speaker_8 ID="8" Azimuth="30.0" Elevation="30.0" Distance="1.0"/>
+    <Speaker_9 ID="9" Azimuth="-30.0" Elevation="30.0" Distance="1.0"/>
+    <Speaker_10 ID="10" Azimuth="150.0" Elevation="30.0" Distance="1.0"/>
+    <Speaker_11 ID="11" Azimuth="-150.0" Elevation="30.0" Distance="1.0"/>
+  </Input_Loudspeaker_Layout>
+  <Output_Loudspeaker_Layout>
+    <Speaker_1 ID="1" Azimuth="30.0" Elevation="0.0" Distance="1.0"/>
+    <Speaker_2 ID="2" Azimuth="-30.0" Elevation="0.0" Distance="1.0"/>
+    <Speaker_3 ID="3" Azimuth="0.0" Elevation="0.0" Distance="1.0"/>
+    <Speaker_4 ID="4" Azimuth="110.0" Elevation="0.0" Distance="1.0"/>
+    <Speaker_5 ID="5" Azimuth="-110.0" Elevation="0.0" Distance="1.0"/>
+    <Speaker_6 ID="6" Azimuth="150.0" Elevation="0.0" Distance="1.0"/>
+    <Speaker_7 ID="7" Azimuth="-150.0" Elevation="0.0" Distance="1.0"/>
+    <Speaker_8 ID="8" Azimuth="30.0" Elevation="30.0" Distance="1.0"/>
+    <Speaker_9 ID="9" Azimuth="-30.0" Elevation="30.0" Distance="1.0"/>
+    <Speaker_10 ID="10" Azimuth="150.0" Elevation="30.0" Distance="1.0"/>
+    <Speaker_11 ID="11" Azimuth="-150.0" Elevation="30.0" Distance="1.0"/>
+  </Output_Loudspeaker_Layout>
+  <Coefficients energy="0.7942207319214959" radialIntensity="0.12890776860221287" transverseIntensity="0.7180148840473396" pressure="0.8124410035723622" radialVelocity="0.7445012452880797" transverseVelocity="0.852498106735282" inPhaseQuadratic="0.37717521600394766" symmetryQuadratic="0.28472598896458845" inPhaseLinear="0.8796270906586201" symmetryLinear="0.5875770197624293" totalGainsLinear="0.9460017639078176" totalGainsQuadratic="0.6180890234738932"/>
+</USAT_State_Parameters>

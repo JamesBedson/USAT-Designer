@@ -60,7 +60,7 @@ OutputFormat:
   FormatChoices: ["Ambisonics", "SpeakerLayout"]
 
   Ambisonics:
-    range: [1, 7]
+    Range: [1, 7]
   
-  speaker_layout:
-    range: ["layout_3_0_2", "layout_5_0_1", "layout_7_0_4"]
+  SpeakerLayout:
+    Range: ["layout_3_0_2", "layout_5_0_1", "layout_7_0_4"]
