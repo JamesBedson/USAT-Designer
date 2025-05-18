@@ -4,13 +4,12 @@ import xml.etree.ElementTree as ET
 import xml.dom.minidom as minidom
 import yaml
 from processing_constants import *
-from typing import Union
-import receive_parameters
-import multiprocessing as mp
+import receive_parameters, parameter_utils as pu
 import speaker_layouts as sl
 import os
 import time
 import traceback
+import argparse
 
 def parse_from_config(yaml_file):
 
@@ -43,14 +42,17 @@ def parse_from_config(yaml_file):
 
     input_speaker_layout    = []
     output_speaker_layout   = []
+    input_layout_desc       = ""
+    output_layout_desc      = ""
 
     if input_data[0] == AMBISONICS:
         input_ambisonics[AMBISONICS_ORDER_IN] = input_data[1]
 
     elif input_data[0] == SPEAKER_LAYOUT:
-        input_speaker_layout = sl.SPEAKER_LAYOUTS.get(input_data[1])
+        input_layout_desc = input_data[1]
+        input_speaker_layout = sl.SPEAKER_LAYOUTS.get(input_layout_desc)
         if input_speaker_layout is None:
-            print(f"Warning: input layout '{input_data[1]}' not found!")
+            print(f"Warning: input layout '{input_layout_desc}' not found!")
     else:
         raise ValueError("Input format not supported.")
 
@@ -58,9 +60,10 @@ def parse_from_config(yaml_file):
         output_ambisonics[AMBISONICS_ORDER_OUT] = output_data[1]
 
     elif output_data[0] == SPEAKER_LAYOUT:
-        output_speaker_layout = sl.SPEAKER_LAYOUTS.get(output_data[1])
+        output_layout_desc = output_data[1]
+        output_speaker_layout = sl.SPEAKER_LAYOUTS.get(output_layout_desc)
         if output_speaker_layout is None:
-            print(f"Warning: output layout '{output_data[1]}' not found!")
+            print(f"Warning: output layout '{output_layout_desc}' not found!")
 
     else:
         raise ValueError("Output format not supported.")
@@ -71,6 +74,8 @@ def parse_from_config(yaml_file):
         OUTPUT_AMBISONICS: output_ambisonics,
         INPUT_SPEAKER_LAYOUT: input_speaker_layout,
         OUTPUT_SPEAKER_LAYOUT: output_speaker_layout,
+        INPUT_LAYOUT_DESC: input_layout_desc,
+        OUTPUT_LAYOUT_DESC: output_layout_desc,
         COEFFICIENTS: coeffs
     }
 
@@ -105,7 +110,11 @@ def get_y_i(distribution: str, range) -> float:
 
     elif distribution == "normal":
         mean, std = range
-        return np.random.normal(mean, std)
+
+        sample = -1
+        while sample < 0:
+            sample = int(round(np.random.normal(mean, std)))
+        return sample
 
     elif distribution == "lognormal":
         mean, sigma = range
@@ -121,17 +130,6 @@ def get_y_i(distribution: str, range) -> float:
     else:
         raise ValueError(f"Unsupported distribution: {distribution}")
 
-def speaker_layout_to_xml(parent: ET.Element, layout_list: list) -> ET.Element:
-    
-    for idx, speaker in enumerate(layout_list, start = 1):
-        tag_name        = f"Speaker_{idx}"
-        speaker_elem    = ET.SubElement(parent, tag_name)
-        
-        for k, v in speaker.items():
-            speaker_elem.set(k, str(v))
-    
-    return parent
-
 
 def build_xml_config(usat_state_parameters):
     state_params_xml            = ET.Element(USAT_STATE_PARAMETERS)
@@ -140,6 +138,8 @@ def build_xml_config(usat_state_parameters):
     output_ambisonics_xml       = ET.SubElement(state_params_xml, OUTPUT_AMBISONICS)
     input_speaker_layout_xml    = ET.SubElement(state_params_xml, INPUT_SPEAKER_LAYOUT)
     output_speaker_layout_xml   = ET.SubElement(state_params_xml, OUTPUT_SPEAKER_LAYOUT)
+    input_layout_desc_xml       = ET.SubElement(state_params_xml, INPUT_LAYOUT_DESC)
+    output_layout_desc_xml      = ET.SubElement(state_params_xml, OUTPUT_LAYOUT_DESC)
     coefficients_xml            = ET.SubElement(state_params_xml, COEFFICIENTS)
 
     # ENCODING SETTINGS
@@ -152,9 +152,12 @@ def build_xml_config(usat_state_parameters):
     for key, val in usat_state_parameters.get(OUTPUT_AMBISONICS, {}).items():
         output_ambisonics_xml.set(key, str(val))
 
+    input_layout_desc_xml.set(INPUT_LAYOUT_DESC, usat_state_parameters[INPUT_LAYOUT_DESC])
+    output_layout_desc_xml.set(OUTPUT_LAYOUT_DESC, usat_state_parameters[OUTPUT_LAYOUT_DESC])
+
     # SPEAKER LAYOUTS
-    speaker_layout_to_xml(input_speaker_layout_xml, usat_state_parameters.get(INPUT_SPEAKER_LAYOUT, []))
-    speaker_layout_to_xml(output_speaker_layout_xml, usat_state_parameters.get(OUTPUT_SPEAKER_LAYOUT, []))
+    pu.speaker_layout_to_xml(input_speaker_layout_xml, usat_state_parameters.get(INPUT_SPEAKER_LAYOUT, []))
+    pu.speaker_layout_to_xml(output_speaker_layout_xml, usat_state_parameters.get(OUTPUT_SPEAKER_LAYOUT, []))
 
     # COEFFICIENTS
     for key, val in usat_state_parameters.get(COEFFICIENTS, {}).items():
@@ -182,66 +185,53 @@ def generate_decoding_data(args):
         
         xml_bytes   = ET.tostring(usat_state_parameters_xml, encoding="utf-8", method="xml")
         parsed_xml  = minidom.parseString(xml_bytes)
-        pretty_xml  = parsed_xml.toprettyxml(indent="  ")
+        pretty_xml  = str(parsed_xml.toprettyxml(indent="  "))
         
         warnings.filterwarnings("ignore")
-        matrix = receive_parameters.start_decoding(pretty_xml)
-        
-        if matrix is None:
-            return ("invalid", None, pretty_xml)
-
-        print(f"Decoding for PID {os.getpid()} complete.")
-        return ("valid", matrix, pretty_xml)
-
+        output_dict = receive_parameters.decode_for_random_parameter_generation(pretty_xml)
+        return pretty_xml, output_dict
+    
     except Exception as e:
         tb_str = traceback.format_exc()
         print(f"Error in PID {os.getpid()} with seed {seed}: {e}")
         print(f"Traceback:\n{tb_str}")
-        # return "invalid" with matrix None but keep pretty_xml if available
-        return ("invalid", None, pretty_xml)
+        output_dict = {
+            "error_message": e,
+            "traceback": tb_str 
+        }
+        return pretty_xml, output_dict
     
 
-def main():
+def main(num_decodings_targeted):
     config_dir_name     = "config" 
     config_file_name    = "test.yaml"
+    base_dir            = "random_usat_decodings"
     
     project_dir     = os.path.dirname(os.path.abspath(__file__))
     config_dir      = os.path.join(project_dir, config_dir_name)
     yaml_file       = os.path.join(config_dir, config_file_name)
 
-    num_decodings_targeted = 10
-    for i in range(num_decodings_targeted):
-        generate_decoding_data((yaml_file, i))
-    #valid_results, invalid_results = run_until_n_valid(yaml_file, num_decodings_targeted)
-
-def run_until_n_valid(yaml_file, target_count) -> tuple[list, list]:
-    valid_results   = []
-    invalid_results = []
-    attempt_seed    = 0
-    start_time      = time.time()
-    batch_size      = mp.cpu_count()
-
-    with mp.Pool(batch_size) as pool:
+    seed                    = int((os.getpid() * time.time()) % (2**32))
+    start_time              = time.time()
+    
+    for i in range(1, num_decodings_targeted + 1):
+        seed                = int(os.getpid() * time.time() * i % (2 ** 32))
+        xml, output_dict    = generate_decoding_data((yaml_file, seed))
         
-        def args_generator():
-            nonlocal attempt_seed
-            while len(valid_results) < target_count:
-                yield (yaml_file, attempt_seed)
-                attempt_seed += 1
-
-        # imap_unordered yields results as soon as they are ready
-        for status, matrix, pretty_xml in pool.imap_unordered(generate_decoding_data, args_generator()):
-            if status == "valid" and matrix is not None:
-                valid_results.append((matrix, pretty_xml))
-            else:
-                invalid_results.append((matrix, pretty_xml))
+        assert(isinstance(xml, str))
+        pu.save_output_data(xml, output_dict, seed, base_dir)
 
     end_time    = time.time()
     elapsed     = end_time - start_time
-    print(f"\nFinished in {elapsed:.2f} seconds.")
-    return valid_results, invalid_results
-
+    print(f"Elapsed time: {elapsed}")  
 
 if __name__ == "__main__":
-    mp.set_start_method("spawn", force=True)
-    main()
+    parser = argparse.ArgumentParser(description="Generate random decoding data.")
+    parser.add_argument(
+        "-n", "--num",
+        type=int,
+        default=10,
+        help="Number of decodings to generate (default: 10)"
+    )
+    args = parser.parse_args()
+    main(args.num)

@@ -47,12 +47,20 @@ parameter_to_coefficient_key = {
     "totalGainsLinear": "total_gains_lin"
 }
 
+CLOUD_PLOTS             = "cloud_plots"
+CLOUD_POINTS            = "cloud_optimization"
+OUTPUT_LAYOUT           = "output_layout"
+QUALITY_SCORE           = "quality_score"
+APPARENT_SOURCE_WIDTH   = "median_source_width"
+
 # Parameter Sampling
 DISTRIBUTION_RANGE  = "Range"
 DISTRIBUTION        = "Distribution"
 INPUT_FORMAT        = "InputFormat"
 OUTPUT_FORMAT       = "OutputFormat"
 FORMAT_CHOICES      = "FormatChoices"
+INPUT_LAYOUT_DESC   = "InputLayoutDescription"
+OUTPUT_LAYOUT_DESC  = "OutputLayoutDescription"
 
 UNIFORM     = "uniform"
 NORMAL      = "normal"

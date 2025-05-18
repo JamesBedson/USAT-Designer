@@ -5,7 +5,7 @@ import sys, os
 from numpy import array as npArray
 from processing_constants import *
 from universal_transcoder.auxiliars.my_coordinates import MyCoordinates
-from universal_transcoder.calculations.optimization import optimize
+from universal_transcoder.calculations.optimization import optimize, optimize_for_usat_designer
 from typing import Union
 
 from universal_transcoder.auxiliars.get_input_channels import (
@@ -178,10 +178,12 @@ def create_encoding_matrix(format: str, parameter_dict: dict, layout_data: Union
     cloud_plots = get_all_sphere_points(1, plot_show=False).discard_lower_hemisphere()
 
     if format == AMBISONICS:
+        assert(isinstance(layout_data, int))
         point_cloud_optimization, G = get_ambisonics_enc_matrix(layout_data, path_to_t_design)
         input_matrix_plots          = get_input_channels_ambisonics(cloud_plots, layout_data)
     
     elif format == SPEAKER_LAYOUT:
+        assert(isinstance(layout_data, MyCoordinates))
         point_cloud_optimization, G = get_speaker_enc_matrix(layout_data, path_to_t_design)
         input_matrix_plots          = get_input_channels_vbap(cloud_plots, layout_data)
 
@@ -213,7 +215,6 @@ def parse_encoding_settings(usat_parameter_settings_xml: ET.Element) -> dict:
     #############################################
     # INPUT
 
-
     if input_type == AMBISONICS:
         input_ambisonics_xml = usat_parameter_settings_xml.find(INPUT_AMBISONICS)
         assert(input_ambisonics_xml is not None)
@@ -223,8 +224,7 @@ def parse_encoding_settings(usat_parameter_settings_xml: ET.Element) -> dict:
 
         parameter_dict = create_encoding_matrix(format=input_type, 
                                                 parameter_dict=parameter_dict, 
-                                                layout_data=int(order)
-                                                )
+                                                layout_data=int(order))
 
     elif input_type == SPEAKER_LAYOUT:
         input_speaker_layout_xml = usat_parameter_settings_xml.find(INPUT_SPEAKER_LAYOUT)
@@ -234,9 +234,8 @@ def parse_encoding_settings(usat_parameter_settings_xml: ET.Element) -> dict:
         
         parameter_dict = create_encoding_matrix(format=input_type,
                                                 parameter_dict=parameter_dict,
-                                                layout_data=input_speaker_layout
-                                                )
-
+                                                layout_data=input_speaker_layout)
+        
     else:
         raise AssertionError("Not valid format")
     #############################################
@@ -274,7 +273,7 @@ def parse_encoding_settings(usat_parameter_settings_xml: ET.Element) -> dict:
     return parameter_dict
 
 
-def start_decoding(xml_string: str) -> Union[list, None]:
+def start_decoding(xml_string: str) -> list:
 
     usat_state_parameters_xml   = ET.fromstring(xml_string)
     optimization_dict           = parse_encoding_settings(usat_state_parameters_xml)
@@ -283,14 +282,39 @@ def start_decoding(xml_string: str) -> Union[list, None]:
     optimization_dict["save_results"]       = False
     optimization_dict["results_file_name"]  = None
     
-    gain_matrix = optimize(optimization_dict)
+    T_optimised = optimize(optimization_dict)
+    return T_optimised.T.tolist()
 
-    if gain_matrix is None:
-        return None
-    #print("Number of Input Channels:", gain_matrix.shape[0])
-    #print("Number of Output Channels:", gain_matrix.shape[1])
+def decode_for_random_parameter_generation(xml_string: str) -> dict:
+    usat_state_parameters_xml   = ET.fromstring(xml_string)
+    optimization_dict           = parse_encoding_settings(usat_state_parameters_xml)
     
-    return gain_matrix.T.tolist()
+    optimization_dict["show_results"]       = False
+    optimization_dict["save_results"]       = False
+    optimization_dict["results_file_name"]  = None
+    
+    all_matrices = optimize_for_usat_designer(optimization_dict) 
+    return all_matrices
+    
+
+#################################################################################
+def main():
+
+    if len(sys.argv) != 2:
+        print("Usage: python script.py <your_argument>")
+
+    else:
+        gain_matrix = start_decoding(sys.argv[1])
+
+    return gain_matrix
+#################################################################################
+
+if __name__ == "__main__":
+    main()
+    sys.modules.clear()
+    gc.collect()
+
+
 '''
 def start_decoding(xml_string: str, 
                    progress_callback=None, 
@@ -311,22 +335,3 @@ def start_decoding(xml_string: str,
 
     return matrix
 '''
-
-
-
-#################################################################################
-def main():
-
-    if len(sys.argv) != 2:
-        print("Usage: python script.py <your_argument>")
-
-    else:
-        gain_matrix = start_decoding(sys.argv[1])
-
-    return gain_matrix
-#################################################################################
-
-if __name__ == "__main__":
-    main()
-    sys.modules.clear()
-    gc.collect()
