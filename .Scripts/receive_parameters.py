@@ -92,8 +92,10 @@ def parse_coefficients(coefficients_xml: ET.Element) -> dict[str, float]:
 
     return coefficients
 
+
 def get_num_ambisonics_channels(order: int) -> int:
     return (order + 1) ** 2
+
 
 def get_ambisonics_enc_matrix(order: int, 
                             path_to_t_design: Union[os.PathLike, str]) -> tuple:
@@ -116,6 +118,7 @@ def get_ambisonics_enc_matrix(order: int,
     G                           = get_input_channels_ambisonics(point_cloud_optimization, order)
     
     return point_cloud_optimization, G
+
 
 def get_ambisonics_output(order: int) -> MyCoordinates:
 
@@ -151,38 +154,18 @@ def get_ambisonics_output(order: int) -> MyCoordinates:
     
     return ambisonics_output
 
+
 def get_speaker_enc_matrix(speaker_layout: MyCoordinates,
                         path_to_t_design: Union[os.PathLike, str]) -> tuple:
-    '''
-    1. Obtains cloud of points with directions sampling the sphere
-    2. Creates the encoding matrix G for speaker layouts
-
-    Args:
-        speaker_layout (MyCoordinates): Layout describing the position of each speaker
-        path_to_t_design(Union[os.PathLike, str]): Path to file containing the sampling points within the unit sphere 
-
-    Returns:
-        point_cloud_optimization: Cloud points 
-        G: Encoding Matrix
-    '''
-
+    
     point_cloud_optimization    = get_equi_t_design_points(path_to_t_design, False)
     G                           = get_input_channels_vbap(point_cloud_optimization, speaker_layout)
 
     return point_cloud_optimization, G
 
+
 def create_encoding_matrix(format: str, parameter_dict: dict, layout_data: Union[int, MyCoordinates]) -> dict:
-    '''
-    1. Obtains the sampling points and VBAP encoding matrix G
-    2. Sets information for plots
 
-    Args: 
-        parameter_dict(dict): Dictionary containing encoding and decoding settings in order to call the USAT optimization code
-        speaker_layout(MyCoordinates): Layout describing the position of each speaker
-
-    Return:
-        parameter_dict (dict): dictionary containing all encoding and decoding settings in order to call the USAT optimization code
-    '''
     basepath = Path(__file__).resolve().parent
     path_to_t_design = (
         basepath /
@@ -214,17 +197,6 @@ def create_encoding_matrix(format: str, parameter_dict: dict, layout_data: Union
 
 
 def parse_encoding_settings(usat_parameter_settings_xml: ET.Element) -> dict:
-    '''
-    Function that extracts the USAT transcoding parameter settings in XML format, and calls the appropriate function to:
-    1. Create the encoding matrix G 
-    2. Create the speaker matrix ?
-    3. Return the appropriate parameter dictionary used to call the USAT algorithm
-
-    Args:
-        usat_parameter_setings (ET.Element): XML tree with USAT parameter settings
-    Returns:
-        parameter_dict (dict): dictionary containing all encoding and decoding settings in order to call the USAT optimization code
-    '''
     
     # Parse encoding settings
     encoding_settings_xml = usat_parameter_settings_xml.find("Encoding_Settings")
@@ -301,7 +273,8 @@ def parse_encoding_settings(usat_parameter_settings_xml: ET.Element) -> dict:
 
     return parameter_dict
 
-def start_decoding(xml_string: str):
+
+def start_decoding(xml_string: str) -> Union[list, None]:
 
     usat_state_parameters_xml   = ET.fromstring(xml_string)
     optimization_dict           = parse_encoding_settings(usat_state_parameters_xml)
@@ -310,12 +283,14 @@ def start_decoding(xml_string: str):
     optimization_dict["save_results"]       = False
     optimization_dict["results_file_name"]  = None
     
-    gain_matrix = optimize(optimization_dict).T
+    gain_matrix = optimize(optimization_dict)
 
-    print("Number of Input Channels:", gain_matrix.shape[0])
-    print("Number of Output Channels:", gain_matrix.shape[1])
+    if gain_matrix is None:
+        return None
+    #print("Number of Input Channels:", gain_matrix.shape[0])
+    #print("Number of Output Channels:", gain_matrix.shape[1])
     
-    return gain_matrix.tolist()
+    return gain_matrix.T.tolist()
 '''
 def start_decoding(xml_string: str, 
                    progress_callback=None, 

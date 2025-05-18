@@ -26,7 +26,7 @@ SPEAKER_LAYOUTS = {
         {"ID": 6, "Azimuth": -45.0, "Elevation": 45.0, "Distance": 1.0},  # Top Front Right
     ],
 
-    # 5.0.1
+    # 5.0
     "layout_5_0": [
         {"ID": 1, "Azimuth": 30.0, "Elevation": 0.0, "Distance": 1.0},    # Front Left
         {"ID": 2, "Azimuth": -30.0, "Elevation": 0.0, "Distance": 1.0},   # Front Right

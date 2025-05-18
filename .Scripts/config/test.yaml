@@ -1,66 +1,77 @@
 Coefficients:
   energy:
-    Distribution: uniform
-    Range: [0.0, 1.0]
+    Distribution: "normal"
+    Range: [5.0, 1]
   
   radialIntensity:
-    Distribution: uniform
-    Range: [0.0, 1.0]
+    Distribution: "normal"
+    Range: [2.0, 0.5]
   
   transverseIntensity:
-    Distribution: uniform
-    Range: [0.0, 1.0]
+    Distribution: "normal"
+    Range: [1.0, 0.2]
   
   pressure:
-    Distribution: uniform
-    Range: [0.0, 1.0]
+    Distribution: "none"
+    Range: 0.0
   
   radialVelocity:
-    Distribution: uniform
-    Range: [0.0, 1.0]
+    Distribution: "none"
+    Range: 0.0
   
   transverseVelocity:
-    Distribution: uniform
-    Range: [0.0, 1.0]
+    Distribution: "none"
+    Range: 0.0
   
   inPhaseQuadratic:
-    Distribution: uniform
-    Range: [0.0, 1.0]
+    Distribution: "normal"
+    Range: [10.0, 3]
   
   symmetryQuadratic:
-    Distribution: uniform
-    Range: [0.0, 1.0]
+    Distribution: "normal"
+    Range: [2.0, 0.5]
   
   inPhaseLinear:
-    Distribution: uniform
-    Range: [0.0, 1.0]
+    Distribution: "none"
+    Range: 0.0
   
   symmetryLinear:
-    Distribution: uniform
-    Range: [0.0, 1.0]
+    Distribution: "none"
+    Range: 0.0
   
   totalGainsLinear:
-    Distribution: uniform
-    Range: [0.0, 1.0]
+    Distribution: "none"
+    Range: 0.0
   
   totalGainsQuadratic:
-    Distribution: uniform
-    Range: [0.0, 1.0]
+    Distribution: "none"
+    Range: 0.0
 
 InputFormat:
-  FormatChoices: ["Ambisonics", "SpeakerLayout"]
+  FormatChoices: ["Ambisonics"]
 
   Ambisonics:
-    Range: [1, 7]
+    Range: [3, 4, 5]
   
   SpeakerLayout:
-    Range: ["layout_3_0_2", "layout_5_0_1", "layout_7_0_4"]
+    Range: [
+      "layout_7_0_4",
+      "layout_5_0",
+      "layout_9_0_1"
+      ]
 
 OutputFormat:
-  FormatChoices: ["Ambisonics", "SpeakerLayout"]
+  FormatChoices: ["SpeakerLayout"]
 
   Ambisonics:
-    Range: [1, 7]
+    Range: [3, 4, 5]
   
   SpeakerLayout:
-    Range: ["layout_3_0_2", "layout_5_0_1", "layout_7_0_4"]
+    Range: [
+      "layout_3_0_2", 
+      "layout_4_0", 
+      "layout_4_0_2", 
+      "layout_5_0", 
+      "layout_7_0_4", 
+      "layout_9_0_4"
+      ]

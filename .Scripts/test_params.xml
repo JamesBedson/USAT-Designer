@@ -26,32 +26,30 @@
 
 <?xml version="1.0" ?>
 <USAT_State_Parameters>
-  <Encoding_Settings InputType="SpeakerLayout" OutputType="SpeakerLayout" AmbisonicsOrderIn="1" AmbisonicsOrderOut="1"/>
-  <Input_Loudspeaker_Layout>
-    <Speaker_1 ID="1" Azimuth="30.0" Elevation="0.0" Distance="1.0"/>
-    <Speaker_2 ID="2" Azimuth="-30.0" Elevation="0.0" Distance="1.0"/>
-    <Speaker_3 ID="3" Azimuth="0.0" Elevation="0.0" Distance="1.0"/>
-    <Speaker_4 ID="4" Azimuth="110.0" Elevation="0.0" Distance="1.0"/>
-    <Speaker_5 ID="5" Azimuth="-110.0" Elevation="0.0" Distance="1.0"/>
-    <Speaker_6 ID="6" Azimuth="150.0" Elevation="0.0" Distance="1.0"/>
-    <Speaker_7 ID="7" Azimuth="-150.0" Elevation="0.0" Distance="1.0"/>
-    <Speaker_8 ID="8" Azimuth="30.0" Elevation="30.0" Distance="1.0"/>
-    <Speaker_9 ID="9" Azimuth="-30.0" Elevation="30.0" Distance="1.0"/>
-    <Speaker_10 ID="10" Azimuth="150.0" Elevation="30.0" Distance="1.0"/>
-    <Speaker_11 ID="11" Azimuth="-150.0" Elevation="30.0" Distance="1.0"/>
-  </Input_Loudspeaker_Layout>
+  <Encoding_Settings InputType="Ambisonics" OutputType="SpeakerLayout"/>
+  <Input_Ambisonics AmbisonicsOrderIn="5"/>
+  <Output_Ambisonics AmbisonicsOrderOut="1"/>
+  <Input_Loudspeaker_Layout/>
   <Output_Loudspeaker_Layout>
     <Speaker_1 ID="1" Azimuth="30.0" Elevation="0.0" Distance="1.0"/>
     <Speaker_2 ID="2" Azimuth="-30.0" Elevation="0.0" Distance="1.0"/>
     <Speaker_3 ID="3" Azimuth="0.0" Elevation="0.0" Distance="1.0"/>
-    <Speaker_4 ID="4" Azimuth="110.0" Elevation="0.0" Distance="1.0"/>
-    <Speaker_5 ID="5" Azimuth="-110.0" Elevation="0.0" Distance="1.0"/>
-    <Speaker_6 ID="6" Azimuth="150.0" Elevation="0.0" Distance="1.0"/>
-    <Speaker_7 ID="7" Azimuth="-150.0" Elevation="0.0" Distance="1.0"/>
-    <Speaker_8 ID="8" Azimuth="30.0" Elevation="30.0" Distance="1.0"/>
-    <Speaker_9 ID="9" Azimuth="-30.0" Elevation="30.0" Distance="1.0"/>
-    <Speaker_10 ID="10" Azimuth="150.0" Elevation="30.0" Distance="1.0"/>
-    <Speaker_11 ID="11" Azimuth="-150.0" Elevation="30.0" Distance="1.0"/>
+    <Speaker_4 ID="4" Azimuth="45.0" Elevation="45.0" Distance="1.0"/>
+    <Speaker_5 ID="5" Azimuth="-45.0" Elevation="45.0" Distance="1.0"/>
   </Output_Loudspeaker_Layout>
-  <Coefficients energy="0.7942207319214959" radialIntensity="0.12890776860221287" transverseIntensity="0.7180148840473396" pressure="0.8124410035723622" radialVelocity="0.7445012452880797" transverseVelocity="0.852498106735282" inPhaseQuadratic="0.37717521600394766" symmetryQuadratic="0.28472598896458845" inPhaseLinear="0.8796270906586201" symmetryLinear="0.5875770197624293" totalGainsLinear="0.9460017639078176" totalGainsQuadratic="0.6180890234738932"/>
+  <Coefficients energy="0.97" radialIntensity="0.55" transverseIntensity="0.97" pressure="0.71" radialVelocity="0.7" transverseVelocity="0.22" inPhaseQuadratic="0.98" symmetryQuadratic="0.01" inPhaseLinear="0.25" symmetryLinear="0.43" totalGainsLinear="0.78" totalGainsQuadratic="0.2"/>
 </USAT_State_Parameters>
+
+<Coefficients 
+energy="5" 
+radialIntensity="2" 
+transverseIntensity="1" 
+pressure="0" 
+radialVelocity="0" 
+transverseVelocity="0" 
+inPhaseQuadratic="10" 
+symmetryQuadratic="2" 
+inPhaseLinear="0" 
+symmetryLinear="0" 
+totalGainsLinear="0" 
+totalGainsQuadratic="0"/>

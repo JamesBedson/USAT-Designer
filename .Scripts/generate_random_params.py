@@ -6,10 +6,14 @@ import yaml
 from processing_constants import *
 from typing import Union
 import receive_parameters
+import multiprocessing as mp
 import speaker_layouts as sl
 import os
+import time
+import traceback
 
 def parse_from_config(yaml_file):
+
     with open(yaml_file, "r") as file:
         config = yaml.safe_load(file)
     
@@ -20,7 +24,7 @@ def parse_from_config(yaml_file):
     for coeff_name, coeff_data in coeff_config.items():
         coeff_distribution = coeff_data.get(DISTRIBUTION)
         coeff_range        = coeff_data.get(DISTRIBUTION_RANGE)
-        coeff_value        = round(get_y_i(coeff_distribution, coeff_range),2)
+        coeff_value        = round(get_y_i(coeff_distribution, coeff_range))
         coeffs[coeff_name] = coeff_value
 
     # FORMATS
@@ -31,22 +35,40 @@ def parse_from_config(yaml_file):
 
     encoding_settings = {
         INPUT_TYPE: input_data[0],
-        OUTPUT_TYPE: output_data[0],
-        AMBISONICS_ORDER_IN: input_data[1] if input_data[0] == AMBISONICS else default_ambisonics_order,
-        AMBISONICS_ORDER_OUT: output_data[1] if output_data[0] == AMBISONICS else default_ambisonics_order,
+        OUTPUT_TYPE: output_data[0]
     }
-    
+
+    input_ambisonics    = {AMBISONICS_ORDER_IN: default_ambisonics_order}
+    output_ambisonics   = {AMBISONICS_ORDER_OUT: default_ambisonics_order}
+
     input_speaker_layout    = []
     output_speaker_layout   = []
 
-    if input_data[0] == SPEAKER_LAYOUT:
+    if input_data[0] == AMBISONICS:
+        input_ambisonics[AMBISONICS_ORDER_IN] = input_data[1]
+
+    elif input_data[0] == SPEAKER_LAYOUT:
         input_speaker_layout = sl.SPEAKER_LAYOUTS.get(input_data[1])
+        if input_speaker_layout is None:
+            print(f"Warning: input layout '{input_data[1]}' not found!")
+    else:
+        raise ValueError("Input format not supported.")
 
-    if output_data[0] == SPEAKER_LAYOUT:
+    if output_data[0] == AMBISONICS:
+        output_ambisonics[AMBISONICS_ORDER_OUT] = output_data[1]
+
+    elif output_data[0] == SPEAKER_LAYOUT:
         output_speaker_layout = sl.SPEAKER_LAYOUTS.get(output_data[1])
+        if output_speaker_layout is None:
+            print(f"Warning: output layout '{output_data[1]}' not found!")
 
+    else:
+        raise ValueError("Output format not supported.")
+    
     return {
         ENCODING_SETTINGS: encoding_settings,
+        INPUT_AMBISONICS: input_ambisonics,
+        OUTPUT_AMBISONICS: output_ambisonics,
         INPUT_SPEAKER_LAYOUT: input_speaker_layout,
         OUTPUT_SPEAKER_LAYOUT: output_speaker_layout,
         COEFFICIENTS: coeffs
@@ -114,6 +136,8 @@ def speaker_layout_to_xml(parent: ET.Element, layout_list: list) -> ET.Element:
 def build_xml_config(usat_state_parameters):
     state_params_xml            = ET.Element(USAT_STATE_PARAMETERS)
     encoding_settings_xml       = ET.SubElement(state_params_xml, ENCODING_SETTINGS)
+    input_ambisonics_xml        = ET.SubElement(state_params_xml, INPUT_AMBISONICS)
+    output_ambisonics_xml       = ET.SubElement(state_params_xml, OUTPUT_AMBISONICS)
     input_speaker_layout_xml    = ET.SubElement(state_params_xml, INPUT_SPEAKER_LAYOUT)
     output_speaker_layout_xml   = ET.SubElement(state_params_xml, OUTPUT_SPEAKER_LAYOUT)
     coefficients_xml            = ET.SubElement(state_params_xml, COEFFICIENTS)
@@ -121,6 +145,12 @@ def build_xml_config(usat_state_parameters):
     # ENCODING SETTINGS
     for key, val in usat_state_parameters.get(ENCODING_SETTINGS, {}).items():
         encoding_settings_xml.set(key, str(val))
+
+    for key, val in usat_state_parameters.get(INPUT_AMBISONICS, {}).items():
+        input_ambisonics_xml.set(key, str(val))
+
+    for key, val in usat_state_parameters.get(OUTPUT_AMBISONICS, {}).items():
+        output_ambisonics_xml.set(key, str(val))
 
     # SPEAKER LAYOUTS
     speaker_layout_to_xml(input_speaker_layout_xml, usat_state_parameters.get(INPUT_SPEAKER_LAYOUT, []))
@@ -132,22 +162,86 @@ def build_xml_config(usat_state_parameters):
 
     return state_params_xml
     
+
+def generate_decoding_data(args):
+    import numpy as np
+    import warnings 
+    import os
+
+    yaml_file, seed = args
+    if seed is not None:
+        np.random.seed(seed)
+
+    pretty_xml = None 
+
+    print(f"Running in PID {os.getpid()} with seed {seed}")
+    
+    try:
+        usat_state_parameters_dict  = parse_from_config(yaml_file)
+        usat_state_parameters_xml   = build_xml_config(usat_state_parameters_dict)
+        
+        xml_bytes   = ET.tostring(usat_state_parameters_xml, encoding="utf-8", method="xml")
+        parsed_xml  = minidom.parseString(xml_bytes)
+        pretty_xml  = parsed_xml.toprettyxml(indent="  ")
+        
+        warnings.filterwarnings("ignore")
+        matrix = receive_parameters.start_decoding(pretty_xml)
+        
+        if matrix is None:
+            return ("invalid", None, pretty_xml)
+
+        print(f"Decoding for PID {os.getpid()} complete.")
+        return ("valid", matrix, pretty_xml)
+
+    except Exception as e:
+        tb_str = traceback.format_exc()
+        print(f"Error in PID {os.getpid()} with seed {seed}: {e}")
+        print(f"Traceback:\n{tb_str}")
+        # return "invalid" with matrix None but keep pretty_xml if available
+        return ("invalid", None, pretty_xml)
+    
+
 def main():
     config_dir_name     = "config" 
     config_file_name    = "test.yaml"
-
+    
     project_dir     = os.path.dirname(os.path.abspath(__file__))
     config_dir      = os.path.join(project_dir, config_dir_name)
     yaml_file       = os.path.join(config_dir, config_file_name)
 
-    usat_state_parameters_dict  = parse_from_config(yaml_file)
-    usat_state_parameters_xml   = build_xml_config(usat_state_parameters_dict)
-    
-    xml_bytes   = ET.tostring(usat_state_parameters_xml, encoding="utf-8", method="xml")
-    parsed_xml  = minidom.parseString(xml_bytes)
-    pretty_xml  = parsed_xml.toprettyxml(indent="  ")
+    num_decodings_targeted = 10
+    for i in range(num_decodings_targeted):
+        generate_decoding_data((yaml_file, i))
+    #valid_results, invalid_results = run_until_n_valid(yaml_file, num_decodings_targeted)
 
-    print(pretty_xml)
+def run_until_n_valid(yaml_file, target_count) -> tuple[list, list]:
+    valid_results   = []
+    invalid_results = []
+    attempt_seed    = 0
+    start_time      = time.time()
+    batch_size      = mp.cpu_count()
+
+    with mp.Pool(batch_size) as pool:
+        
+        def args_generator():
+            nonlocal attempt_seed
+            while len(valid_results) < target_count:
+                yield (yaml_file, attempt_seed)
+                attempt_seed += 1
+
+        # imap_unordered yields results as soon as they are ready
+        for status, matrix, pretty_xml in pool.imap_unordered(generate_decoding_data, args_generator()):
+            if status == "valid" and matrix is not None:
+                valid_results.append((matrix, pretty_xml))
+            else:
+                invalid_results.append((matrix, pretty_xml))
+
+    end_time    = time.time()
+    elapsed     = end_time - start_time
+    print(f"\nFinished in {elapsed:.2f} seconds.")
+    return valid_results, invalid_results
+
 
 if __name__ == "__main__":
+    mp.set_start_method("spawn", force=True)
     main()
