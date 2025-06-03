@@ -71,9 +71,9 @@ public:
     }
     
     ~PythonInterpreter() {
-        // Check if Python is finalizing — don’t touch Python if it's already dying
+        
         if (!_Py_IsFinalizing()) {
-            ScopedGILGuard gil;  // Only safe if Python is not finalizing
+            ScopedGILGuard gil;
 
             if (numpyModule)
                 Py_DECREF(numpyModule);

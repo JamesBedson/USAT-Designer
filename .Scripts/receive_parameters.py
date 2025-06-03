@@ -19,6 +19,20 @@ from universal_transcoder.auxiliars.get_cloud_points import (
     get_equi_t_design_points,
     mix_clouds_of_points
 )
+
+from universal_transcoder.calculations.energy_intensity import (
+    angular_error,
+    width_angle,
+)
+
+from universal_transcoder.calculations.energy_intensity import (
+    energy_calculation,
+    radial_I_calculation,
+    transverse_I_calculation,
+)
+
+from plots_usat_designer import *
+
 #################################################################################
 
 def create_speaker_layout(speaker_layout_xml: ET.Element) -> MyCoordinates:
@@ -273,6 +287,80 @@ def parse_encoding_settings(usat_parameter_settings_xml: ET.Element) -> dict:
     return parameter_dict
 
 
+def generate_base64_plots(all_matricies):
+    S           = all_matricies["S"]
+    cloud_plots = all_matricies["cloud_plots"]
+    output_layout = all_matricies["output_layout"]
+    
+    energy          = energy_calculation(S)
+    radial_i        = radial_I_calculation(cloud_plots, S, output_layout)
+    transverse_i    = transverse_I_calculation(cloud_plots, S, output_layout)
+    ae              = angular_error(radial_i, transverse_i)
+    source_width    = width_angle(radial_i)
+
+    '''
+    Args:
+        values (ArrayLike): Scalar data to visualize.
+        cloud_points (MyCoordinates): Coordinate object providing sph_deg().
+        title (str): Title of the plot.
+        colorbar_label (str): Label for the colorbar.
+        clim_range (tuple): (min, max) range for color limits.
+        save_path (str, optional): Path to save the figure.
+        cmap (Colormap, optional): Matplotlib colormap to use.
+    '''
+
+    # Energy
+    energy_base64           = plot_scalar_map(values=energy,
+                                        cloud_points=cloud_plots,
+                                        title="Energy",
+                                        colorbar_label="Energy",
+                                        clim_range=(0, 2),
+                                        cmap=custom_cmap,
+                                        return_base64=True)
+    
+    radial_i_base64         = plot_scalar_map(values=radial_i,
+                                      cloud_points=cloud_plots,
+                                      title="Radial Intensity",
+                                      colorbar_label="Radial Intensity",
+                                      clim_range=(0,1),
+                                      cmap=custom_cmap,
+                                      return_base64=True)
+    
+    transverse_i_base64     = plot_scalar_map(values=transverse_i,
+                                          cloud_points=cloud_plots,
+                                          title="Transverse Intensity",
+                                          colorbar_label="Transverse Intensity",
+                                          clim_range=(0,1),
+                                          cmap=custom_cmap,
+                                          return_base64=True)
+    
+    angular_error_base64    = plot_scalar_map(values=ae,
+                                           cloud_points=cloud_plots,
+                                           title="Angular Error",
+                                           colorbar_label="Angular Error (Degrees)",
+                                           clim_range=(0, 45),
+                                           cmap=custom_cmap,
+                                           return_base64=True)
+    
+    source_width_base64     = plot_scalar_map(values=source_width,
+                                              cloud_points=cloud_plots,
+                                              title="Source Width",
+                                              colorbar_label="Source Width (Degrees)",
+                                              clim_range=(0, 45),
+                                              cmap=custom_cmap,
+                                              return_base64=True)
+    
+    plot_data = {
+        "e_base_64": energy_base64,
+        "ri_base_64": radial_i_base64,
+        "ti_base_64": transverse_i_base64,
+        "ae_base_64": angular_error_base64,
+        "sw_base_64": source_width_base64
+    }
+
+    return plot_data
+
+
 def start_decoding(xml_string: str) -> list:
 
     usat_state_parameters_xml   = ET.fromstring(xml_string)
@@ -282,7 +370,16 @@ def start_decoding(xml_string: str) -> list:
     optimization_dict["save_results"]       = False
     optimization_dict["results_file_name"]  = None
     
-    T_optimised = optimize(optimization_dict)
+    all_matrices    = optimize_for_usat_designer(optimization_dict)
+    T_optimised     = all_matrices["T_optimized"]
+    plot_data       = generate_base64_plots(all_matrices)
+
+    energy_base_54                  = plot_data["e_base_64"]
+    radial_intensity_base_64        = plot_data["ri_base_64"]
+    transverse_intensity_base_64    = plot_data["ti_base_64"]
+    angular_error_base_64           = plot_data["ae_base_64"]
+    source_width_base_64            = plot_data["sw_base_64"] 
+
     return T_optimised.T.tolist()
 
 def decode_for_random_parameter_generation(xml_string: str) -> dict:

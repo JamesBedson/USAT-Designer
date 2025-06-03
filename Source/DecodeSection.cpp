@@ -9,7 +9,7 @@
 */
 
 #include <JuceHeader.h>
-#include "DecoderSettingsPanel.h"
+#include "DecodeSection.h"
 
 //==============================================================================
 DecoderSettingsPanel::DecoderSettingsPanel(USATAudioProcessor& p)

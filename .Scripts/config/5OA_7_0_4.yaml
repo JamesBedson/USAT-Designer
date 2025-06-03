@@ -1,60 +1,60 @@
 Coefficients:
   energy:
-    Distribution: "normal"
-    Range: [5.0, 5.0]
+    Distribution: "none"
+    Args: 5.0
   
   radialIntensity:
     Distribution: "normal"
-    Range: [2.0, 2.0]
+    Args: [4.0, 2.0]
   
   transverseIntensity:
     Distribution: "normal"
-    Range: [1.0, 1.0]
+    Args: [2.0, 1.0]
   
   pressure:
     Distribution: "none"
-    Range: 0.0
+    Args: 0.0
   
   radialVelocity:
     Distribution: "none"
-    Range: 0.0
+    Args: 0.0
   
   transverseVelocity:
     Distribution: "none"
-    Range: 0.0
+    Args: 0.0
   
   inPhaseQuadratic:
-    Distribution: "normal"
-    Range: [10.0, 4.0]
+    Distribution: "none"
+    Args: 10.0
   
   symmetryQuadratic:
     Distribution: "normal"
-    Range: [4.0, 4.0]
+    Args: [5.0, 3.0]
   
   inPhaseLinear:
     Distribution: "none"
-    Range: 0.0
+    Args: 0.0
   
   symmetryLinear:
     Distribution: "none"
-    Range: 0.0
+    Args: 0.0
   
   totalGainsLinear:
     Distribution: "none"
-    Range: 0.0
+    Args: 0.0
   
   totalGainsQuadratic:
     Distribution: "none"
-    Range: 0.0
+    Args: 0.0
 
 InputFormat:
   FormatChoices: ["Ambisonics"]
 
   Ambisonics:
-    Range: [5]
+    Args: [5]
   
   SpeakerLayout:
-    Range: [
+    Args: [
       "layout_7_0_4",
       "layout_5_0",
       "layout_9_0_1"
@@ -64,9 +64,9 @@ OutputFormat:
   FormatChoices: ["SpeakerLayout"]
 
   Ambisonics:
-    Range: [3, 4, 5]
+    Args: [3, 4, 5]
   
   SpeakerLayout:
-    Range: [ 
+    Args: [ 
       "layout_7_0_4"
       ]

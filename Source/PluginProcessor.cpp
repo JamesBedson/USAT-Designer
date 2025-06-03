@@ -152,6 +152,7 @@ void USATAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::M
     if (decoder.decodingMatrixReady()) {
         decoder.process(buffer, getTotalNumInputChannels(), getTotalNumOutputChannels());
     }
+    // TODO: Set channels to zero if not ready.
 }
 
 //==============================================================================

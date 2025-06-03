@@ -5,11 +5,15 @@ import xml.dom.minidom as minidom
 import yaml
 from processing_constants import *
 import receive_parameters, parameter_utils as pu
+import directory_utils as dir_utils
 import speaker_layouts as sl
 import os
 import time
 import traceback
 import argparse
+import warnings
+import tempfile
+import secrets
 
 def parse_from_config(yaml_file):
 
@@ -22,7 +26,7 @@ def parse_from_config(yaml_file):
 
     for coeff_name, coeff_data in coeff_config.items():
         coeff_distribution = coeff_data.get(DISTRIBUTION)
-        coeff_range        = coeff_data.get(DISTRIBUTION_RANGE)
+        coeff_range        = coeff_data.get(DISTRIBUTION_ARGS)
         coeff_value        = round(get_y_i(coeff_distribution, coeff_range))
         coeffs[coeff_name] = coeff_value
 
@@ -60,8 +64,9 @@ def parse_from_config(yaml_file):
         output_ambisonics[AMBISONICS_ORDER_OUT] = output_data[1]
 
     elif output_data[0] == SPEAKER_LAYOUT:
-        output_layout_desc = output_data[1]
-        output_speaker_layout = sl.SPEAKER_LAYOUTS.get(output_layout_desc)
+        output_layout_desc      = output_data[1]
+        output_speaker_layout   = sl.SPEAKER_LAYOUTS.get(output_layout_desc)
+        
         if output_speaker_layout is None:
             print(f"Warning: output layout '{output_layout_desc}' not found!")
 
@@ -84,11 +89,11 @@ def get_random_x_lambda(config_section):
     selected_format = np.random.choice(formats)
 
     if selected_format == AMBISONICS:
-        ambisonics_orders   = config_section.get(AMBISONICS).get(DISTRIBUTION_RANGE)
+        ambisonics_orders   = config_section.get(AMBISONICS).get(DISTRIBUTION_ARGS)
         selected_value      = np.random.choice(ambisonics_orders)
 
     elif selected_format == SPEAKER_LAYOUT:
-        layout_names        = config_section.get(SPEAKER_LAYOUT).get(DISTRIBUTION_RANGE)
+        layout_names        = config_section.get(SPEAKER_LAYOUT).get(DISTRIBUTION_ARGS)
         selected_value      = np.random.choice(layout_names)
 
     else:
@@ -97,35 +102,37 @@ def get_random_x_lambda(config_section):
     return selected_format, selected_value
 
 
-def get_y_i(distribution: str, range) -> float:
+def get_y_i(distribution: str, args) -> float:
     distribution = distribution.lower()
     
     if distribution == "none":
-        assert(isinstance(range, float) or isinstance(range, int))
-        return range
+        assert(isinstance(args, float) or isinstance(args, int))
+        return args
     
     elif distribution == "uniform":
-        low, high = range
+        low, high = args
         return np.random.uniform(low, high)
 
     elif distribution == "normal":
-        mean, std = range
+        mean, std   = args
+        mean        = round(mean, 2)
+        std         = round(std, 2)
 
         sample = -1
         while sample < 0:
-            sample = int(round(np.random.normal(mean, std)))
+            sample = int(np.random.normal(mean, std))
         return sample
 
     elif distribution == "lognormal":
-        mean, sigma = range
+        mean, sigma = args
         return np.random.lognormal(mean, sigma)
 
     elif distribution == "beta":
-        a, b = range
+        a, b = args
         return np.random.beta(a, b)
 
     elif distribution == "choice":
-        return np.random.choice(range)
+        return np.random.choice(args)
 
     else:
         raise ValueError(f"Unsupported distribution: {distribution}")
@@ -167,9 +174,6 @@ def build_xml_config(usat_state_parameters):
     
 
 def generate_decoding_data(args):
-    import numpy as np
-    import warnings 
-    import os
 
     yaml_file, seed = args
     if seed is not None:
@@ -200,30 +204,48 @@ def generate_decoding_data(args):
             "traceback": tb_str 
         }
         return pretty_xml, output_dict
-    
 
-def main(num_decodings_targeted):
-    config_dir_name     = "config" 
-    config_file_name    = "test.yaml"
-    base_dir            = "random_usat_decodings"
-    
-    project_dir     = os.path.dirname(os.path.abspath(__file__))
-    config_dir      = os.path.join(project_dir, config_dir_name)
-    yaml_file       = os.path.join(config_dir, config_file_name)
 
-    seed                    = int((os.getpid() * time.time()) % (2**32))
-    start_time              = time.time()
+def main(num_decodings_targeted, yaml_path, bucket_name):
+    
+    if not yaml_path:
+        print("No config file specified...")
+        return
+    
+    yaml_base   = os.path.splitext(os.path.basename(yaml_path))[0]
+    base_dir    = os.path.join(tempfile.gettempdir(), yaml_base)
+    os.makedirs(base_dir, exist_ok=True)
+
+    if (dir_utils.is_gcs_path(yaml_path)):
+        local_yaml_path, _ = dir_utils.download_yaml_to_directory(yaml_path, base_dir)
+    else:
+        local_yaml_path = dir_utils.copy_local_yaml_to_directory(yaml_path, base_dir)
+
+    if bucket_name:
+        gcs_config_path = f"outputs/{yaml_base}/{os.path.basename(local_yaml_path)}"
+        dir_utils.upload_file_to_gcs(local_path=local_yaml_path,
+                                     bucket_name=bucket_name,
+                                     destination_blob_name=gcs_config_path)
+
+    seed        = secrets.randbits(32)
+    start_time  = time.time()
     
     for i in range(1, num_decodings_targeted + 1):
-        seed                = int(os.getpid() * time.time() * i % (2 ** 32))
-        xml, output_dict    = generate_decoding_data((yaml_file, seed))
+        print(f"Starting iteration {i}...")
         
+        xml, output_dict    = generate_decoding_data((local_yaml_path, seed))
         assert(isinstance(xml, str))
-        pu.save_output_data(xml, output_dict, seed, base_dir)
 
-    end_time    = time.time()
-    elapsed     = end_time - start_time
-    print(f"Elapsed time: {elapsed}")  
+        output_dir = pu.save_output_data(xml, output_dict, seed, base_dir)
+
+        if bucket_name:
+            print("Uploading...")
+            gcs_prefix = f"outputs/{yaml_base}/usat_{seed}"
+            dir_utils.upload_directory_to_gcs(output_dir, bucket_name, gcs_prefix)
+
+    elapsed = time.time() - start_time
+    print(f"Elapsed time: {elapsed}")
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate random decoding data.")
@@ -231,7 +253,20 @@ if __name__ == "__main__":
         "-n", "--num",
         type=int,
         default=10,
-        help="Number of decodings to generate (default: 10)"
+        help="Number of decodings to generate"
     )
+    parser.add_argument(
+        "-c", "--config",
+        type=str,
+        required=True,
+        help="Path to YAML config (local or gs://...)"
+    )
+    parser.add_argument(
+        "-b", "--bucket_name",
+        type=str,
+        default=None,
+        help="GCS bucket to upload results to (optional)"
+    )
+
     args = parser.parse_args()
-    main(args.num)
+    main(args.num, args.config, args.bucket_name)

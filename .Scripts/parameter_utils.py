@@ -83,7 +83,8 @@ def save_output_data(xml_string: str,
         metadata_path = os.path.join(output_dir, f"metadata_{seed}.json")
         with open(metadata_path, "w") as f:
             json.dump(metadata, f, indent=2)
-    return
+    
+    return output_dir
 
 import xml.etree.ElementTree as ET
 

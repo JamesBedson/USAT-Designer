@@ -15,7 +15,7 @@
 #include "Header.h"
 #include "ControlSection.h"
 #include "VisualisationSection.h"
-#include "DecoderSettingsPanel.h"
+#include "DecodeSection.h"
 #include "FormatSection.h"
 
 //==============================================================================

@@ -54,7 +54,7 @@ QUALITY_SCORE           = "quality_score"
 APPARENT_SOURCE_WIDTH   = "median_source_width"
 
 # Parameter Sampling
-DISTRIBUTION_RANGE  = "Range"
+DISTRIBUTION_ARGS   = "Args"
 DISTRIBUTION        = "Distribution"
 INPUT_FORMAT        = "InputFormat"
 OUTPUT_FORMAT       = "OutputFormat"

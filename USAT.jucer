@@ -75,10 +75,9 @@
                 file="Source/VisualisationSection.cpp"/>
           <FILE id="Jv4AAl" name="VisualisationSection.h" compile="0" resource="0"
                 file="Source/VisualisationSection.h"/>
-          <FILE id="h4tKMJ" name="DecoderSettingsPanel.cpp" compile="1" resource="0"
-                file="Source/DecoderSettingsPanel.cpp"/>
-          <FILE id="e493lq" name="DecoderSettingsPanel.h" compile="0" resource="0"
-                file="Source/DecoderSettingsPanel.h"/>
+          <FILE id="h4tKMJ" name="DecodeSection.cpp" compile="1" resource="0"
+                file="Source/DecodeSection.cpp"/>
+          <FILE id="e493lq" name="DecodeSection.h" compile="0" resource="0" file="Source/DecodeSection.h"/>
           <FILE id="dtqMt7" name="MatrixComputeWindow.h" compile="0" resource="0"
                 file="Source/MatrixComputeWindow.h"/>
           <FILE id="Peg8sp" name="CustomLNF.h" compile="0" resource="0" file="Source/CustomLNF.h"/>
