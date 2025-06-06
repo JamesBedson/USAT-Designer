@@ -48,6 +48,10 @@ from universal_transcoder.plots_and_logs.write_logs import (
     write_optimization_log,
     save_results,
 )
+import warnings
+
+# Suppress all warnings
+warnings.filterwarnings("ignore")
 
 os.environ["JAX_ENABLE_X64"] = "1"
 
@@ -61,7 +65,7 @@ def optimize(info: Dict[str, Any]) -> NpArray:
     Args:
         info (dict): All the info needed for the optimization given as the following:
             dictionary = {
-                "input_matrix_optimization": input,     # Input matrix that encodes in input format: G(LxM)
+                "input_matrix_optimization": input,     # Input matrix that encodes in input format LxM
                 "cloud_optimization": cloud,            # Cloud of points sampling the sphere (L)
                 "output_layout": output_layout,         # Output layout of speakers to decode (P speakers)
                 "coefficients": {                       # List of coefficients to the cost function
@@ -96,10 +100,6 @@ def optimize(info: Dict[str, Any]) -> NpArray:
     # Save optimisation data in json
     if info["save_results"]:
         save_results(info)
-
-    G               = info["input_matrix_optimization"]
-    speaker_signals = np.array([])
-    Dspk            = np.array([])
 
     ## Set up optimisation
     current_state, T_flatten_initial = set_up_general(info)
@@ -148,7 +148,7 @@ def optimize(info: Dict[str, Any]) -> NpArray:
         else:
             # Resulting speaker signals
             speaker_signals = jnp.dot(info["input_matrix_optimization"], D.T)
-
+            
             plots_general(
                 info["output_layout"],
                 speaker_signals,
@@ -162,13 +162,10 @@ def optimize(info: Dict[str, Any]) -> NpArray:
 
 def optimize_for_usat_designer(info: Dict[str, Any]) -> dict:
     # Resulting matrices
-    G       = info["input_matrix_optimization"]
-    S       = np.array([])
-    D       = np.array([])
-    
+        
     # Additional data for plotting
     output_layout       = info["output_layout"]
-    cloud_plots         = info["cloud_plots"]
+    cloud_plots         = info["cloud_plots"] if "cloud_plots" in info else None
     cloud_optimisation  = info["cloud_optimization"] 
 
     # Set up optimisation
@@ -189,15 +186,20 @@ def optimize_for_usat_designer(info: Dict[str, Any]) -> dict:
     )
     
     D = T_optimized
-    
     if "Dspk" in info.keys():
-        D = np.array(jnp.dot(info["Dspk"], T_optimized))
-    
+        D = jnp.dot(info["Dspk"], T_optimized)
+
+
     if "cloud_plots" in info:
-        S = np.array(jnp.dot(G, D.T))
+        G       = info["input_matrix_plots"]
+        cloud   = info["cloud_plots"]
 
     else:
-        S = np.array(jnp.dot(info["input_matrix_optimization"], D.T))
+        G       = info["input_matrix_optimization"]
+        cloud   = info["cloud_optimization"]    
+
+
+    S = jnp.dot(G, D.T)
     
     output = {
         "G": G,
@@ -205,10 +207,9 @@ def optimize_for_usat_designer(info: Dict[str, Any]) -> dict:
         "T_optimized": T_optimized,
         "S": S,
         "output_layout": output_layout,
-        "cloud_plots": cloud_plots,
-        "cloud_optimization": cloud_optimisation 
+        "cloud": cloud, 
     }
-
+    
     return output 
     
 

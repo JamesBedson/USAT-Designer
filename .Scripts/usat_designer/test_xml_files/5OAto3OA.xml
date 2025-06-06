@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<USAT_State_Parameters>
+  <Encoding_Settings InputType="Ambisonics" OutputType="Ambisonics"/>
+  <Input_Ambisonics AmbisonicsOrderIn="5"/>
+  <Output_Ambisonics AmbisonicsOrderOut="3"/>
+  <Input_Loudspeaker_Layout/>
+  <Output_Loudspeaker_Layout/>
+  <Coefficients energy="0.0" radialIntensity="0.5" transverseIntensity="1.0"
+                pressure="3.0" radialVelocity="0.0" transverseVelocity="1.0"
+                inPhaseQuadratic="10.0" symmetryQuadratic="2.0" inPhaseLinear="0.0"
+                symmetryLinear="0.0" totalGainsLinear="0.0" totalGainsQuadratic="0.0"/>
+</USAT_State_Parameters>
