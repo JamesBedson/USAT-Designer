@@ -6,3 +6,5 @@
 /.Scripts/__pycache__
 /.Scripts/random_usat_decodings
 *.pyc
+/python
+/.venv

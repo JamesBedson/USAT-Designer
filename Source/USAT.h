@@ -47,6 +47,7 @@ public:
                  int numOutputChannelsFromHost);
     
     const GainMatrix& getGainMatrixInstance() const;
+    const std::array<std::string, 5> getBase64Plots() const;
     
     void fillMatrixFromValueTree(const juce::ValueTree&);
     
@@ -62,10 +63,11 @@ private:
     ProcessingConstants::PythonParameterNameMap pythonParameterMap;
     
     bool matrixReady;
-    //PythonInterpreter interpreter;
+    PythonInterpreter interpreter;
     std::unique_ptr<PythonThread> pyThread;
     
     GainMatrix gainsMatrix;
+    std::array<std::string, 5> base64PlotsStr;
     juce::Value& progressValue;
     juce::Value& statusValue;
 };

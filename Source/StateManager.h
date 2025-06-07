@@ -26,7 +26,6 @@ public:
     static const juce::File resourceDirectory;
     static const juce::File pythonScriptsDirectory;
     static const juce::File speakerLayoutDirectory;
-    static const juce::File getPythonScript();
     
     void ensureDirectoryExists(const juce::File& directory);
     void initCoefficientsTree();
@@ -37,6 +36,7 @@ public:
     const juce::ValueTree createInputAmbisonicsTree() const;
     const juce::ValueTree createOutputAmbisonicsTree() const;
     const juce::ValueTree createGainMatrixTree(const GainMatrix& matrix) const;
+    const juce::ValueTree createPlotTree(const std::array<std::string, 5> base64PlotStrings) const;
     
     void debugValueTree(const juce::ValueTree& tree) const;
     

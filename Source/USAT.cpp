@@ -17,7 +17,7 @@ statusValue(status)
     matrixReady = false;
     currentChannelCountIn   = 0;
     currentChannelCountOut  = 0;
-    //pyThread = std::make_unique<PythonThread>(interpreter, gainsMatrix);
+    pyThread = std::make_unique<PythonThread>(interpreter, gainsMatrix, base64PlotsStr);
 }
 
 USAT::~USAT()
@@ -144,4 +144,8 @@ void USAT::fillMatrixFromValueTree(const juce::ValueTree& matrixTree) {
 
 const GainMatrix& USAT::getGainMatrixInstance() const {
     return gainsMatrix;
+}
+
+const std::array<std::string, 5> USAT::getBase64Plots() const {
+    return base64PlotsStr;
 }

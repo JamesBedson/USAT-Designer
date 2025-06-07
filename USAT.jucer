@@ -84,7 +84,7 @@
         </GROUP>
       </GROUP>
       <FILE id="Lwsx9C" name="PluginProcessor.cpp" compile="1" resource="0"
-            file="Source/PluginProcessor.cpp"/>
+            file="Source/PluginProcessor.cpp" xcodeResource="0"/>
       <FILE id="DiCCZE" name="PluginProcessor.h" compile="0" resource="0"
             file="Source/PluginProcessor.h"/>
       <FILE id="V08EvH" name="PluginEditor.cpp" compile="1" resource="0"
@@ -134,12 +134,13 @@
   </MODULES>
   <JUCEOPTIONS JUCE_STRICT_REFCOUNTEDPOINTER="1" JUCE_VST3_CAN_REPLACE_VST2="0"/>
   <EXPORTFORMATS>
-    <XCODE_MAC targetFolder="Builds/MacOSX" externalLibraries="python3.11" extraLinkerFlags="-L/Users/james/.pyenv/versions/3.11.1/lib -lpython3.11">
+    <XCODE_MAC targetFolder="Builds/MacOSX" externalLibraries="python3.11" extraLinkerFlags="-L$(PROJECT_DIR)/../../python/versions/3.11.1/lib -Wl,-rpath,@executable_path/../Resources/python/versions/3.11.1/lib -lpython3.11&#10;"
+               postbuildCommand="#!/bin/bash&#10;set -e&#10;set -x&#10;&#10;# Define plugin/app name (must match target name exactly)&#10;APP_NAME=&quot;USAT&quot;   # &lt;-- Change if your app is named differently&#10;&#10;# Determine project root&#10;CURRENT_DIR=&quot;$(pwd)&quot;&#10;PROJECT_ROOT=&quot;$(cd &quot;$CURRENT_DIR/../..&quot; &amp;&amp; pwd)&quot;&#10;&#10;# Source folders&#10;SCRIPTS_SRC=&quot;$PROJECT_ROOT/.Scripts&quot;&#10;PYTHON_SRC=&quot;$PROJECT_ROOT/python&quot;&#10;&#10;# Destination app bundle&#10;APP_BUNDLE=&quot;$BUILT_PRODUCTS_DIR/$APP_NAME.app&quot;&#10;&#10;# Ensure the app bundle exists&#10;if [ ! -d &quot;$APP_BUNDLE&quot; ]; then&#10;    echo &quot;&#10060; Error: App bundle not found at $APP_BUNDLE&quot;&#10;    exit 1&#10;fi&#10;&#10;# Create Resources folder and copy&#10;RESOURCES_DIR=&quot;$APP_BUNDLE/Contents/Resources&quot;&#10;mkdir -p &quot;$RESOURCES_DIR&quot;&#10;&#10;cp -R &quot;$SCRIPTS_SRC&quot; &quot;$RESOURCES_DIR/&quot;&#10;cp -R &quot;$PYTHON_SRC&quot; &quot;$RESOURCES_DIR/&quot;&#10;&#10;echo &quot;&#9989; Copied resources to $APP_NAME.app&quot;&#10;">
       <CONFIGURATIONS>
-        <CONFIGURATION isDebug="1" name="Debug" targetName="USAT" headerPath="/Users/james/.pyenv/versions/3.11.1/include/python3.11"
-                       libraryPath="/Users/james/.pyenv/versions/3.11.1/lib"/>
-        <CONFIGURATION isDebug="0" name="Release" targetName="USAT" headerPath="/Users/james/.pyenv/versions/3.11.1/include/python3.11"
-                       libraryPath="/Users/james/.pyenv/versions/3.11.1/lib"/>
+        <CONFIGURATION isDebug="1" name="Debug" targetName="USAT" headerPath="$(PROJECT_DIR)/../../python/versions/3.11.1/include/python3.11"
+                       libraryPath="$(PROJECT_DIR)/../../python/versions/3.11.1/lib"/>
+        <CONFIGURATION isDebug="0" name="Release" targetName="USAT" headerPath="$(PROJECT_DIR)/../../python/versions/3.11.1/include/python3.11&#10;"
+                       libraryPath="$(PROJECT_DIR)/../../python/versions/3.11.1/lib&#10;"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="juce_animation" path="../../../JUCE/modules"/>

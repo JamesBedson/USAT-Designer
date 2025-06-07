@@ -105,8 +105,10 @@ void USATAudioProcessor::decode()
     decoder.computeMatrix(globalValueTree, [this]() {
         
         const auto matrix           = decoder.getGainMatrixInstance();
+        const auto base64Plots      = decoder.getBase64Plots();
+        
         auto decodingMatrixTree     = stateManager.createGainMatrixTree(matrix);
-        stateManager.debugValueTree(decodingMatrixTree);
+        auto base64PlotsTree        = stateManager.createPlotTree(base64Plots);
     });
 }
 

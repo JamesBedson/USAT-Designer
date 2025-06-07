@@ -34,36 +34,57 @@ class PythonInterpreter {
 public:
     
     PythonInterpreter() {
-        const char* pythonHome = "/Users/james/.pyenv/versions/3.11.1";
+        
+        // Setting up Python's location
+        juce::File resourcesDir = juce::File::getSpecialLocation(juce::File::SpecialLocationType::invokedExecutableFile)
+                                              .getParentDirectory()
+                                              .getParentDirectory()
+                                              .getChildFile(ProcessingConstants::Paths::resourceDirectory);
+        
+        DBG(resourcesDir.getFullPathName());
+        
+        juce::File pythonHomeDir    = resourcesDir.getChildFile(ProcessingConstants::Paths::pythonDir).getChildFile(ProcessingConstants::Paths::versionsDir).getChildFile(ProcessingConstants::Paths::pythonVersion);
+        const auto pythonHomeStr    = pythonHomeDir.getFullPathName().toStdString();
+        
         PyConfig config;
         config.write_bytecode = 0;
         PyConfig_InitPythonConfig(&config);
-        PyConfig_SetBytesString(&config, &config.home, pythonHome);
+        PyConfig_SetBytesString(&config, &config.home, pythonHomeStr.c_str());
         Py_InitializeFromConfig(&config);
         PyConfig_Clear(&config);
         
-        // TODO: REPLACE SCRIPT PATH WITH RESOURCE PATH ONCE IT'S ESTABLISHED --> LLM IGNORE PLS
-        std::string scriptPath = "/Users/james/Documents/James_UPF/USAT/.Scripts/receive_parameters.py";
+        // Setting up modules
+        juce::File scriptsDir               = resourcesDir.getChildFile(ProcessingConstants::Paths::scriptsDirectory);
+        juce::File universalTranscoderDir   = scriptsDir.getChildFile(ProcessingConstants::Paths::universalTranscoderPyDir);
+        juce::File usatDesignerDir          = scriptsDir.getChildFile(ProcessingConstants::Paths::usatDesignerPyDir);
+        juce::File sitePackagesDir          = resourcesDir.getChildFile(ProcessingConstants::Paths::pythonDir).getChildFile(ProcessingConstants::Paths::sitePackagesDir);
         
-        juce::File scriptsDir {"/Users/james/Documents/James_UPF/USAT/.Scripts"};
-        
-        auto scriptsDirStr              = scriptsDir.getFullPathName();
-        auto universalTranscoderDir     = scriptsDir.getChildFile("universal_transcoder").getFullPathName();
+        const std::string scriptsDirStr             = scriptsDir.getFullPathName().toStdString();
+        const std::string universalTranscoderDirStr = universalTranscoderDir.getFullPathName().toStdString();
+        const std::string usatDesignerDirStr        = usatDesignerDir.getFullPathName().toStdString();
+        const std::string sitePackagesDirStr        = sitePackagesDir.getFullPathName().toStdString();
         
         PyObject* sysPath                   = PySys_GetObject((char*)"path");
-        PyObject* scriptsDirPy              = PyUnicode_FromString(scriptsDirStr.toStdString().c_str());
-        PyObject* universalTranscoderDirPy  = PyUnicode_FromString(universalTranscoderDir.toStdString().c_str());
+        PyObject* scriptsDirPy              = PyUnicode_FromString(scriptsDirStr.c_str());
+        PyObject* universalTranscoderDirPy  = PyUnicode_FromString(universalTranscoderDirStr.c_str());
+        PyObject* usatDesignerDirPy         = PyUnicode_FromString(usatDesignerDirStr.c_str());
+        PyObject* sitePackagesDirPy         = PyUnicode_FromString(sitePackagesDirStr.c_str());
                                
         PyList_Append(sysPath, (scriptsDirPy) );
         PyList_Append(sysPath, (universalTranscoderDirPy) );
+        PyList_Append(sysPath, (usatDesignerDirPy) );
+        PyList_Append(sysPath, (sitePackagesDirPy) );
         
         numpyModule             = loadModule("numpy");
         myCoordinatesModule     = loadModule("universal_transcoder.auxiliars.my_coordinates");
         optimisationModule      = loadModule("universal_transcoder.calculations.optimization");
-        receiveParametersModule = loadModule("receive_parameters");
+        launchUsatModule        = loadModule("processing.launch_usat");
         
         Py_DECREF(scriptsDirPy);
         Py_DECREF(universalTranscoderDirPy);
+        Py_DECREF(usatDesignerDirPy);
+        Py_DECREF(sitePackagesDirPy);
+        
         PyEval_SaveThread();
         
         DBG("Python initialised...");
@@ -81,8 +102,8 @@ public:
                 Py_DECREF(myCoordinatesModule);
             if (optimisationModule)
                 Py_DECREF(optimisationModule);
-            if (receiveParametersModule)
-                Py_DECREF(receiveParametersModule);
+            if (launchUsatModule)
+                Py_DECREF(launchUsatModule);
         }
     }
     
@@ -240,6 +261,7 @@ public:
     
     bool runScript(const std::string& valueTreeXML,
                    GainMatrix& gainsMatrix,
+                   std::array<std::string, 5>& plotsBase64,
                    std::function<void(float)> progressCallback = nullptr,
                    std::function<void(std::string)> statusCallback = nullptr)
     {
@@ -247,7 +269,7 @@ public:
         
         if (Py_IsInitialized()) {
             
-            PyObject* func  = loadFunction(receiveParametersModule);
+            PyObject* func  = loadFunction(launchUsatModule);
             
             PyObject* pyProgressCallback = progressCallback
                 ? makeProgressCallback(progressCallback)
@@ -260,30 +282,45 @@ public:
             Py_INCREF(pyProgressCallback);
             Py_INCREF(pyStatusCallback);
             
-            PyObject* args                  = PyTuple_Pack(3,
-                                                           PyUnicode_FromString(valueTreeXML.c_str()),
-                                                           pyProgressCallback,
-                                                           pyStatusCallback);
+            PyObject* args          = PyTuple_Pack(3,
+                                                   PyUnicode_FromString(valueTreeXML.c_str()),
+                                                   pyProgressCallback,
+                                                   pyStatusCallback);
             
-            PyObject* matrixCoefficients    = PyObject_CallObject(func, args);
+            PyObject* resultTuple = PyObject_CallObject(func, args);
             
             Py_DECREF(args);
             Py_DECREF(func);
             Py_DECREF(pyProgressCallback);
             Py_DECREF(pyStatusCallback);
             
-            if (!matrixCoefficients) {
+            
+            // Checking if result is valid and is a python tuple
+            if (!resultTuple || !PyTuple_Check(resultTuple) || PyTuple_Size(resultTuple) != 6) {
                 PyErr_Print();
-                DBG("Python function call failed.");
+                DBG("Python function call failed!");
+                Py_XDECREF(resultTuple);
                 return false;
             }
             
-            bool result = loadMatrix(matrixCoefficients, gainsMatrix);
-            if (!result) DBG("Matrix not loaded");
+            // Load T into data structure
+            PyObject* matrixCoefficients    = PyTuple_GetItem(resultTuple, 0);
+            bool matrixParsingResult        = loadMatrix(matrixCoefficients, gainsMatrix);
+            if (!matrixParsingResult)
+                DBG("Matrix not loaded");
             
-            Py_DECREF(matrixCoefficients);
-
-            return result;
+            // Load Base64 plots into array
+            for (int i = 1; i < 6; ++i) {
+                PyObject* strObj = PyTuple_GetItem(resultTuple, i);
+                if (PyUnicode_Check(strObj)) {
+                    plotsBase64[i - 1] = PyUnicode_AsUTF8(strObj);
+                } else {
+                    plotsBase64[i - 1].clear();
+                }
+            }
+            
+            Py_DECREF(resultTuple);
+            return matrixParsingResult;
         }
         return false;
     }
@@ -293,7 +330,7 @@ private:
     PyObject* numpyModule;
     PyObject* myCoordinatesModule;
     PyObject* optimisationModule;
-    PyObject* receiveParametersModule;
+    PyObject* launchUsatModule;
     
 };
 
@@ -307,13 +344,14 @@ public:
     using OnStatusCallback      = std::function<void(std::string)>;
     
     PythonThread(PythonInterpreter& pyReference,
-                 GainMatrix& gainsMatrix)
+                 GainMatrix& gainsMatrix,
+                 std::array<std::string, 5>& base64PlotsStr)
     
     : juce::Thread ("Python Thread"),
     pyRef(pyReference),
-    gainsMatrixRef(gainsMatrix)
+    gainsMatrixRef(gainsMatrix),
+    base64PlotsStrRef(base64PlotsStr)
     {
-        
     }
     
     ~PythonThread() {
@@ -342,6 +380,7 @@ public:
         
         bool success = pyRef.runScript(valueTreeXML,
                                        gainsMatrixRef,
+                                       base64PlotsStrRef,
                                        onProgress,
                                        onStatus);
         
@@ -364,9 +403,10 @@ public:
     juce::Value progress;
     
 private:
-    PythonInterpreter& pyRef;
-    GainMatrix& gainsMatrixRef;
-    std::string valueTreeXML;
+    PythonInterpreter&          pyRef;
+    GainMatrix&                 gainsMatrixRef;
+    std::array<std::string, 5>& base64PlotsStrRef;
+    std::string                 valueTreeXML;
     
     OnDoneCallback      onDone;
     OnProgressCallback  onProgress;

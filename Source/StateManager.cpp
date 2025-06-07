@@ -41,10 +41,6 @@ const juce::File StateManager::speakerLayoutDirectory
     presetsDirectory.getChildFile(ProcessingConstants::Paths::speakerLayoutDir)
 };
 
-const juce::File StateManager::getPythonScript()
-{
-    return pythonScriptsDirectory.getChildFile(ProcessingConstants::Paths::scriptName);
-}
 
 StateManager::StateManager(APVTS& apvts)
 : apvts(apvts),
@@ -201,6 +197,33 @@ const juce::ValueTree StateManager::createGainMatrixTree(const GainMatrix& matri
     
     globalGainMatrixTree.addChild(matrixTree, -1, nullptr);
     return globalGainMatrixTree;
+}
+
+const juce::ValueTree StateManager::createPlotTree(const std::array<std::string, 5> base64PlotStrings) const {
+    
+    juce::ValueTree energyPlotTree              {ProcessingConstants::TreeTags::energyPlotID};
+    energyPlotTree.setProperty(ProcessingConstants::TreeTags::plotData, juce::String(base64PlotStrings[0]), nullptr);
+    
+    juce::ValueTree radialIntensityPlotTree     {ProcessingConstants::TreeTags::radialIntensityPlotID};
+    radialIntensityPlotTree.setProperty(ProcessingConstants::TreeTags::plotData, juce::String(base64PlotStrings[1]), nullptr);
+    
+    juce::ValueTree transverseIntensityPlotTree {ProcessingConstants::TreeTags::transverseIntensityPlotID};
+    transverseIntensityPlotTree.setProperty(ProcessingConstants::TreeTags::plotData, juce::String(base64PlotStrings[2]), nullptr);
+    
+    juce::ValueTree angularErrorPlotTree        {ProcessingConstants::TreeTags::angularErrorPlotID};
+    angularErrorPlotTree.setProperty(ProcessingConstants::TreeTags::plotData, juce::String(base64PlotStrings[3]), nullptr);
+    
+    juce::ValueTree sourceWidthPlotTree         {ProcessingConstants::TreeTags::sourceWidthPlotID};
+    sourceWidthPlotTree.setProperty(ProcessingConstants::TreeTags::plotData, juce::String(base64PlotStrings[4]), nullptr);
+    
+    juce::ValueTree allPlotsTree {ProcessingConstants::TreeTags::allPlotsID};
+    allPlotsTree.addChild(energyPlotTree, -1, nullptr);
+    allPlotsTree.addChild(radialIntensityPlotTree, -1, nullptr);
+    allPlotsTree.addChild(transverseIntensityPlotTree, -1, nullptr);
+    allPlotsTree.addChild(angularErrorPlotTree, -1, nullptr);
+    allPlotsTree.addChild(sourceWidthPlotTree, -1, nullptr);
+    //debugValueTree(energyPlotTree);
+    return allPlotsTree;
 }
 
 void StateManager::debugValueTree(const juce::ValueTree& tree) const {

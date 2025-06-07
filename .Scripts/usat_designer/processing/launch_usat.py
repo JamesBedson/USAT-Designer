@@ -4,10 +4,13 @@ from typing import Union
 import gc
 import sys, os
 from numpy import array as npArray
+import threading
 from usat_designer.processing.constants import *
+from usat_designer.processing.plot_worker import *
 from universal_transcoder.auxiliars.my_coordinates import MyCoordinates
 from universal_transcoder.calculations.optimization import optimize_for_usat_designer
 from universal_transcoder.auxiliars.get_decoder_matrices import get_ambisonics_decoder_matrix
+import matplotlib
 
 
 from universal_transcoder.auxiliars.get_input_channels import (
@@ -288,10 +291,16 @@ def parse_encoding_settings(usat_parameter_settings_xml: ET.Element) -> dict:
 
     return parameter_dict
 
+def threaded_plot_worker(optimisation_data, output_container):
+    plots = generate_base64_plots(optimisation_data, return_base_64=True)
+    output_container.update(plots)
 
 def generate_base64_plots(optimisation_data: dict,
                           return_base_64 = True) -> dict:
     
+    if return_base_64:
+        print("Returning base 64")
+
     S               = optimisation_data[DSN_OUT_SPEAKER_MATRIX]
     cloud           = optimisation_data[DSN_OUT_CLOUD]
     output_layout   = optimisation_data[DSN_OUT_OUTPUT_LAYOUT]
@@ -310,6 +319,7 @@ def generate_base64_plots(optimisation_data: dict,
 
     cmap = LinearSegmentedColormap.from_list("custom_coolwarm", colors)
     # Energy
+    print("Creating Energy Plot")
     energy_base64           = plot_scalar_map(values=energy,
                                               cloud_points=cloud,
                                               title="Energy",
@@ -326,7 +336,6 @@ def generate_base64_plots(optimisation_data: dict,
                                               clim_range=(0,1),
                                               cmap=cmap,
                                               return_base64=return_base_64)
-    
     # Transverse Intensity
     transverse_i_base64     = plot_scalar_map(values=transverse_i,
                                               cloud_points=cloud,
@@ -335,7 +344,6 @@ def generate_base64_plots(optimisation_data: dict,
                                               clim_range=(0,1),
                                               cmap=cmap,
                                               return_base64=return_base_64)
-    
     # Angular Error
     angular_error_base64    = plot_scalar_map(values=ae,
                                               cloud_points=cloud,
@@ -344,7 +352,6 @@ def generate_base64_plots(optimisation_data: dict,
                                               clim_range=(0, 45),
                                               cmap=cmap,
                                               return_base64=return_base_64)
-    
     # Apparent Source Width
     source_width_base64     = plot_scalar_map(values=source_width,
                                               cloud_points=cloud,
@@ -353,7 +360,7 @@ def generate_base64_plots(optimisation_data: dict,
                                               clim_range=(0, 45),
                                               cmap=cmap,
                                               return_base64=return_base_64)
-    
+
     plot_data = {
         DSN_PLT_ENERGY: energy_base64,
         DSN_PLT_RADIAL_INTENSITY: radial_i_base64,
@@ -365,8 +372,11 @@ def generate_base64_plots(optimisation_data: dict,
     return plot_data
 
 
-def start_decoding(xml_string: str) -> tuple:
-
+def start_decoding(xml_string: str,
+                   progress_callback=None,
+                   status_callback=None) -> tuple:
+    
+    matplotlib.use("Agg")
     usat_state_parameters_xml   = ET.fromstring(xml_string)
     optimization_dict           = parse_encoding_settings(usat_state_parameters_xml)
     
@@ -375,16 +385,21 @@ def start_decoding(xml_string: str) -> tuple:
     optimization_dict[OPT_PD_RESULTS_FILE_NAME]  = None
     
     optimisation_data   = optimize_for_usat_designer(optimization_dict)
-    T_optimised         = optimisation_data[DSN_OUT_TRANSCODING_MATRIX]
-    plot_data           = generate_base64_plots(optimisation_data, False)
+    T_optimised         = optimisation_data[DSN_OUT_TRANSCODING_MATRIX].tolist()
 
-    setup_plot_style()
+    print("Generating plots in subprocess...")
+
+    print("Generating plots in thread...")
+    plot_data_container = {}
+    plot_thread = threading.Thread(target=threaded_plot_worker, args=(optimisation_data, plot_data_container))
+    plot_thread.start()
+    plot_thread.join()
     
-    energy_base_64                  = plot_data[DSN_PLT_ENERGY]
-    radial_intensity_base_64        = plot_data[DSN_PLT_RADIAL_INTENSITY]
-    transverse_intensity_base_64    = plot_data[DSN_PLT_TRANSVERSE_INTENSITY]
-    angular_error_base_64           = plot_data[DSN_PLT_ANGULAR_ERROR]
-    source_width_base_64            = plot_data[DSN_PLT_SOURCE_WIDTH] 
+    energy_base_64                  = plot_data_container[DSN_PLT_ENERGY]
+    radial_intensity_base_64        = plot_data_container[DSN_PLT_RADIAL_INTENSITY]
+    transverse_intensity_base_64    = plot_data_container[DSN_PLT_TRANSVERSE_INTENSITY]
+    angular_error_base_64           = plot_data_container[DSN_PLT_ANGULAR_ERROR]
+    source_width_base_64            = plot_data_container[DSN_PLT_SOURCE_WIDTH]
     
     return (
         T_optimised,

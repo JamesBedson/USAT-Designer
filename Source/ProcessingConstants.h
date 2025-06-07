@@ -12,18 +12,23 @@
 namespace ProcessingConstants {
 
     namespace Paths {
-    const juce::String scriptsDirectory     = ".Scripts";
-    const juce::String scriptName           = "receive_parameters.py";
-    const juce::String resourceDirectory    = "Resources";
-    const juce::String speakerLayoutDir     = "Speaker_Layouts";
+    const juce::String scriptsDirectory         = ".Scripts";
+    const juce::String resourceDirectory        = "Resources";
+    const juce::String universalTranscoderPyDir = "universal_transcoder";
+    const juce::String usatDesignerPyDir        = "usat_designer";
+    const juce::String pythonDir                = "python";
+    const juce::String sitePackagesDir          = "site-packages";
+    const juce::String versionsDir              = "versions";
+    const juce::String pythonVersion            = "3.11.1";
+    const juce::String speakerLayoutDir         = "Speaker_Layouts";
     }
 
     namespace SpeakerProperties {
     
-    const juce::String  ID              = "ID";
-    const juce::String  azimuth         = "Azimuth";
-    const juce::String  elevation       = "Elevation";
-    const juce::String  distance        = "Distance";
+    const juce::String  ID                      = "ID";
+    const juce::String  azimuth                 = "Azimuth";
+    const juce::String  elevation               = "Elevation";
+    const juce::String  distance                = "Distance";
     const juce::String inputSpeakerLayoutName   = "Input Layout";
     const juce::String outputSpeakerLayoutName  = "Output Layout";
     
@@ -48,6 +53,15 @@ namespace ProcessingConstants {
     const juce::String matrixCoefficientsID     = "Matrix_Coefficients";
     const juce::String mainStateID              = "Main_State";
     
+    // Plot Tree Tags
+    const juce::String allPlotsID                   = "Plots";
+    const juce::String energyPlotID                 = "EnergyPlot";
+    const juce::String radialIntensityPlotID        = "RadialIntensityPlot";
+    const juce::String transverseIntensityPlotID    = "TransverseIntensityPlot";
+    const juce::String angularErrorPlotID           = "AngularErrorPlot";
+    const juce::String sourceWidthPlotID            = "SourceWidthPlot";
+    
+    const juce::String plotData = "PlotData";
     }
 
     namespace GainMatrixTree {

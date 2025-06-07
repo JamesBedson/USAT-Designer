@@ -100,9 +100,12 @@ def plot_scalar_map(
     points = cloud_points.sph_deg()
     x, y = points[:, 0], points[:, 1]
 
+    print("Creating standard figure...")
     fig, ax = create_standard_figure()
+    print("Creating base map...")
     _, x_map, y_map = create_base_map(ax, x, y)
 
+    print("Creating scatter")
     sc = ax.scatter(
         x_map,
         y_map,
@@ -112,7 +115,7 @@ def plot_scalar_map(
         alpha=0.8,
         edgecolors="none"
     )
-
+    print("Assigning colour bar and title")
     plt.colorbar(sc, label=colorbar_label, ax=ax)
     ax.set_title(title)
     sc.set_clim(*clim_range)
@@ -122,7 +125,8 @@ def plot_scalar_map(
         fig.savefig(buffer, format='png', bbox_inches='tight', dpi=dpi)
         plt.close(fig)
         buffer.seek(0)
-        return base64.b64encode(buffer.read()).decode('utf-8')
+        base64_str = base64.b64encode(buffer.read()).decode('utf-8')
+        return base64_str
     else:
         plt.show()
         return None
