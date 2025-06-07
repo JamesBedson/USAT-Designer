@@ -8,7 +8,7 @@ import threading
 from usat_designer.processing.constants import *
 from usat_designer.processing.plot_worker import *
 from universal_transcoder.auxiliars.my_coordinates import MyCoordinates
-from universal_transcoder.calculations.optimization import optimize_for_usat_designer
+from usat_designer.processing.optimize_usat_designer import optimize_for_usat_designer
 from universal_transcoder.auxiliars.get_decoder_matrices import get_ambisonics_decoder_matrix
 import matplotlib
 
@@ -216,7 +216,7 @@ def create_encoding_matrix(format: str, parameter_dict: dict, layout_data: Union
 def parse_encoding_settings(usat_parameter_settings_xml: ET.Element) -> dict:
     
     # Parse encoding settings
-    encoding_settings_xml = usat_parameter_settings_xml.find("Encoding_Settings")
+    encoding_settings_xml = usat_parameter_settings_xml.find(DSN_XML_SETTINGS)
     assert(encoding_settings_xml is not None)
 
     parameter_dict = {}
@@ -419,8 +419,9 @@ def decode_for_random_parameter_generation(xml_string: str) -> dict:
     optimization_dict["save_results"]       = False
     optimization_dict["results_file_name"]  = None
     
-    all_matrices = optimize_for_usat_designer(optimization_dict) 
-    return all_matrices
+    output_data = optimize_for_usat_designer(optimization_dict) 
+    print(output_data.keys())
+    return output_data
     
 
 #################################################################################

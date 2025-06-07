@@ -67,11 +67,14 @@ def save_output_data(xml_string: str,
     else:
         matrix_path = os.path.join(output_dir, f"matrix_data_{seed}.npz")
         
-        np.savez(matrix_path, 
-                    G = output_dict[DSN_OUT_ENCODING_MATRIX],
-                    T = output_dict[DSN_OUT_TRANSCODING_MATRIX],
-                    D = output_dict[DSN_OUT_DECODING_MATRIX],
-                    S = output_dict[DSN_OUT_SPEAKER_MATRIX])
+        np.savez(matrix_path,
+        **{
+            DSN_OUT_SPEAKER_MATRIX: output_dict[DSN_OUT_SPEAKER_MATRIX],
+            DSN_OUT_ENCODING_MATRIX: output_dict[DSN_OUT_ENCODING_MATRIX],
+            DSN_OUT_TRANSCODING_MATRIX: output_dict[DSN_OUT_TRANSCODING_MATRIX],
+            DSN_OUT_DECODING_MATRIX: output_dict[DSN_OUT_DECODING_MATRIX],
+        }
+)
         
         metadata = {
             DSN_SMPL_SEED: seed,

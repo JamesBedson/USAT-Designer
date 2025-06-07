@@ -1,21 +1,27 @@
+import sys
+import os
+
+scripts_path = os.path.abspath(".Scripts")
+if scripts_path not in sys.path:
+    sys.path.insert(0, scripts_path)
+
 import numpy as np
 import usat_designer.processing.speaker_layouts as sl
 import xml.etree.ElementTree as ET
 import xml.dom.minidom as minidom
 import yaml
 from usat_designer.processing.constants import *
-from usat_designer.processing.launch_usat import (
-    decode_for_random_parameter_generation
-)
+from usat_designer.processing.launch_usat import decode_for_random_parameter_generation
+from usat_designer.processing.optimize_usat_designer import optimize_for_usat_designer
 from usat_designer.utils import parameter_utils as pu
 import usat_designer.utils.directory_utils as dir_utils
-import os
 import time
 import traceback
 import argparse
 import warnings
 import tempfile
 import secrets
+
 
 def parse_from_config(yaml_file):
 
@@ -195,6 +201,7 @@ def generate_decoding_data(args):
         
         warnings.filterwarnings("ignore")
         output_dict = decode_for_random_parameter_generation(pretty_xml)
+    
         return pretty_xml, output_dict
     
     except Exception as e:
@@ -239,6 +246,7 @@ def main(num_decodings_targeted, yaml_path, bucket_name):
         assert(isinstance(xml, str))
 
         output_dir = pu.save_output_data(xml, output_dict, seed, base_dir)
+        print(f"Saved output files to: {output_dir}")
 
         if bucket_name:
             print("Uploading...")
@@ -247,7 +255,6 @@ def main(num_decodings_targeted, yaml_path, bucket_name):
 
     elapsed = time.time() - start_time
     print(f"Elapsed time: {elapsed}")
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate random decoding data.")

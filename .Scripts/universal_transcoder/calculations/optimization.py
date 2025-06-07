@@ -160,58 +160,6 @@ def optimize(info: Dict[str, Any]) -> NpArray:
 
     return T_optimized
 
-def optimize_for_usat_designer(info: Dict[str, Any]) -> dict:
-    # Resulting matrices
-        
-    # Additional data for plotting
-    output_layout       = info["output_layout"]
-    cloud_plots         = info["cloud_plots"] if "cloud_plots" in info else None
-    cloud_optimisation  = info["cloud_optimization"] 
-
-    # Set up optimisation
-    current_state, T_flatten_initial = set_up_general(info)
-
-    # Call optimization function
-    T_flatten_optimized = bfgs_optim(
-        current_state,
-        T_flatten_initial,
-        info["show_results"],
-        info["save_results"],
-        info["results_file_name"],
-    )
-
-    # Adapt / reshape result of optimization --> transcoding matrix
-    T_optimized = np.array(T_flatten_optimized).reshape(
-        current_state.transcoding_matrix_shape
-    )
-    
-    D = T_optimized
-    if "Dspk" in info.keys():
-        D = jnp.dot(info["Dspk"], T_optimized)
-
-
-    if "cloud_plots" in info:
-        G       = info["input_matrix_plots"]
-        cloud   = info["cloud_plots"]
-
-    else:
-        G       = info["input_matrix_optimization"]
-        cloud   = info["cloud_optimization"]    
-
-
-    S = jnp.dot(G, D.T)
-    
-    output = {
-        "G": G,
-        "D": D,
-        "T_optimized": T_optimized,
-        "S": S,
-        "output_layout": output_layout,
-        "cloud": cloud, 
-    }
-    
-    return output 
-    
 
 def bfgs_optim(
     current_state: State,
