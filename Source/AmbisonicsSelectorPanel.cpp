@@ -23,14 +23,14 @@ background(juce::ImageCache::getFromMemory(BinaryData::formatSelectBackground3x_
     
     if (formatType == UI::FormatType::input) {
         comboBoxAttachment = std::make_unique<APVTS::ComboBoxAttachment>
-        (s.apvts,
+        (s.formatSettings,
          ProcessingConstants::EncodingOptions::Ambisonics::orderIn,
          orders);
     }
     
     else {
         comboBoxAttachment = std::make_unique<APVTS::ComboBoxAttachment>
-        (s.apvts,
+        (s.formatSettings,
          ProcessingConstants::EncodingOptions::Ambisonics::orderOut,
          orders);
     }

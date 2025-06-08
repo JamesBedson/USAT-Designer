@@ -30,14 +30,14 @@ ambisonicsSelectorPanel(s, formatType)
     
     if (formatType == UI::FormatType::input) {
         comboBoxAttachment = std::make_unique<APVTS::ComboBoxAttachment>
-        (s.apvts,
+        (s.formatSettings,
          ProcessingConstants::EncodingOptions::inputType,
          comboBox);
     }
     
     else {
         comboBoxAttachment = std::make_unique<APVTS::ComboBoxAttachment>
-        (s.apvts,
+        (s.formatSettings,
          ProcessingConstants::EncodingOptions::outputType,
          comboBox);
     }

@@ -6,7 +6,6 @@ import sys, os
 from numpy import array as npArray
 import threading
 from usat_designer.processing.constants import *
-from usat_designer.processing.plot_worker import *
 from universal_transcoder.auxiliars.my_coordinates import MyCoordinates
 from usat_designer.processing.optimize_usat_designer import optimize_for_usat_designer
 from universal_transcoder.auxiliars.get_decoder_matrices import get_ambisonics_decoder_matrix
@@ -26,14 +25,15 @@ from universal_transcoder.auxiliars.get_cloud_points import (
 )
 
 from universal_transcoder.calculations.energy_intensity import (
-    angular_error,
-    width_angle,
-)
-
-from universal_transcoder.calculations.energy_intensity import (
     energy_calculation,
     radial_I_calculation,
     transverse_I_calculation,
+    angular_error,
+    width_angle
+)
+
+from universal_transcoder.calculations.pressure_velocity import (
+    pressure_calculation
 )
 
 from usat_designer.processing.plots_usat_designer import *
@@ -298,14 +298,12 @@ def threaded_plot_worker(optimisation_data, output_container):
 def generate_base64_plots(optimisation_data: dict,
                           return_base_64 = True) -> dict:
     
-    if return_base_64:
-        print("Returning base 64")
-
     S               = optimisation_data[DSN_OUT_SPEAKER_MATRIX]
     cloud           = optimisation_data[DSN_OUT_CLOUD]
     output_layout   = optimisation_data[DSN_OUT_OUTPUT_LAYOUT]
     
     energy          = energy_calculation(S)
+    pressure        = pressure_calculation(S)
     radial_i        = radial_I_calculation(cloud, S, output_layout)
     transverse_i    = transverse_I_calculation(cloud, S, output_layout)
     ae              = angular_error(radial_i, transverse_i)
@@ -318,12 +316,20 @@ def generate_base64_plots(optimisation_data: dict,
     ]
 
     cmap = LinearSegmentedColormap.from_list("custom_coolwarm", colors)
+    
     # Energy
-    print("Creating Energy Plot")
     energy_base64           = plot_scalar_map(values=energy,
                                               cloud_points=cloud,
                                               title="Energy",
                                               colorbar_label="Energy",
+                                              clim_range=(0, 2),
+                                              cmap=cmap,
+                                              return_base64=return_base_64)
+    
+    pressure_base64         = plot_scalar_map(values=pressure,
+                                              cloud_points=cloud,
+                                              title="Pressure",
+                                              colorbar_label="Pressure",
                                               clim_range=(0, 2),
                                               cmap=cmap,
                                               return_base64=return_base_64)
@@ -363,6 +369,7 @@ def generate_base64_plots(optimisation_data: dict,
 
     plot_data = {
         DSN_PLT_ENERGY: energy_base64,
+        DSN_PLT_PRESSURE: pressure_base64,
         DSN_PLT_RADIAL_INTENSITY: radial_i_base64,
         DSN_PLT_TRANSVERSE_INTENSITY: transverse_i_base64,
         DSN_PLT_ANGULAR_ERROR: angular_error_base64,
@@ -377,25 +384,49 @@ def start_decoding(xml_string: str,
                    status_callback=None) -> tuple:
     
     matplotlib.use("Agg")
+
+    total_steps = 4;
+
+    if progress_callback:
+        progress_callback(1.0 / total_steps)
+    
+    if status_callback:
+        status_callback("Processing USAT parameters")
+
     usat_state_parameters_xml   = ET.fromstring(xml_string)
     optimization_dict           = parse_encoding_settings(usat_state_parameters_xml)
-    
+
     optimization_dict[OPT_PD_SHOW_RESULTS]       = False
     optimization_dict[OPT_PD_SAVE_RESULTS]       = False
     optimization_dict[OPT_PD_RESULTS_FILE_NAME]  = None
     
+    if progress_callback:
+        progress_callback(2.0 / total_steps)
+
+    if status_callback:
+        status_callback("Optimizing")
     optimisation_data   = optimize_for_usat_designer(optimization_dict)
     T_optimised         = optimisation_data[DSN_OUT_TRANSCODING_MATRIX].tolist()
 
-    print("Generating plots in subprocess...")
+    if progress_callback:
+        progress_callback(3.0 / total_steps)
 
-    print("Generating plots in thread...")
+    if status_callback:
+        status_callback("Generating Plots")
+
     plot_data_container = {}
     plot_thread = threading.Thread(target=threaded_plot_worker, args=(optimisation_data, plot_data_container))
     plot_thread.start()
     plot_thread.join()
     
+    if progress_callback:
+        progress_callback(4.0 / total_steps)
+
+    if status_callback:
+        status_callback("Finishing")
+
     energy_base_64                  = plot_data_container[DSN_PLT_ENERGY]
+    pressure_base_64                = plot_data_container[DSN_PLT_PRESSURE]
     radial_intensity_base_64        = plot_data_container[DSN_PLT_RADIAL_INTENSITY]
     transverse_intensity_base_64    = plot_data_container[DSN_PLT_TRANSVERSE_INTENSITY]
     angular_error_base_64           = plot_data_container[DSN_PLT_ANGULAR_ERROR]
@@ -404,6 +435,7 @@ def start_decoding(xml_string: str,
     return (
         T_optimised,
         energy_base_64,
+        pressure_base_64,
         radial_intensity_base_64,
         transverse_intensity_base_64,
         angular_error_base_64,

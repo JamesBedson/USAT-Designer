@@ -25,9 +25,9 @@ userParameters(*this, nullptr, juce::Identifier("USAT Designer"),
 #include "ParameterDefinitions.h"
            ),
 stateManager(userParameters),
-decoder(progressValue, statusValue)
+decoder(progressValue, statusValue, processCompleted)
 {
-    //decode();
+    stateManager.signalNewGainMatrix.addListener(this);
 }
 
 USATAudioProcessor::~USATAudioProcessor()
@@ -97,18 +97,31 @@ void USATAudioProcessor::changeProgramName (int index, const juce::String& newNa
 {
 }
 
+void USATAudioProcessor::valueChanged(juce::Value& value)
+{
+    if (value.refersToSameSourceAs(stateManager.signalNewGainMatrix))
+    {
+        if (static_cast<bool>(stateManager.signalCoefficients.getValue()) ==  true)
+        {
+            decoder.fillMatrixFromValueTree(stateManager.gainMatrixTree);
+            stateManager.signalNewGainMatrix = false;
+        }
+    }
+}
+
 //==============================================================================
 void USATAudioProcessor::decode()
 {
     // TODO: Do prior check as to whether the channel dimensions will match and ask user whether they want to continue if they don't
-    std::string globalValueTree = stateManager.createGlobalValueTree().toXmlString().toStdString();
+    std::string globalValueTree = stateManager.createParameterValueTree().toXmlString().toStdString();
     decoder.computeMatrix(globalValueTree, [this]() {
         
         const auto matrix           = decoder.getGainMatrixInstance();
         const auto base64Plots      = decoder.getBase64Plots();
         
-        auto decodingMatrixTree     = stateManager.createGainMatrixTree(matrix);
-        auto base64PlotsTree        = stateManager.createPlotTree(base64Plots);
+        stateManager.gainMatrixTree = stateManager.createGainMatrixTree(matrix);
+        stateManager.plotsTree      = stateManager.createPlotTree(base64Plots);
+        stateManager.updatePlots(stateManager.plotsTree);
     });
 }
 
@@ -151,10 +164,30 @@ bool USATAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) con
 void USATAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
     juce::ScopedNoDenormals noDenormals;
+    
+    /*
+    juce::AudioPlayHead* playHead = getPlayHead();
+    if (playHead != nullptr)
+    {
+        playheadCurrentPosition = playHead->getPosition()->getTimeInSamples();
+        if (isPlaying && playheadCurrentPosition == playheadPreviousPosition) {
+            stoppedPlaying  = true;
+            isPlaying       = false;
+            playheadCurrentPosition     = 0;
+            playheadPreviousPosition    = 0;
+            
+            // UI Callback
+        }
+        
+        else {
+            playheadPreviousPosition = playheadCurrentPosition;
+        }
+    }*/
+    
+    
     if (decoder.decodingMatrixReady()) {
         decoder.process(buffer, getTotalNumInputChannels(), getTotalNumOutputChannels());
     }
-    // TODO: Set channels to zero if not ready.
 }
 
 //==============================================================================
@@ -172,7 +205,7 @@ juce::AudioProcessorEditor* USATAudioProcessor::createEditor()
 void USATAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
     juce::ValueTree mainState {ProcessingConstants::TreeTags::mainStateID};
-    const juce::ValueTree globalTree        = stateManager.createGlobalValueTree();
+    const juce::ValueTree globalTree = stateManager.createParameterValueTree();
     mainState.addChild(globalTree, -1, nullptr);
     
     if (decoder.decodingMatrixReady()) {
@@ -194,30 +227,28 @@ void USATAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
         
         if (mainState.isValid())
         {
+            // USAT_State_Parameters
             auto params = mainState.getChildWithName(ProcessingConstants::TreeTags::stateParametersID);
     
-            auto encodingSettings   = params.getChildWithName(ProcessingConstants::TreeTags::encodingSettingsID);
+            auto settings           = params.getChildWithName(ProcessingConstants::TreeTags::settingsID);
             auto ambisonicsInput    = params.getChildWithName(ProcessingConstants::TreeTags::inputAmbisonicsID);
             auto ambisonicsOutput   = params.getChildWithName(ProcessingConstants::TreeTags::outputAmbisonicsID);
-            auto speakersInput      = params.getChildWithName(ProcessingConstants::TreeTags::inputSpeakerLayoutID);
-            auto speakersOutput     = params.getChildWithName(ProcessingConstants::TreeTags::outputSpeakerLayoutID);
-            auto coefficients       = params.getChildWithName(ProcessingConstants::TreeTags::coefficientsID);
+            stateManager.updateAPVTSParameters(settings, ambisonicsInput, ambisonicsOutput);
             
+            auto speakersInput  = params.getChildWithName(ProcessingConstants::TreeTags::inputSpeakerLayoutID);
             stateManager.inputSpeakerManager.recoverStateFromValueTree(speakersInput);
+            
+            auto speakersOutput = params.getChildWithName(ProcessingConstants::TreeTags::outputSpeakerLayoutID);
             stateManager.outputSpeakerManager.recoverStateFromValueTree(speakersOutput);
             
-            if (!coefficients.isValid())
-                stateManager.initCoefficientsTree();
-            else
-                stateManager.coefficientsTree = coefficients.createCopy();
-                        
-            auto globalGainMatrix = mainState.getChildWithName(ProcessingConstants::TreeTags::gainMatrixID);
+            auto coefficients   = params.getChildWithName(ProcessingConstants::TreeTags::coefficientsID);
+            stateManager.updateCoefficients(coefficients);
             
-            if (globalGainMatrix.isValid()) {
-                auto channelCount   = globalGainMatrix.getChildWithName(ProcessingConstants::TreeTags::channelCountsID);
-                auto matrix         = globalGainMatrix.getChildWithName(ProcessingConstants::TreeTags::coefficientsID);
-                decoder.fillMatrixFromValueTree(matrix);
-            }
+            auto plots = mainState.getChildWithName(ProcessingConstants::TreeTags::allPlotsID);
+            stateManager.updatePlots(plots);
+            
+            auto gainMatrix = mainState.getChildWithName(ProcessingConstants::TreeTags::gainMatrixID);
+            stateManager.updateGainMatrixCoefficients(gainMatrix);
         }
     }
 }

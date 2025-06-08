@@ -375,6 +375,11 @@ public:
         g.fillRoundedRectangle (thumbBounds.reduced (1).toFloat(), 4.0f);
     }
     
+    juce::Font getLabelFont(juce::Label& label) override
+    {
+        return UI::Fonts::getMainFontWithSize(14.f);
+    }
+    
 private:
     
 };

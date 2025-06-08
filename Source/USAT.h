@@ -22,7 +22,7 @@ class USAT {
     
 public:
     
-    USAT(juce::Value& progress, juce::Value& status);
+    USAT(juce::Value& progress, juce::Value& status, juce::Value& processCompleted);
     ~USAT();
     
     enum MatrixDim{
@@ -47,7 +47,7 @@ public:
                  int numOutputChannelsFromHost);
     
     const GainMatrix& getGainMatrixInstance() const;
-    const std::array<std::string, 5> getBase64Plots() const;
+    const std::array<std::string, 6> getBase64Plots() const;
     
     void fillMatrixFromValueTree(const juce::ValueTree&);
     
@@ -67,7 +67,8 @@ private:
     std::unique_ptr<PythonThread> pyThread;
     
     GainMatrix gainsMatrix;
-    std::array<std::string, 5> base64PlotsStr;
+    std::array<std::string, 6> base64PlotsStr;
     juce::Value& progressValue;
     juce::Value& statusValue;
+    juce::Value& processCompleted;
 };

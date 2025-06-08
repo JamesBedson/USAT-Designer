@@ -143,8 +143,8 @@ void SpeakerManager::removeSpeaker(int speakerID)
     }
 }
 
-void SpeakerManager::saveCurrentLayoutToXML(const juce::File &xmlFile) {
-    
+void SpeakerManager::saveCurrentLayoutToXML(const juce::File &xmlFile)
+{
     if (auto xml = speakerTree.createXml()) {
         if (!xmlFile.existsAsFile()) {
             auto fileRes = xmlFile.create();

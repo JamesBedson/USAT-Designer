@@ -14,7 +14,8 @@
 //==============================================================================
 DecoderSettingsPanel::DecoderSettingsPanel(USATAudioProcessor& p)
 : audioProcessor(p),
-sectionBackground(juce::ImageCache::getFromMemory(BinaryData::decode_section3x_png, BinaryData::decode_section3x_pngSize))
+sectionBackground(juce::ImageCache::getFromMemory(BinaryData::decode_section3x_png, BinaryData::decode_section3x_pngSize)),
+stateManager(p.stateManager)
 {
     addAndMakeVisible(decode);
     addAndMakeVisible(save);
@@ -27,6 +28,8 @@ sectionBackground(juce::ImageCache::getFromMemory(BinaryData::decode_section3x_p
     load.setLookAndFeel(&lookAndFeel);
     
     decode.addListener(this);
+    save.addListener(this);
+    load.addListener(this);
     
     decode.setButtonText("decode");
     save.setButtonText("save");
@@ -83,13 +86,80 @@ void DecoderSettingsPanel::resized()
     
     load.setSize(buttonWidth, buttonHeight);
     load.setTopLeftPosition(loadButtonX, loadButtonY);
+}
+
+void DecoderSettingsPanel::saveStateToXML()
+{
+    fileChooser = std::make_unique<juce::FileChooser>("Export decode settings as XML",
+                                                      StateManager::transcodingsDirectory,
+                                                      "*.xml",
+                                                      true,
+                                                      this);
+
+    constexpr auto fileChooserFlags = juce::FileBrowserComponent::saveMode;
+
+    fileChooser->launchAsync(
+        fileChooserFlags,
+        [this](const juce::FileChooser& chooser)
+        {
+            DBG("Exporting decode settings...");
+            const juce::File chosenFile = chooser.getResult();
+
+            if (chosenFile != juce::File{}) {
+                juce::File fileToSave = chosenFile.hasFileExtension(".xml")
+                                            ? chosenFile
+                                            : chosenFile.withFileExtension(".xml");
+
+                DBG("Chosen file: " + fileToSave.getFullPathName());
+                stateManager.saveStateParametersToXML(fileToSave);
+            }
+            
+            else {
+                DBG("Export dialog canceled by user.");
+            }
+        });
+}
+
+void DecoderSettingsPanel::loadStateFromXML()
+{
+    fileChooser = std::make_unique<juce::FileChooser>("Choose a name",
+                                                      StateManager::transcodingsDirectory,
+                                                      "*.xml",
+                                                      true,
+                                                      this
+    );
     
+
+    constexpr auto fileChooserFlags = juce::FileBrowserComponent::openMode | juce::FileBrowserComponent::canSelectFiles;
+
+    fileChooser->launchAsync(
+        fileChooserFlags,
+        [this](const juce::FileChooser& chooser)
+        {
+            DBG("Importing File...");
+            const juce::File chosenFile = chooser.getResult();
+
+            if (chosenFile != juce::File{}) {
+
+                juce::File fileToLoad = chosenFile.hasFileExtension(".xml")
+                    ? chosenFile
+                    : chosenFile.withFileExtension(".xml");
+
+                DBG("Chosen file: " + fileToLoad.getFullPathName());
+                
+                stateManager.loadStateParametersFromXML(fileToLoad);
+            }
+
+            else {
+                DBG("Save dialog canceled by user.");
+            }
+        });
 }
 
 void DecoderSettingsPanel::buttonClicked(juce::Button *button) {
     if (button == &decode) {
         
-        const auto valueTree    = audioProcessor.stateManager.createGlobalValueTree();
+        const auto valueTree    = audioProcessor.stateManager.createParameterValueTree();
         auto file               = audioProcessor.stateManager.presetsDirectory.getChildFile("GlobalValueTree.xml");
         std::unique_ptr<juce::XmlElement> xml(valueTree.createXml());
         
@@ -99,14 +169,14 @@ void DecoderSettingsPanel::buttonClicked(juce::Button *button) {
         
         BlockingPopup* popup = new BlockingPopup(&audioProcessor);
         const float
-        popupWidth  = getWidth() * 0.3f,
-        popupHeight = getHeight() * 0.3f;
+        popupWidth  = getWidth() * 0.6f,
+        popupHeight = getHeight() * 0.6f;
         
         popup->setSize(popupWidth, popupHeight);
         
         juce::DialogWindow::LaunchOptions options;
         options.content.setOwned(popup);
-        options.dialogTitle                     = "Decoding...";
+        options.dialogTitle                     = "USAT Designer";
         options.escapeKeyTriggersCloseButton    = false;
         options.useNativeTitleBar               = false;
         options.resizable                       = false;
@@ -114,5 +184,15 @@ void DecoderSettingsPanel::buttonClicked(juce::Button *button) {
         options.launchAsync();
         
         audioProcessor.decode();
+    }
+    
+    else if (button == &save)
+    {
+        saveStateToXML();
+    }
+    
+    else if (button == &load)
+    {
+        loadStateFromXML();
     }
 }

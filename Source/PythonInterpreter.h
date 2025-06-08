@@ -40,9 +40,7 @@ public:
                                               .getParentDirectory()
                                               .getParentDirectory()
                                               .getChildFile(ProcessingConstants::Paths::resourceDirectory);
-        
-        DBG(resourcesDir.getFullPathName());
-        
+                
         juce::File pythonHomeDir    = resourcesDir.getChildFile(ProcessingConstants::Paths::pythonDir).getChildFile(ProcessingConstants::Paths::versionsDir).getChildFile(ProcessingConstants::Paths::pythonVersion);
         const auto pythonHomeStr    = pythonHomeDir.getFullPathName().toStdString();
         
@@ -261,7 +259,7 @@ public:
     
     bool runScript(const std::string& valueTreeXML,
                    GainMatrix& gainsMatrix,
-                   std::array<std::string, 5>& plotsBase64,
+                   std::array<std::string, 6>& plotsBase64,
                    std::function<void(float)> progressCallback = nullptr,
                    std::function<void(std::string)> statusCallback = nullptr)
     {
@@ -296,7 +294,7 @@ public:
             
             
             // Checking if result is valid and is a python tuple
-            if (!resultTuple || !PyTuple_Check(resultTuple) || PyTuple_Size(resultTuple) != 6) {
+            if (!resultTuple || !PyTuple_Check(resultTuple) || PyTuple_Size(resultTuple) != 7) {
                 PyErr_Print();
                 DBG("Python function call failed!");
                 Py_XDECREF(resultTuple);
@@ -310,7 +308,7 @@ public:
                 DBG("Matrix not loaded");
             
             // Load Base64 plots into array
-            for (int i = 1; i < 6; ++i) {
+            for (int i = 1; i < 7; ++i) {
                 PyObject* strObj = PyTuple_GetItem(resultTuple, i);
                 if (PyUnicode_Check(strObj)) {
                     plotsBase64[i - 1] = PyUnicode_AsUTF8(strObj);
@@ -345,7 +343,7 @@ public:
     
     PythonThread(PythonInterpreter& pyReference,
                  GainMatrix& gainsMatrix,
-                 std::array<std::string, 5>& base64PlotsStr)
+                 std::array<std::string, 6>& base64PlotsStr)
     
     : juce::Thread ("Python Thread"),
     pyRef(pyReference),
@@ -405,7 +403,7 @@ public:
 private:
     PythonInterpreter&          pyRef;
     GainMatrix&                 gainsMatrixRef;
-    std::array<std::string, 5>& base64PlotsStrRef;
+    std::array<std::string, 6>& base64PlotsStrRef;
     std::string                 valueTreeXML;
     
     OnDoneCallback      onDone;

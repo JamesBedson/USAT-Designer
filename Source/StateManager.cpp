@@ -41,9 +41,14 @@ const juce::File StateManager::speakerLayoutDirectory
     presetsDirectory.getChildFile(ProcessingConstants::Paths::speakerLayoutDir)
 };
 
+const juce::File StateManager::transcodingsDirectory
+{
+    presetsDirectory.getChildFile(ProcessingConstants::Paths::transcodingsDir)
+};
+
 
 StateManager::StateManager(APVTS& apvts)
-: apvts(apvts),
+: formatSettings(apvts),
 inputSpeakerManager(ProcessingConstants::TreeTags::inputSpeakerLayoutID),
 outputSpeakerManager(ProcessingConstants::TreeTags::outputSpeakerLayoutID),
 coefficientsTree(ProcessingConstants::TreeTags::coefficientsID)
@@ -54,6 +59,8 @@ coefficientsTree(ProcessingConstants::TreeTags::coefficientsID)
     ensureDirectoryExists(pythonScriptsDirectory);
     
     initCoefficientsTree();
+    initGainMatrixTree();
+    initPlotsTree();
 }
 
 StateManager::~StateManager()
@@ -79,7 +86,16 @@ void StateManager::initCoefficientsTree()
         auto defaultValue = it->second;
         coefficientsTree.setProperty(coefficient, defaultValue, nullptr);
     }
+}
 
+void StateManager::initPlotsTree()
+{
+    plotsTree = juce::ValueTree(ProcessingConstants::TreeTags::allPlotsID);
+}
+
+void StateManager::initGainMatrixTree()
+{
+    gainMatrixTree = juce::ValueTree(ProcessingConstants::TreeTags::gainMatrixID);
 }
 
 const juce::ValueTree StateManager::createInputAmbisonicsTree() const
@@ -87,7 +103,7 @@ const juce::ValueTree StateManager::createInputAmbisonicsTree() const
     
     juce::ValueTree ambisonicsTree {ProcessingConstants::TreeTags::inputAmbisonicsID};
     
-    int ambisonicsOrderIn = apvts.getParameterAsValue(ProcessingConstants::EncodingOptions::Ambisonics::orderIn).getValue();
+    int ambisonicsOrderIn = formatSettings.getParameterAsValue(ProcessingConstants::EncodingOptions::Ambisonics::orderIn).getValue();
     
     ambisonicsTree.setProperty(ProcessingConstants::EncodingOptions::Ambisonics::orderIn, ambisonicsOrderIn + 1, nullptr);
     
@@ -99,28 +115,28 @@ const juce::ValueTree StateManager::createOutputAmbisonicsTree() const
     
     juce::ValueTree ambisonicsTree {ProcessingConstants::TreeTags::outputAmbisonicsID};
     
-    int ambisonicsOrderOut = apvts.getParameterAsValue(ProcessingConstants::EncodingOptions::Ambisonics::orderOut).getValue();
+    int ambisonicsOrderOut = formatSettings.getParameterAsValue(ProcessingConstants::EncodingOptions::Ambisonics::orderOut).getValue();
     
     ambisonicsTree.setProperty(ProcessingConstants::EncodingOptions::Ambisonics::orderOut, ambisonicsOrderOut + 1, nullptr);
     
     return ambisonicsTree;
 }
 
-const juce::ValueTree StateManager::createEncodingSettingsTree() const
+const juce::ValueTree StateManager::createSettingsTree() const
 {
-    juce::ValueTree encodingTree {ProcessingConstants::TreeTags::encodingSettingsID};
+    juce::ValueTree settingsTree {ProcessingConstants::TreeTags::settingsID};
     
-    int inputType          = apvts.getParameterAsValue(ProcessingConstants::EncodingOptions::inputType).getValue();
-    int outputType         = apvts.getParameterAsValue(ProcessingConstants::EncodingOptions::outputType).getValue();
+    int inputType          = formatSettings.getParameterAsValue(ProcessingConstants::EncodingOptions::inputType).getValue();
+    int outputType         = formatSettings.getParameterAsValue(ProcessingConstants::EncodingOptions::outputType).getValue();
 
     // INPUT ================================================================================================
     if (inputType == 0) { // SpeakerLayout
-        encodingTree.setProperty(ProcessingConstants::EncodingOptions::inputType,
+        settingsTree.setProperty(ProcessingConstants::EncodingOptions::inputType,
                                    ProcessingConstants::EncodingOptions::speakerLayout, nullptr);
     }
     
     else if (inputType == 1) { // Ambisonics
-        encodingTree.setProperty(ProcessingConstants::EncodingOptions::inputType,
+        settingsTree.setProperty(ProcessingConstants::EncodingOptions::inputType,
                                  ProcessingConstants::EncodingOptions::ambisonics, nullptr);
     }
     
@@ -129,41 +145,41 @@ const juce::ValueTree StateManager::createEncodingSettingsTree() const
     
     // OUTPUT ===============================================================================================
     if (outputType == 0) {
-        encodingTree.setProperty(ProcessingConstants::EncodingOptions::outputType,
+        settingsTree.setProperty(ProcessingConstants::EncodingOptions::outputType,
                                  ProcessingConstants::EncodingOptions::speakerLayout, nullptr);
     }
     
     else if (outputType == 1) {
-        encodingTree.setProperty(ProcessingConstants::EncodingOptions::outputType,
+        settingsTree.setProperty(ProcessingConstants::EncodingOptions::outputType,
                                  ProcessingConstants::EncodingOptions::ambisonics, nullptr);
     }
     
     else
         jassertfalse;
     
-    return encodingTree;
+    return settingsTree;
 }
 
-const juce::ValueTree StateManager::createGlobalValueTree() const
+const juce::ValueTree StateManager::createParameterValueTree() const
 {
     // Create Separate ValueTree for APVTS parameters
-    auto encodingSettingsTree   = createEncodingSettingsTree();
+    auto encodingSettingsTree   = createSettingsTree();
     auto ambisonicsInTree       = createInputAmbisonicsTree();
     auto ambisonicsOutTree      = createOutputAmbisonicsTree();
     auto speakerLayoutInTree    = inputSpeakerManager.getSpeakerTree().createCopy();
     auto speakerLayoutOutTree   = outputSpeakerManager.getSpeakerTree().createCopy();
     auto coeffTree              = coefficientsTree.createCopy();
     
-    juce::ValueTree globalTree {ProcessingConstants::TreeTags::stateParametersID};
+    juce::ValueTree parameters {ProcessingConstants::TreeTags::stateParametersID};
     
-    globalTree.addChild(encodingSettingsTree, -1, nullptr);
-    globalTree.addChild(ambisonicsInTree, -1, nullptr);
-    globalTree.addChild(ambisonicsOutTree, -1, nullptr);
-    globalTree.addChild(speakerLayoutInTree, -1, nullptr);
-    globalTree.addChild(speakerLayoutOutTree, -1, nullptr);
-    globalTree.addChild(coeffTree, -1, nullptr);
+    parameters.addChild(encodingSettingsTree, -1, nullptr);
+    parameters.addChild(ambisonicsInTree, -1, nullptr);
+    parameters.addChild(ambisonicsOutTree, -1, nullptr);
+    parameters.addChild(speakerLayoutInTree, -1, nullptr);
+    parameters.addChild(speakerLayoutOutTree, -1, nullptr);
+    parameters.addChild(coeffTree, -1, nullptr);
     
-    return globalTree;
+    return parameters;
 }
 
 const juce::ValueTree StateManager::createGainMatrixTree(const GainMatrix& matrix) const
@@ -199,25 +215,29 @@ const juce::ValueTree StateManager::createGainMatrixTree(const GainMatrix& matri
     return globalGainMatrixTree;
 }
 
-const juce::ValueTree StateManager::createPlotTree(const std::array<std::string, 5> base64PlotStrings) const {
+const juce::ValueTree StateManager::createPlotTree(const std::array<std::string, 6> base64PlotStrings) const {
     
     juce::ValueTree energyPlotTree              {ProcessingConstants::TreeTags::energyPlotID};
     energyPlotTree.setProperty(ProcessingConstants::TreeTags::plotData, juce::String(base64PlotStrings[0]), nullptr);
     
+    juce::ValueTree pressurePlotTree            {ProcessingConstants::TreeTags::pressurePlotID};
+    pressurePlotTree.setProperty(ProcessingConstants::TreeTags::plotData, juce::String(base64PlotStrings[1]), nullptr);
+    
     juce::ValueTree radialIntensityPlotTree     {ProcessingConstants::TreeTags::radialIntensityPlotID};
-    radialIntensityPlotTree.setProperty(ProcessingConstants::TreeTags::plotData, juce::String(base64PlotStrings[1]), nullptr);
+    radialIntensityPlotTree.setProperty(ProcessingConstants::TreeTags::plotData, juce::String(base64PlotStrings[2]), nullptr);
     
     juce::ValueTree transverseIntensityPlotTree {ProcessingConstants::TreeTags::transverseIntensityPlotID};
-    transverseIntensityPlotTree.setProperty(ProcessingConstants::TreeTags::plotData, juce::String(base64PlotStrings[2]), nullptr);
+    transverseIntensityPlotTree.setProperty(ProcessingConstants::TreeTags::plotData, juce::String(base64PlotStrings[3]), nullptr);
     
     juce::ValueTree angularErrorPlotTree        {ProcessingConstants::TreeTags::angularErrorPlotID};
-    angularErrorPlotTree.setProperty(ProcessingConstants::TreeTags::plotData, juce::String(base64PlotStrings[3]), nullptr);
+    angularErrorPlotTree.setProperty(ProcessingConstants::TreeTags::plotData, juce::String(base64PlotStrings[4]), nullptr);
     
     juce::ValueTree sourceWidthPlotTree         {ProcessingConstants::TreeTags::sourceWidthPlotID};
-    sourceWidthPlotTree.setProperty(ProcessingConstants::TreeTags::plotData, juce::String(base64PlotStrings[4]), nullptr);
+    sourceWidthPlotTree.setProperty(ProcessingConstants::TreeTags::plotData, juce::String(base64PlotStrings[5]), nullptr);
     
     juce::ValueTree allPlotsTree {ProcessingConstants::TreeTags::allPlotsID};
     allPlotsTree.addChild(energyPlotTree, -1, nullptr);
+    allPlotsTree.addChild(pressurePlotTree, -1, nullptr);
     allPlotsTree.addChild(radialIntensityPlotTree, -1, nullptr);
     allPlotsTree.addChild(transverseIntensityPlotTree, -1, nullptr);
     allPlotsTree.addChild(angularErrorPlotTree, -1, nullptr);
@@ -228,4 +248,178 @@ const juce::ValueTree StateManager::createPlotTree(const std::array<std::string,
 
 void StateManager::debugValueTree(const juce::ValueTree& tree) const {
     DBG(tree.toXmlString());
+}
+
+const juce::ValueTree StateManager::createGlobalStateTree() const
+{
+    juce::ValueTree globalState {ProcessingConstants::TreeTags::stateID};
+    auto parameterValueTree = createParameterValueTree();
+    
+    globalState.addChild(parameterValueTree, -1, nullptr);
+    
+    if (gainMatrixTree.isValid()) {
+        globalState.addChild(gainMatrixTree.createCopy(), -1, nullptr);
+    }
+    
+    if (plotsTree.isValid()) {
+        globalState.addChild(plotsTree.createCopy(), -1, nullptr);
+    }
+    
+    debugValueTree(globalState);
+    return globalState;
+}
+
+void StateManager::saveStateParametersToXML(const juce::File &xmlFile)
+{
+    auto globalState = createGlobalStateTree();
+    
+    if (auto xml = globalState.createXml()) {
+        if (!xmlFile.existsAsFile()) {
+            auto fileRes = xmlFile.create();
+            
+            if (fileRes.failed()) {
+                DBG("Failed to create XML file for USAT transcoding: " + fileRes.getErrorMessage());
+                jassertfalse;
+                return;
+            }
+        }
+        
+        if (!xml->writeTo(xmlFile)) {
+            DBG("Failed to write to XML file!");
+            jassertfalse;
+        }
+        
+        else {
+            DBG("Successfully saved USAT transcoding file!");
+        }
+    }
+    
+    else {
+        DBG("Failed to convert value tree to XML");
+        jassertfalse;
+    }
+}
+
+void StateManager::updateAPVTSParameters(const juce::ValueTree &settings,
+                                         const juce::ValueTree &ambisonicsInput,
+                                         const juce::ValueTree &ambisonicsOutput)
+{
+    // INPUT ================================================================================================
+    auto inputFormat    = settings.getProperty(ProcessingConstants::EncodingOptions::inputType);
+    auto outputFormat   = settings.getProperty(ProcessingConstants::EncodingOptions::outputType);
+    
+    if (inputFormat == ProcessingConstants::EncodingOptions::speakerLayout) {
+        auto apvtsInput = formatSettings.getParameterAsValue(ProcessingConstants::EncodingOptions::inputType);
+        apvtsInput.setValue(0); // Speaker layout
+    }
+    
+    else if (inputFormat == ProcessingConstants::EncodingOptions::ambisonics) {
+        auto apvtsInput = formatSettings.getParameterAsValue(ProcessingConstants::EncodingOptions::inputType);
+        apvtsInput.setValue(1); // Ambisonics
+    }
+    
+    else {
+        jassertfalse;
+    }
+    
+    // OUTPUT ===============================================================================================
+    if (outputFormat == ProcessingConstants::EncodingOptions::speakerLayout) {
+        auto apvtsOutput = formatSettings.getParameterAsValue(ProcessingConstants::EncodingOptions::outputType);
+        apvtsOutput.setValue(0); // Speaker layout
+    }
+    
+    else if (outputFormat == ProcessingConstants::EncodingOptions::ambisonics) {
+        auto apvtsOutput = formatSettings.getParameterAsValue(ProcessingConstants::EncodingOptions::outputType);
+        apvtsOutput.setValue(1); // Ambisonics
+    }
+    
+    else {
+        jassertfalse;
+    }
+    
+    // AMBISONICS ORDERS ====================================================================================
+    auto ambisonicsInputOrder   = ambisonicsInput.getProperty(ProcessingConstants::EncodingOptions::Ambisonics::orderIn);
+    auto inputOrderVal          = formatSettings.getParameterAsValue(ProcessingConstants::EncodingOptions::Ambisonics::orderIn);
+    inputOrderVal.setValue(ambisonicsInputOrder);
+    
+    auto ambisonicsOutputOrder  = ambisonicsOutput.getProperty(ProcessingConstants::EncodingOptions::Ambisonics::orderOut);
+    auto outputOrderVal         = formatSettings.getParameterAsValue(ProcessingConstants::EncodingOptions::Ambisonics::orderOut);
+    outputOrderVal.setValue(outputOrderVal);
+}
+
+void StateManager::updateCoefficients(const juce::ValueTree &coefficients)
+{
+    if (coefficients.isValid()) {
+        coefficientsTree = coefficients.createCopy();
+        
+        juce::MessageManager::callAsync([this]() {
+            signalCoefficients.setValue(true);
+        });
+    }
+}
+
+void StateManager::updatePlots(const juce::ValueTree &plots)
+{
+    if (plots.isValid()) {
+        plotsTree = plots.createCopy();
+        if (plotsTree.getNumChildren() != 0) {
+            
+            juce::MessageManager::callAsync([this]() {
+                signalPlots.setValue(true);
+            });
+        }
+    }
+}
+
+void StateManager::updateGainMatrixCoefficients(const juce::ValueTree& gainMatrix)
+{
+    if (gainMatrix.isValid()) {
+        gainMatrixTree = gainMatrix.createCopy();
+        if (gainMatrixTree.getNumChildren() != 0) {
+            
+            // Update the gain matrix
+            juce::MessageManager::callAsync([this]() {
+                signalNewGainMatrix.setValue(true);
+            });
+        }
+    }
+}
+
+void StateManager::loadStateParametersFromXML(const juce::File& xmlFile)
+{
+    auto xmlString      = xmlFile.loadFileAsString();
+    auto globalState    = juce::ValueTree::fromXml(xmlString);
+
+    if (!globalState.isValid()) {
+        jassertfalse;
+        return;
+    }
+    
+    // USAT_State_Parameters
+    auto params = globalState.getChildWithName(ProcessingConstants::TreeTags::stateParametersID);
+    
+    // Settings =================
+    auto settings           = params.getChildWithName(ProcessingConstants::TreeTags::settingsID);
+    auto ambisonicsInput    = params.getChildWithName(ProcessingConstants::TreeTags::inputAmbisonicsID);
+    auto ambisonicsOutput   = params.getChildWithName(ProcessingConstants::TreeTags::outputAmbisonicsID);
+    updateAPVTSParameters(settings, ambisonicsInput, ambisonicsOutput);
+    
+    // SPEAKERS =================
+    auto speakersInput  = params.getChildWithName(ProcessingConstants::TreeTags::inputSpeakerLayoutID);
+    inputSpeakerManager.recoverStateFromValueTree(speakersInput);
+    
+    auto speakersOutput = params.getChildWithName(ProcessingConstants::TreeTags::outputSpeakerLayoutID);
+    outputSpeakerManager.recoverStateFromValueTree(speakersOutput);
+    
+    // COEFFICIENTS =============
+    auto coefficients = params.getChildWithName(ProcessingConstants::TreeTags::coefficientsID);
+    updateCoefficients(coefficients);
+    
+    // GAIN MATRIX ==============
+    auto gainMatrix = globalState.getChildWithName(ProcessingConstants::TreeTags::gainMatrixID);
+    updateGainMatrixCoefficients(gainMatrix);
+    
+    // PLOTS ====================
+    auto plots = globalState.getChildWithName(ProcessingConstants::TreeTags::allPlotsID);
+    updatePlots(plots);
 }

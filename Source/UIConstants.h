@@ -115,7 +115,7 @@ namespace ColourDefinitions {
 
 const juce::Colour
 outlineColour   = juce::Colours::white,
-accentColour    = juce::Colour(0xFFDA4C0F),
+accentColour    = juce::Colour(0xFFFB8B24),
 backgroundColour = juce::Colour(0xFF0A0D0F),
 darkhighlightColour = juce::Colour(0xFF15191F);
 

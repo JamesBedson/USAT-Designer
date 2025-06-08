@@ -21,6 +21,7 @@ namespace ProcessingConstants {
     const juce::String versionsDir              = "versions";
     const juce::String pythonVersion            = "3.11.1";
     const juce::String speakerLayoutDir         = "Speaker_Layouts";
+    const juce::String transcodingsDir          = "USAT_Transcodings";
     }
 
     namespace SpeakerProperties {
@@ -43,7 +44,7 @@ namespace ProcessingConstants {
     
     const juce::String inputSpeakerLayoutID     = "Input_Loudspeaker_Layout";
     const juce::String outputSpeakerLayoutID    = "Output_Loudspeaker_Layout";
-    const juce::String encodingSettingsID       = "Encoding_Settings";
+    const juce::String settingsID               = "Settings";
     const juce::String inputAmbisonicsID        = "Input_Ambisonics";
     const juce::String outputAmbisonicsID       = "Output_Ambisonics";
     const juce::String coefficientsID           = "Coefficients";
@@ -52,10 +53,12 @@ namespace ProcessingConstants {
     const juce::String channelCountsID          = "Channel_Counts";
     const juce::String matrixCoefficientsID     = "Matrix_Coefficients";
     const juce::String mainStateID              = "Main_State";
+    const juce::String stateID                  = "USAT_State";
     
     // Plot Tree Tags
     const juce::String allPlotsID                   = "Plots";
     const juce::String energyPlotID                 = "EnergyPlot";
+    const juce::String pressurePlotID               = "PressurePlot";
     const juce::String radialIntensityPlotID        = "RadialIntensityPlot";
     const juce::String transverseIntensityPlotID    = "TransverseIntensityPlot";
     const juce::String angularErrorPlotID           = "AngularErrorPlot";
@@ -112,7 +115,7 @@ namespace ProcessingConstants {
         const juce::String orderIn  = "AmbisonicsOrderIn";
         const juce::String orderOut = "AmbisonicsOrderOut";
         const juce::StringArray orderChoices {
-                "1", "2", "3", "4", "5", "6", "7"
+                "1", "2", "3", "4", "5"
             };
         }
     

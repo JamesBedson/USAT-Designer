@@ -16,11 +16,15 @@ VisualisationPanel::VisualisationPanel(StateManager& s)
 : stateManager(s),
 panelBackground(juce::ImageCache::getFromMemory(BinaryData::placeholder3x_png, BinaryData::placeholder3x_pngSize))
 {
-
 }
 
 VisualisationPanel::~VisualisationPanel()
 {
+}
+
+void VisualisationPanel::displayImage(const juce::Image &img)
+{
+    panelBackground = img;
 }
 
 void VisualisationPanel::paint (juce::Graphics& g)
@@ -32,5 +36,6 @@ void VisualisationPanel::resized()
 {
     // This method is where you should set the bounds of any child
     // components that your component contains..
-
 }
+
+

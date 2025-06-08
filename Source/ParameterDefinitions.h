@@ -12,15 +12,7 @@
 
 {
     // =========================================================================
-    // PLUGIN PARAMETERS (Control the actual UI parameters)
-    
-    // bypass
-    std::make_unique<juce::AudioParameterBool> (juce::ParameterID {ProcessingConstants::PluginParameterNames::bypass, 1},
-                                                ProcessingConstants::PluginParameterNames::bypass,
-                                                false),
-    
-    // =========================================================================
-    // EncodingOptions
+    // Settings
     
     // input type
     std::make_unique<juce::AudioParameterChoice>

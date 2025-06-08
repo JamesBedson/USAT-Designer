@@ -57,7 +57,8 @@ private:
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SliderPanel)
 };
 
-class ParameterPanel  : public juce::Component
+class ParameterPanel  : public juce::Component,
+juce::Value::Listener
 {
     
 public:
@@ -76,7 +77,9 @@ public:
     
     void setSimpleParameterPage();
     void setAdvancedParameterPage(const ParameterSelectorChoice& advancedChoice);
-
+    void refreshUIFromState();
+    void valueChanged(juce::Value& value) override;
+    
 private:
     StateManager& stateManager;
     

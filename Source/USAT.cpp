@@ -10,9 +10,10 @@
 
 #include "USAT.h"
 
-USAT::USAT(juce::Value& progress, juce::Value& status)
+USAT::USAT(juce::Value& progress, juce::Value& status, juce::Value& processCompleted)
 : progressValue(progress),
-statusValue(status)
+statusValue(status),
+processCompleted(processCompleted)
 {
     matrixReady = false;
     currentChannelCountIn   = 0;
@@ -43,11 +44,12 @@ void USAT::computeMatrix(const std::string& valueTreeXML,
     pyThread->setOnDoneCallback([this, onComplete]()
     {
         matrixReady = true;
-        DBG("Matrix is done!");
         
         if (onComplete) {
             juce::MessageManager::callAsync(onComplete);
+            processCompleted = true;
         }
+        
     });
     
     pyThread->setOnProgressCallback([this](float progress) {
@@ -146,6 +148,6 @@ const GainMatrix& USAT::getGainMatrixInstance() const {
     return gainsMatrix;
 }
 
-const std::array<std::string, 5> USAT::getBase64Plots() const {
+const std::array<std::string, 6> USAT::getBase64Plots() const {
     return base64PlotsStr;
 }

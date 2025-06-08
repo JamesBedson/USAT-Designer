@@ -16,7 +16,8 @@
 
 //==============================================================================
 
-class USATAudioProcessor  : public juce::AudioProcessor
+class USATAudioProcessor  : public juce::AudioProcessor,
+juce::Value::Listener
 {
 public:
     using APVTS = juce::AudioProcessorValueTreeState;
@@ -62,7 +63,12 @@ public:
     
     juce::Value progressValue;
     juce::Value statusValue;
+    juce::Value processCompleted;
     USAT decoder;
+    
+    bool isPlaying, stoppedPlaying;
+    int64_t playheadCurrentPosition {0}, playheadPreviousPosition {0};
+    void valueChanged(juce::Value& value) override;
     
 private:
     //==============================================================================

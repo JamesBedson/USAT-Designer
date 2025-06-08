@@ -15,7 +15,8 @@
 ParameterPanel::ParameterPanel(StateManager& s)
 : stateManager(s)
 {
-        
+    stateManager.signalCoefficients.addListener(this);
+    
     for (int i = 0; i < sliderPanels.size(); i++)
     {
         auto* sliderPanel = sliderPanels[i];
@@ -89,6 +90,40 @@ void ParameterPanel::setSimpleParameterPage() {
     }
 }
 
+void ParameterPanel::refreshUIFromState()
+{
+    const auto& coefficientsTree = stateManager.coefficientsTree;
+
+    for (int i = 0; i < sliderPanels.size(); ++i)
+    {
+        auto* sliderPanel   = sliderPanels[i];
+        auto* slider        = &(sliderPanel->slider);
+        auto* valueLabel    = &(sliderPanel->valueLabel);
+
+        const juce::String& propertyName    = ProcessingConstants::Coeffs::coefficientTypes[i];
+        float value                         = static_cast<float>(coefficientsTree.getProperty(propertyName, 0.0));
+
+        slider->setValue(value, juce::dontSendNotification);
+
+        juce::String valueText(value, 2);
+        valueLabel->setText(valueText, juce::dontSendNotification);
+    }
+}
+
+
+void ParameterPanel::valueChanged(juce::Value& value)
+{
+    if (value.refersToSameSourceAs(stateManager.signalCoefficients))
+    {
+        if (static_cast<bool>(stateManager.signalCoefficients.getValue()) ==  true)
+        {
+            refreshUIFromState();
+            stateManager.signalCoefficients = false;
+        }
+    }
+}
+
+
 void ParameterPanel::setAdvancedParameterPage(const ParameterSelectorChoice &advancedChoice)
 {
     int mid = static_cast<int>(sliderPanels.size()) / 2;
@@ -104,7 +139,6 @@ void ParameterPanel::setAdvancedParameterPage(const ParameterSelectorChoice &adv
     std::vector<SliderPanel*> sliderPanelsToUse;
     
     if (advancedChoice == ParameterSelectorChoice::Advanced_1) {
-        DBG("Selected first page");
         sliderPanelsToUse = slidersFirstHalf;
         for (int i = 0; i < slidersFirstHalf.size(); i++) {
             auto* activeSliderPanel         = slidersFirstHalf[i];
@@ -116,7 +150,6 @@ void ParameterPanel::setAdvancedParameterPage(const ParameterSelectorChoice &adv
     }
     
     else if (advancedChoice == ParameterSelectorChoice::Advanced_2) {
-        DBG("Selected second page");
         sliderPanelsToUse = slidersSecondHalf;
         for (int i = 0; i < slidersFirstHalf.size(); i++) {
             auto* activeSliderPanel         = slidersSecondHalf[i];

@@ -14,6 +14,7 @@
 #include "PluginProcessor.h"
 #include "MatrixComputeWindow.h"
 #include "CustomLNF.h"
+
 //==============================================================================
 /*
 */
@@ -30,6 +31,9 @@ public:
     void resized() override;
     void buttonClicked(juce::Button* button) override;
     
+    void saveStateToXML();
+    void loadStateFromXML();
+    
 private:
     USATAudioProcessor& audioProcessor;
     juce::TextButton
@@ -38,8 +42,12 @@ private:
         load;
     
     juce::Image sectionBackground;
+    StateManager& stateManager;
     CustomLNF lookAndFeel;
     DecodeButtonLNF decodeLNF;
+    std::unique_ptr<juce::FileChooser> fileChooser;
+    
+    
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DecoderSettingsPanel)
 };

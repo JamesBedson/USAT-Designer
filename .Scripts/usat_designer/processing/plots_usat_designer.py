@@ -38,7 +38,7 @@ def setup_plot_style(
     rcParams['legend.frameon'] = False
 
 #setup_plot_style()
-DEFAULT_FIGSIZE = (10.4, 4.5)
+DEFAULT_FIGSIZE = (8.76, 3.24)
 setup_plot_style()
 
 def create_standard_figure(figsize=None, dpi=100):
@@ -100,12 +100,9 @@ def plot_scalar_map(
     points = cloud_points.sph_deg()
     x, y = points[:, 0], points[:, 1]
 
-    print("Creating standard figure...")
     fig, ax = create_standard_figure()
-    print("Creating base map...")
     _, x_map, y_map = create_base_map(ax, x, y)
 
-    print("Creating scatter")
     sc = ax.scatter(
         x_map,
         y_map,
@@ -115,7 +112,7 @@ def plot_scalar_map(
         alpha=0.8,
         edgecolors="none"
     )
-    print("Assigning colour bar and title")
+    
     plt.colorbar(sc, label=colorbar_label, ax=ax)
     ax.set_title(title)
     sc.set_clim(*clim_range)
