@@ -196,3 +196,5 @@ void DecoderSettingsPanel::buttonClicked(juce::Button *button) {
         loadStateFromXML();
     }
 }
+
+

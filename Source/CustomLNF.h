@@ -258,8 +258,8 @@ public:
         area.reduce (4, 0);
 
         g.setColour (UI::ColourDefinitions::outlineColour);
-        g.setFont (UI::Fonts::getMainFontWithSize(14.f));
-        g.drawFittedText (columnName, area, juce::Justification::centredLeft, 1);
+        g.setFont (UI::Fonts::getMainFontWithSize(17.f));
+        g.drawFittedText (columnName, area, juce::Justification::left, 1);
     }
     
     void drawRotarySlider (juce::Graphics& g,

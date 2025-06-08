@@ -16,32 +16,35 @@ class Speaker {
 
 public:
     
-    enum SphericalCoordinates{
+    enum Attributes{
         Azimuth     = 0,
         Elevation   = 1,
-        Distance    = 2
+        Distance    = 2,
+        LFE = 3
     };
     
     Speaker(const float& azimuth,
             const float& elevation,
-            const float& distance = 1.f);
+            const float& distance = 1.f,
+            const bool& isLFE = false);
     
     ~Speaker();
     
-    void changeSpeakerCoordinates(const SphericalCoordinates& coordinate, const float& value);
-    const float getCoordinate(const SphericalCoordinates& coordinate) const;
-    static bool isValidCoordinate(const SphericalCoordinates& coordinate, const float& value);
+    void changeSpeakerAttribute(const Attributes& attribute, const float& value);
+    const float getAttribute(const Attributes& attribute) const;
+    const bool getBoolAttribute() const;
+    static bool isValidAttribute(const Attributes& attribute, const float& value);
     
-    void printCoordinates() {
-        for (int i = 0; i < 3; i++) {
-            DBG("Coordinate " << i + 1 << ": " << coordinates[i]);
+    void printAttributes() {
+        for (int i = 0; i < 4; i++) {
+            DBG("Attribute " << i + 1 << ": " << attributes[i]);
         }
     }
     
 private:
     
-    std::array<float, 3>
-        coordinates;
+    std::array<float, 4>
+        attributes;
 };
 
 class SpeakerManager {
@@ -60,7 +63,7 @@ public:
     void replaceSpeaker(std::unique_ptr<Speaker> newSpeaker, int speakerID);
     void removeSpeaker(int speakerID);
     void modifySpeakerProperty(int speakerID,
-                               Speaker::SphericalCoordinates,
+                               Speaker::Attributes,
                                const float value);
 
     unsigned const int getSpeakerCount() const;
@@ -76,7 +79,7 @@ public:
         for (auto& pair : speakerMap) {
             DBG("Speaker ID: " << pair.first);
             DBG("====================");
-            pair.second->printCoordinates();
+            pair.second->printAttributes();
             DBG("");
         }
     }

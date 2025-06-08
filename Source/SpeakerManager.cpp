@@ -12,11 +12,13 @@
 // ================================================================================================================
 Speaker::Speaker(const float& azimuth,
                  const float& elevation,
-                 const float& distance)
+                 const float& distance,
+                 const bool& isLFE)
 {
-    coordinates[SphericalCoordinates::Azimuth]      = azimuth;
-    coordinates[SphericalCoordinates::Elevation]    = elevation;
-    coordinates[SphericalCoordinates::Distance]     = distance;
+    attributes[Attributes::Azimuth]     = azimuth;
+    attributes[Attributes::Elevation]   = elevation;
+    attributes[Attributes::Distance]    = distance;
+    attributes[Attributes::LFE]         = float(isLFE);
 }
 
 Speaker::~Speaker()
@@ -24,19 +26,19 @@ Speaker::~Speaker()
 
 }
 
-void Speaker::changeSpeakerCoordinates(const SphericalCoordinates &coordinate, const float &value)
+void Speaker::changeSpeakerAttribute(const Attributes &attribute, const float &value)
 {
-    if (isValidCoordinate(coordinate, value))
-        coordinates[coordinate] = value;
+    if (isValidAttribute(attribute, value))
+        attributes[attribute] = value;
     else
         jassertfalse;
 }
 
 
-bool Speaker::isValidCoordinate(const SphericalCoordinates &coordinate, const float &value)
+bool Speaker::isValidAttribute(const Attributes &attribute, const float &value)
 {
     
-    switch (coordinate) {
+    switch (attribute) {
         case Azimuth:
             return value >= -360 && value <= 360;
             
@@ -45,12 +47,22 @@ bool Speaker::isValidCoordinate(const SphericalCoordinates &coordinate, const fl
             
         case Distance:
             return true;
+            
+        case LFE:
+            if (value == 0.f or value == 1.f)
+                return true;
+            else return false;
     }
 }
 
-const float Speaker::getCoordinate(const SphericalCoordinates& coordinate) const
+const float Speaker::getAttribute(const Attributes& attribute) const
 {
-    return coordinates[coordinate];
+    return attributes[attribute];
+}
+
+const bool Speaker::getBoolAttribute() const
+{
+    return attributes[Attributes::LFE];
 }
 
 // ==================================================================================================================
@@ -85,15 +97,19 @@ void SpeakerManager::addSpeaker(std::unique_ptr<Speaker> newSpeaker, int speaker
                             nullptr);
     
     speakerInfo.setProperty(ProcessingConstants::SpeakerProperties::azimuth,
-                            speakerMap[speakerID]->getCoordinate(Speaker::SphericalCoordinates::Azimuth),
+                            speakerMap[speakerID]->getAttribute(Speaker::Attributes::Azimuth),
                             nullptr);
 
     speakerInfo.setProperty(ProcessingConstants::SpeakerProperties::elevation,
-                            speakerMap[speakerID]->getCoordinate(Speaker::SphericalCoordinates::Elevation),
+                            speakerMap[speakerID]->getAttribute(Speaker::Attributes::Elevation),
                             nullptr);
     
     speakerInfo.setProperty(ProcessingConstants::SpeakerProperties::distance,
-                            speakerMap[speakerID]->getCoordinate(Speaker::SphericalCoordinates::Distance),
+                            speakerMap[speakerID]->getAttribute(Speaker::Attributes::Distance),
+                            nullptr);
+    
+    speakerInfo.setProperty(ProcessingConstants::SpeakerProperties::isLFE,
+                            speakerMap[speakerID]->getAttribute(Speaker::Attributes::LFE),
                             nullptr);
     
     speakerTree.appendChild(speakerInfo, nullptr);
@@ -189,7 +205,7 @@ void SpeakerManager::loadValueTreeFromXML(const juce::File& xmlFile)
 
 void SpeakerManager::recoverStateFromValueTree(const juce::ValueTree& newValueTree) 
 {
-    speakerTree         = newValueTree;
+    speakerTree         = newValueTree.createCopy();
     auto numSpeakers    = speakerTree.getNumChildren();
     speakerMap.clear();
 
@@ -201,8 +217,9 @@ void SpeakerManager::recoverStateFromValueTree(const juce::ValueTree& newValueTr
         auto azimuth    = static_cast<float>(speakerInfo.getProperty(ProcessingConstants::SpeakerProperties::azimuth));
         auto elevation  = static_cast<float>(speakerInfo.getProperty(ProcessingConstants::SpeakerProperties::elevation));
         auto distance   = static_cast<float>(speakerInfo.getProperty(ProcessingConstants::SpeakerProperties::distance));
+        auto lfe        = static_cast<float>(speakerInfo.getProperty(ProcessingConstants::SpeakerProperties::isLFE));
 
-        std::unique_ptr<Speaker> newSpeaker = std::make_unique<Speaker>(azimuth, elevation, distance);
+        std::unique_ptr<Speaker> newSpeaker = std::make_unique<Speaker>(azimuth, elevation, distance, lfe);
         speakerMap[id] = std::move(newSpeaker);
     }
 }
@@ -241,62 +258,73 @@ void SpeakerManager::generateSpeakerTree()
     
     for (auto id : speakerIDs) {
         
-        juce::ValueTree speakerInfo(static_cast<juce::String>(std::to_string(id)));
+        juce::ValueTree speakerInfo("Speaker_" + juce::String(id));
         speakerInfo.setProperty(ProcessingConstants::SpeakerProperties::ID, id, nullptr);
         
         auto currentSpeaker = getSpeaker(id);
         
         speakerInfo.setProperty(
-                            ProcessingConstants::SpeakerProperties::azimuth,
-                            currentSpeaker->getCoordinate(Speaker::SphericalCoordinates::Azimuth), nullptr
-                            );
+                                ProcessingConstants::SpeakerProperties::azimuth,
+                                currentSpeaker->getAttribute(Speaker::Attributes::Azimuth), nullptr
+                                );
         
         speakerInfo.setProperty(
-                            ProcessingConstants::SpeakerProperties::elevation,
-                            currentSpeaker->getCoordinate(Speaker::SphericalCoordinates::Elevation), nullptr
-                            );
+                                ProcessingConstants::SpeakerProperties::elevation,
+                                currentSpeaker->getAttribute(Speaker::Attributes::Elevation), nullptr
+                                );
         
         speakerInfo.setProperty(
-                            ProcessingConstants::SpeakerProperties::distance,
-                            currentSpeaker->getCoordinate(Speaker::SphericalCoordinates::Distance), nullptr
-                            );
+                                ProcessingConstants::SpeakerProperties::distance,
+                                currentSpeaker->getAttribute(Speaker::Attributes::Distance), nullptr
+                                );
+        
+        speakerInfo.setProperty(
+                                ProcessingConstants::SpeakerProperties::isLFE,
+                                currentSpeaker->getAttribute(Speaker::Attributes::LFE), nullptr
+                                );
         
         speakerTree.appendChild(speakerInfo, nullptr);
     }
 }
 
 void SpeakerManager::modifySpeakerProperty(int speakerID,
-                                           Speaker::SphericalCoordinates coordinate,
+                                           Speaker::Attributes attribute,
                                            const float value)
 {
-    jassert(Speaker::isValidCoordinate(coordinate, value));
+    jassert(Speaker::isValidAttribute(attribute, value));
     
     // Modify Speaker in Map
     auto it             = speakerMap.find(speakerID);
     Speaker* speaker    = it->second.get();
     jassert(speaker != nullptr);
-    speaker->changeSpeakerCoordinates(coordinate, value);
+    speaker->changeSpeakerAttribute(attribute, value);
     
     // Modify Speaker in Speaker Tree
     juce::Identifier treeID {"Speaker_" + juce::String(speakerID)};
     auto speakerInfo        = speakerTree.getChildWithName(treeID);
     jassert(speakerInfo.isValid());
     
-    switch (coordinate) {
-        case Speaker::Azimuth:
+    switch (attribute) {
+        case Speaker::Attributes::Azimuth:
             speakerInfo.setProperty(ProcessingConstants::SpeakerProperties::azimuth,
                                     value,
                                     nullptr);
             break;
             
-        case Speaker::Elevation:
+        case Speaker::Attributes::Elevation:
             speakerInfo.setProperty(ProcessingConstants::SpeakerProperties::elevation,
                                     value,
                                     nullptr);
             break;
             
-        case Speaker::Distance:
+        case Speaker::Attributes::Distance:
             speakerInfo.setProperty(ProcessingConstants::SpeakerProperties::distance,
+                                    value,
+                                    nullptr);
+            break;
+        
+        case Speaker::Attributes::LFE:
+            speakerInfo.setProperty(ProcessingConstants::SpeakerProperties::isLFE,
                                     value,
                                     nullptr);
     }

@@ -54,6 +54,9 @@ public:
     void loadStateParametersFromXML(const juce::File& xmlFile);
     void debugValueTree(const juce::ValueTree& tree) const;
     
+    const int getLFEChannelIndexInput() const;
+    const int getLFEChannelIndexOutput() const;
+    
     APVTS&          formatSettings;
     SpeakerManager  inputSpeakerManager;
     SpeakerManager  outputSpeakerManager;
@@ -65,6 +68,7 @@ public:
     juce::Value signalPlots;
     juce::Value signalCoefficients;
     
+    int LFEChannelIndexInput, LFEChanenlIndexOutput;
     
 private:
     

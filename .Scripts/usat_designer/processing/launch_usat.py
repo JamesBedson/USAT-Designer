@@ -10,6 +10,7 @@ from universal_transcoder.auxiliars.my_coordinates import MyCoordinates
 from usat_designer.processing.optimize_usat_designer import optimize_for_usat_designer
 from universal_transcoder.auxiliars.get_decoder_matrices import get_ambisonics_decoder_matrix
 import matplotlib
+import xml.dom.minidom as minidom
 
 
 from universal_transcoder.auxiliars.get_input_channels import (
@@ -47,12 +48,16 @@ def create_speaker_layout(speaker_layout_xml: ET.Element) -> MyCoordinates:
         azimuth     = speaker.get(DSN_SPK_AZIMUTH)
         elevation   = speaker.get(DSN_SPK_ELEVATION)
         distance    = speaker.get(DSN_SPK_DISTANCE)
-        
+        isLFE       = speaker.get(DSN_SPK_LFE)
+
         assert(azimuth is not None)
         assert(elevation is not None)
         assert(distance is not None)
-
-        speakers.append((float(azimuth), float(elevation), float(distance)))
+        assert(isLFE is not None)
+        
+        if bool(float(isLFE)) == False:
+            speakers.append((float(azimuth), float(elevation), float(distance)))
+    
     return MyCoordinates.mult_points(npArray(speakers))
 
 
@@ -385,8 +390,8 @@ def start_decoding(xml_string: str,
     
     matplotlib.use("Agg")
 
-    total_steps = 4;
-
+    total_steps = 4
+    
     if progress_callback:
         progress_callback(1.0 / total_steps)
     

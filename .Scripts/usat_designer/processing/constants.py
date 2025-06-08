@@ -12,6 +12,7 @@ DSN_SPK_CHANNEL_ID              = "ID"
 DSN_SPK_AZIMUTH                 = "Azimuth"
 DSN_SPK_ELEVATION               = "Elevation"
 DSN_SPK_DISTANCE                = "Distance"
+DSN_SPK_LFE                     = "IsLFE"
 
 # AMBISONICS
 DSN_XML_AMBISONICS              = "Ambisonics"

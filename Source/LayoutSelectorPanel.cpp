@@ -163,7 +163,7 @@ void LayoutSelectorPanel::buttonClicked(juce::Button* button)
             else
                 jassertfalse;
         
-            layoutWindow->centreWithSize(400, 300);
+            layoutWindow->centreWithSize(600, 500);
             layoutWindow->setVisible(true);
         }
     }

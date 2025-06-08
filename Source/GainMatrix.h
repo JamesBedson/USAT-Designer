@@ -3,7 +3,7 @@
 
 using Matrix = std::vector<std::vector<float>>;
 
-class GainMatrix {
+class GainMatrix{
 
 public:
     GainMatrix() = default;

@@ -26,7 +26,9 @@ stateManager(s)
     else
         jassertfalse;
     
+    initialiseLFEState();
     initTable();
+    
     
     addAndMakeVisible(addSpeaker);
     addSpeaker.addListener(this);
@@ -97,6 +99,10 @@ void SpeakerLayoutPanel::initTable()
                                 1
                                 );
     
+    table.getHeader().addColumn(ProcessingConstants::SpeakerProperties::tableLFE,
+                                5,
+                                1);
+    
     table.setMultipleSelectionEnabled(false);
     table.setHeaderHeight(30);
     table.updateContent();
@@ -119,6 +125,29 @@ void SpeakerLayoutPanel::paint (juce::Graphics& g)
     g.fillRect(buttonBounds);
 }
 
+void SpeakerLayoutPanel::onLFEToggled(int row, bool isOn)
+{
+    if (isOn) {
+        activeLFERow = row;
+        
+        for (int i = 0; i < getNumRows(); ++i) {
+            bool lfeValue = (i == row);
+            speakerManager->modifySpeakerProperty(i + 1, Speaker::Attributes::LFE, lfeValue ? 1.f : 0.f);
+        }
+    }
+    
+    else {
+        activeLFERow = -1;
+        
+        for (int i = 0; i < getNumRows(); ++i) {
+            speakerManager->modifySpeakerProperty(i + 1, Speaker::Attributes::LFE, 0.f);
+        }
+    }
+    
+    table.updateContent();
+}
+
+
 void SpeakerLayoutPanel::resized()
 {
     auto bounds = getLocalBounds();
@@ -131,9 +160,9 @@ void SpeakerLayoutPanel::resized()
     table.setBounds(xTable, yTable, tableWidth, tableHeight);
     
     const float
-    columnWidth = table.getWidth() / 4.f;
+    columnWidth = table.getWidth() / 5.f;
     
-    for (int i = 1; i <= 4; i++)
+    for (int i = 1; i <= 5; i++)
         table.getHeader().setColumnWidth(i, columnWidth);
     
     juce::Rectangle<float> buttonBounds;
@@ -174,9 +203,9 @@ void SpeakerLayoutPanel::paintCell(juce::Graphics& g,
     }
     else
     {
-        auto coordinate = getSpeakerAttributeFromColumn(columnId);
+        auto attribute = getSpeakerAttributeFromColumn(columnId);
         g.setFont(UI::Fonts::getMainFontWithSize(12.f));
-        text = getText(columnId, rowNumber, coordinate);
+        text = getText(columnId, rowNumber, attribute);
     }
 
     // Draw cell text
@@ -187,7 +216,7 @@ void SpeakerLayoutPanel::paintCell(juce::Graphics& g,
                0,
                width - 4,
                height,
-               juce::Justification::centred);
+               juce::Justification::left);
 }
 
 void SpeakerLayoutPanel::paintRowBackground(juce::Graphics& g,
@@ -221,15 +250,18 @@ void SpeakerLayoutPanel::paintRowBackground(juce::Graphics& g,
 void SpeakerLayoutPanel::buttonClicked(juce::Button* button)
 {
     if (button == &addSpeaker) {
-        int
+        float
         defaultAzimuth      = 0.f,
         defaultElevation    = 0.f,
         defaultDistance     = 1.f;
         
+        bool defaultLFE = false;
+        
         auto numSpeakers = getNumRows();
         auto newSpeaker = std::make_unique<Speaker>(defaultAzimuth,
                                                     defaultElevation,
-                                                    defaultDistance
+                                                    defaultDistance,
+                                                    defaultLFE
                                                     );
         
         speakerManager->addSpeaker(std::move(newSpeaker),
@@ -254,21 +286,21 @@ void SpeakerLayoutPanel::buttonClicked(juce::Button* button)
 
 const juce::String SpeakerLayoutPanel::getText(const int columnNumber,
                                                const int rowNumber,
-                                               const Speaker::SphericalCoordinates coordinate)
+                                               const Speaker::Attributes coordinate)
 {
     auto* currentSpeaker = speakerManager->getSpeaker(rowNumber + 1);
-    if (coordinate == Speaker::SphericalCoordinates::Azimuth) {
-        auto azimuth = currentSpeaker->getCoordinate(Speaker::SphericalCoordinates::Azimuth);
+    if (coordinate == Speaker::Attributes::Azimuth) {
+        auto azimuth = currentSpeaker->getAttribute(Speaker::Attributes::Azimuth);
         return juce::String {azimuth};
     }
     
-    else if (coordinate == Speaker::SphericalCoordinates::Elevation) {
-        auto elevation = currentSpeaker->getCoordinate(Speaker::SphericalCoordinates::Elevation);
+    else if (coordinate == Speaker::Attributes::Elevation) {
+        auto elevation = currentSpeaker->getAttribute(Speaker::Attributes::Elevation);
         return juce::String {elevation};
     }
     
-    else if (coordinate == Speaker::SphericalCoordinates::Distance) {
-        auto distance = currentSpeaker->getCoordinate(Speaker::SphericalCoordinates::Distance);
+    else if (coordinate == Speaker::Attributes::Distance) {
+        auto distance = currentSpeaker->getAttribute(Speaker::Attributes::Distance);
         return juce::String {distance};
     }
     
@@ -280,14 +312,13 @@ const juce::String SpeakerLayoutPanel::getText(const int columnNumber,
 
 void SpeakerLayoutPanel::updateSpeakerState(int row, int columnID, float value)
 {
-    auto coordinateType = getSpeakerAttributeFromColumn(columnID);
-    speakerManager->modifySpeakerProperty(row + 1, coordinateType, value);
-    
+    auto attributeType = getSpeakerAttributeFromColumn(columnID);
+    speakerManager->modifySpeakerProperty(row + 1, attributeType, value);
 }
 
-const Speaker::SphericalCoordinates SpeakerLayoutPanel::getSpeakerAttributeFromColumn(int columnID)
+const Speaker::Attributes SpeakerLayoutPanel::getSpeakerAttributeFromColumn(int columnID)
 {
-    return static_cast<Speaker::SphericalCoordinates>(columnID - 2);
+    return static_cast<Speaker::Attributes>(columnID - 2);
 }
 
 void SpeakerLayoutPanel::cellClicked(int rowNumber, int columnId, const juce::MouseEvent&)
@@ -316,6 +347,22 @@ juce::Component* SpeakerLayoutPanel::refreshComponentForCell(int rowNumber,
         return nullptr;
     }
     
+    else if (columnId == 5) // LFE
+    {
+        EditableToggleComponent* toggleButton = static_cast<EditableToggleComponent*>(existingComponentToUpdate);
+        
+        if (toggleButton == nullptr) {
+            toggleButton = new EditableToggleComponent(*this);
+        }
+        
+        toggleButton->setRow(rowNumber);
+        auto currentSpeaker = speakerManager->getSpeaker(rowNumber + 1);
+
+        toggleButton->setToggleState(currentSpeaker->getBoolAttribute(), juce::dontSendNotification);
+        
+        return toggleButton;
+    }
+    
     else {
         
         EditableTextComponent* textComponent = static_cast<EditableTextComponent*>(existingComponentToUpdate);
@@ -327,9 +374,23 @@ juce::Component* SpeakerLayoutPanel::refreshComponentForCell(int rowNumber,
         
         auto coordinateType = getSpeakerAttributeFromColumn(columnId);
         auto currentSpeaker = speakerManager->getSpeaker(rowNumber + 1);
-        auto initialText    = juce::String {currentSpeaker->getCoordinate(coordinateType)};
+        auto initialText    = juce::String {currentSpeaker->getAttribute(coordinateType)};
         
         textComponent->setText(initialText, juce::dontSendNotification);
         return textComponent;
     }
+}
+
+void SpeakerLayoutPanel::initialiseLFEState() {
+    
+    activeLFERow = -1;
+
+        for (int i = 0; i < getNumRows(); ++i)
+        {
+            if (speakerManager->getSpeaker(i + 1)->getBoolAttribute())
+            {
+                activeLFERow = i;
+                break;
+            }
+        }
 }

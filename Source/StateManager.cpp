@@ -61,6 +61,8 @@ coefficientsTree(ProcessingConstants::TreeTags::coefficientsID)
     initCoefficientsTree();
     initGainMatrixTree();
     initPlotsTree();
+    
+    signalNewGainMatrix.setValue(false);
 }
 
 StateManager::~StateManager()
@@ -188,15 +190,26 @@ const juce::ValueTree StateManager::createGainMatrixTree(const GainMatrix& matri
     juce::ValueTree
         globalGainMatrixTree    {ProcessingConstants::TreeTags::gainMatrixID},
         channelCountTree        {ProcessingConstants::TreeTags::channelCountsID},
+        LFEIndexTree            {ProcessingConstants::TreeTags::LFEChannelIndices},
         matrixTree              {ProcessingConstants::TreeTags::matrixCoefficientsID};
     
     auto inputChannels  = matrix.getNumInputChannels();
     auto outputChannels = matrix.getNumOutputChannels();
-    jassert(inputChannels > 0 && outputChannels > 0);
+    //jassert(inputChannels > 0 && outputChannels > 0);
     
+    // Channel Counts
     channelCountTree.setProperty(ProcessingConstants::GainMatrixTree::ChannelCount::inputChannelCount, inputChannels, nullptr);
     channelCountTree.setProperty(ProcessingConstants::GainMatrixTree::ChannelCount::outputChannelCount, outputChannels, nullptr);
+    
+    // LFE Indices
+    int indexInput  = getLFEChannelIndexInput();
+    int indexOutput = getLFEChannelIndexOutput();
+    
+    LFEIndexTree.setProperty(ProcessingConstants::GainMatrixTree::LFEIndices::inputLFEChannelIndex, indexInput, nullptr);
+    LFEIndexTree.setProperty(ProcessingConstants::GainMatrixTree::LFEIndices::outputLFEChannelIndex, indexOutput, nullptr);
+    
     globalGainMatrixTree.addChild(channelCountTree, -1, nullptr);
+    globalGainMatrixTree.addChild(LFEIndexTree, -1, nullptr);
     
     for (int chIn = 0; chIn < inputChannels; chIn++) {
         for (int chOut = 0; chOut < outputChannels; chOut++) {
@@ -371,6 +384,49 @@ void StateManager::updatePlots(const juce::ValueTree &plots)
     }
 }
 
+const int StateManager::getLFEChannelIndexInput() const
+{
+    auto settingsTree = createSettingsTree();
+    auto inputFormat = settingsTree.getProperty(ProcessingConstants::EncodingOptions::inputType);
+    
+    if (inputFormat == ProcessingConstants::EncodingOptions::ambisonics)
+        return -1;
+    
+    else {
+        auto inputSpeakerTree = inputSpeakerManager.getSpeakerTree();
+        
+        for (int i = 0; i < inputSpeakerTree.getNumChildren(); i++) {
+            auto speaker    = inputSpeakerTree.getChild(i);
+            float isLFE     = speaker.getProperty(ProcessingConstants::SpeakerProperties::isLFE);
+            
+            if (static_cast<bool>(isLFE))
+                return i;
+        }
+        return -1;
+    }
+}
+
+const int StateManager::getLFEChannelIndexOutput() const
+{
+    auto settingsTree = createSettingsTree();
+    auto outputFormat = settingsTree.getProperty(ProcessingConstants::EncodingOptions::outputType);
+    
+    if (outputFormat == ProcessingConstants::EncodingOptions::ambisonics)
+        return -1;
+    
+    else {
+        auto outputSpeakerTree = outputSpeakerManager.getSpeakerTree();
+        
+        for (int i = 0; i < outputSpeakerTree.getNumChildren(); i++) {
+            auto speaker    = outputSpeakerTree.getChild(i);
+            float isLFE     = speaker.getProperty(ProcessingConstants::SpeakerProperties::isLFE);
+            
+            if (static_cast<bool>(isLFE))
+                return i;
+        }
+        return -1;
+    }
+}
 void StateManager::updateGainMatrixCoefficients(const juce::ValueTree& gainMatrix)
 {
     if (gainMatrix.isValid()) {

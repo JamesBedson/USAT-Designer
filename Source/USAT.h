@@ -18,11 +18,14 @@
 
 using APVTS     = juce::AudioProcessorValueTreeState;
 
-class USAT {
+class USAT : public juce::Value::Listener {
     
 public:
     
-    USAT(juce::Value& progress, juce::Value& status, juce::Value& processCompleted);
+    USAT(juce::Value& progress,
+         juce::Value& status,
+         juce::Value& processCompleted,
+         StateManager& stateManager);
     ~USAT();
     
     enum MatrixDim{
@@ -35,12 +38,13 @@ public:
                        std::function<void()> onComplete);
     
     void signalStopPythread();
-    const bool decodingMatrixReady();
     
     void prepare(double sampleRate,
                  int samplesPerBlock,
                  int numInputChannelsInHost,
-                 int numOutputChannelsInHost);
+                 int numOutputChannelsInHost,
+                 int LFEChannelIndexInput,
+                 int LFEChannelIndexOutput);
     
     void process(juce::AudioBuffer<float>& buffer,
                  int numInputChannelsFromHost,
@@ -50,20 +54,20 @@ public:
     const std::array<std::string, 6> getBase64Plots() const;
     
     void fillMatrixFromValueTree(const juce::ValueTree&);
+    void valueChanged(juce::Value &value) override;
+    void produceSilence(juce::AudioBuffer<float>& buffer);
+    bool hostAndUSATInputDimensionsMatch(const int numInputChannelsHost);
+    bool hostAndUSATOutputDimensionsMatch(const int numOutputChannelsHost);
     
 private:    
-    const int getMatrixChannelCountIn();
-    const int getMatrixChannelCountOut();
     
+    juce::AudioBuffer<float> tempInputBuffer;
     juce::AudioBuffer<float> tempOutputBuffer;
-    
-    int currentChannelCountIn;
-    int currentChannelCountOut;
+    juce::AudioBuffer<float> multiplicationInputBuffer;
     
     ProcessingConstants::PythonParameterNameMap pythonParameterMap;
     
-    bool matrixReady;
-    PythonInterpreter interpreter;
+    //PythonInterpreter interpreter;
     std::unique_ptr<PythonThread> pyThread;
     
     GainMatrix gainsMatrix;
@@ -71,4 +75,8 @@ private:
     juce::Value& progressValue;
     juce::Value& statusValue;
     juce::Value& processCompleted;
+    juce::Value updateGainMatrixXML;
+    StateManager& stateManager;
+    
+    int LFEIndexIn, LFEIndexOut;
 };

@@ -25,9 +25,8 @@ userParameters(*this, nullptr, juce::Identifier("USAT Designer"),
 #include "ParameterDefinitions.h"
            ),
 stateManager(userParameters),
-decoder(progressValue, statusValue, processCompleted)
+decoder(progressValue, statusValue, processCompleted, stateManager)
 {
-    stateManager.signalNewGainMatrix.addListener(this);
 }
 
 USATAudioProcessor::~USATAudioProcessor()
@@ -97,45 +96,41 @@ void USATAudioProcessor::changeProgramName (int index, const juce::String& newNa
 {
 }
 
-void USATAudioProcessor::valueChanged(juce::Value& value)
-{
-    if (value.refersToSameSourceAs(stateManager.signalNewGainMatrix))
-    {
-        if (static_cast<bool>(stateManager.signalCoefficients.getValue()) ==  true)
-        {
-            decoder.fillMatrixFromValueTree(stateManager.gainMatrixTree);
-            stateManager.signalNewGainMatrix = false;
-        }
-    }
-}
 
 //==============================================================================
 void USATAudioProcessor::decode()
 {
     // TODO: Do prior check as to whether the channel dimensions will match and ask user whether they want to continue if they don't
-    std::string globalValueTree = stateManager.createParameterValueTree().toXmlString().toStdString();
-    decoder.computeMatrix(globalValueTree, [this]() {
+    std::string usatParameters = stateManager.createParameterValueTree().toXmlString().toStdString();
+    decoder.computeMatrix(usatParameters, [this]() {
         
         const auto matrix           = decoder.getGainMatrixInstance();
         const auto base64Plots      = decoder.getBase64Plots();
         
-        stateManager.gainMatrixTree = stateManager.createGainMatrixTree(matrix);
-        stateManager.plotsTree      = stateManager.createPlotTree(base64Plots);
+        auto gainMatrixTree         = stateManager.createGainMatrixTree(matrix);
+        stateManager.gainMatrixTree = gainMatrixTree.createCopy();
+        
+        auto plotsTree              = stateManager.createPlotTree(base64Plots);
+        stateManager.plotsTree      = plotsTree.createCopy();
         stateManager.updatePlots(stateManager.plotsTree);
+        stateManager.debugValueTree(stateManager.gainMatrixTree);
     });
-}
-
-void USATAudioProcessor::cancelDecoding() {
-    DBG("Stopping Thread");
-    decoder.signalStopPythread();
 }
 
 void USATAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
+    auto gainMatrixTree     = stateManager.createGainMatrixTree(decoder.getGainMatrixInstance());
+    auto LFEChannelIndices  = gainMatrixTree.getChildWithName(ProcessingConstants::TreeTags::LFEChannelIndices);
+    
+    int LFEInputChannelIdx  = LFEChannelIndices.getProperty(ProcessingConstants::GainMatrixTree::LFEIndices::inputLFEChannelIndex);
+    int LFEOutputChannelIdx = LFEChannelIndices.getProperty(ProcessingConstants::GainMatrixTree::LFEIndices::outputLFEChannelIndex);
+    
     decoder.prepare(sampleRate,
                     samplesPerBlock,
                     getTotalNumInputChannels(),
-                    getTotalNumOutputChannels());
+                    getTotalNumOutputChannels(),
+                    LFEInputChannelIdx,
+                    LFEOutputChannelIdx);
 }
 
 void USATAudioProcessor::releaseResources()
@@ -164,30 +159,7 @@ bool USATAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) con
 void USATAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
     juce::ScopedNoDenormals noDenormals;
-    
-    /*
-    juce::AudioPlayHead* playHead = getPlayHead();
-    if (playHead != nullptr)
-    {
-        playheadCurrentPosition = playHead->getPosition()->getTimeInSamples();
-        if (isPlaying && playheadCurrentPosition == playheadPreviousPosition) {
-            stoppedPlaying  = true;
-            isPlaying       = false;
-            playheadCurrentPosition     = 0;
-            playheadPreviousPosition    = 0;
-            
-            // UI Callback
-        }
-        
-        else {
-            playheadPreviousPosition = playheadCurrentPosition;
-        }
-    }*/
-    
-    
-    if (decoder.decodingMatrixReady()) {
-        decoder.process(buffer, getTotalNumInputChannels(), getTotalNumOutputChannels());
-    }
+    decoder.process(buffer, getTotalNumInputChannels(), getTotalNumOutputChannels());
 }
 
 //==============================================================================
@@ -205,13 +177,17 @@ juce::AudioProcessorEditor* USATAudioProcessor::createEditor()
 void USATAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
     juce::ValueTree mainState {ProcessingConstants::TreeTags::mainStateID};
-    const juce::ValueTree globalTree = stateManager.createParameterValueTree();
-    mainState.addChild(globalTree, -1, nullptr);
+    const juce::ValueTree usatParams = stateManager.createParameterValueTree();
+    mainState.addChild(usatParams, -1, nullptr);
     
-    if (decoder.decodingMatrixReady()) {
-        const juce::ValueTree gainMatrixTree = stateManager.createGainMatrixTree(decoder.getGainMatrixInstance());
+    const juce::ValueTree gainMatrixTree = stateManager.createGainMatrixTree(decoder.getGainMatrixInstance());
+    if (gainMatrixTree.getNumChildren() > 0) {
         mainState.addChild(gainMatrixTree, -1, nullptr);
+        matrixIsReady.setValue(true);
     }
+    
+    const juce::ValueTree plotTree = stateManager.plotsTree.createCopy();
+    mainState.addChild(plotTree, -1, nullptr);
     
     std::unique_ptr<juce::XmlElement> xml (mainState.createXml());
     if (xml)

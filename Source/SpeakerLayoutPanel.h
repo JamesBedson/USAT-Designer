@@ -29,7 +29,8 @@ public:
     void resized() override;
     int getNumRows() override;
     
-    static const Speaker::SphericalCoordinates getSpeakerAttributeFromColumn(int columnID);
+    static const Speaker::Attributes getSpeakerAttributeFromColumn(int columnID);
+    void onLFEToggled(int row, bool isOn);
     
     void paintRowBackground (juce::Graphics&,
                              int rowNumber,
@@ -67,11 +68,14 @@ private:
     void initTable();
     const juce::String getText(const int columnNumber,
                                const int rowNumber,
-                               const Speaker::SphericalCoordinates);
+                               const Speaker::Attributes);
     
     const UI::FormatType formatType;
     
     int speakerIDSelected {0};
+    int activeLFERow;
+
+    void initialiseLFEState();
     
     juce::TextButton
     addSpeaker,
@@ -119,7 +123,7 @@ public:
             g.setFont(UI::Fonts::getMainFontWithSize(12.f));
             g.drawFittedText(getText(),
                              getLocalBounds(),
-                             juce::Justification::centred,
+                             juce::Justification::left,
                              1);
         }
     }
@@ -128,4 +132,25 @@ private:
     SpeakerLayoutPanel& owner;
     int row, columnID;
     juce::Colour textColour;
+};
+
+class EditableToggleComponent : public juce::ToggleButton
+{
+public:
+    EditableToggleComponent(SpeakerLayoutPanel& layoutPanel)
+        : owner(layoutPanel)
+    {
+        setClickingTogglesState(true);
+        onClick = [this]() {
+            owner.onLFEToggled(row, getToggleState());
+            // owner.updateSpeakerState(row, 5, float(getToggleState()));
+        };
+    }
+
+    void setRow(int r) { row = r; }
+
+
+private:
+    SpeakerLayoutPanel& owner;
+    int row;
 };

@@ -26,10 +26,11 @@ namespace ProcessingConstants {
 
     namespace SpeakerProperties {
     
-    const juce::String  ID                      = "ID";
-    const juce::String  azimuth                 = "Azimuth";
-    const juce::String  elevation               = "Elevation";
-    const juce::String  distance                = "Distance";
+    const juce::String ID                       = "ID";
+    const juce::String azimuth                  = "Azimuth";
+    const juce::String elevation                = "Elevation";
+    const juce::String distance                 = "Distance";
+    const juce::String isLFE                    = "IsLFE";
     const juce::String inputSpeakerLayoutName   = "Input Layout";
     const juce::String outputSpeakerLayoutName  = "Output Layout";
     
@@ -38,6 +39,7 @@ namespace ProcessingConstants {
     const juce::String tableAzimuth     = "azimuth";
     const juce::String tableElevation   = "elevation";
     const juce::String tableDistance    = "distance";
+    const juce::String tableLFE         = "LFE";
     }
 
     namespace TreeTags {
@@ -51,6 +53,7 @@ namespace ProcessingConstants {
     const juce::String stateParametersID        = "USAT_State_Parameters";
     const juce::String gainMatrixID             = "Gain_Matrix";
     const juce::String channelCountsID          = "Channel_Counts";
+    const juce::String LFEChannelIndices        = "LFE_Channel_Indices";
     const juce::String matrixCoefficientsID     = "Matrix_Coefficients";
     const juce::String mainStateID              = "Main_State";
     const juce::String stateID                  = "USAT_State";
@@ -78,16 +81,23 @@ namespace ProcessingConstants {
     
         namespace MatrixCoefficient {
         
-        const juce::String baseCoefficientID    = "P";
+        const juce::String baseCoefficientID    = "T";
         inline const juce::String getCoefficientID(const int chIn, const int chOut)
         {
-            juce::String baseName = "P";
+            juce::String baseName = "T";
             baseName << chIn;
             baseName << chOut;
             return baseName;
         }
+        }
+    
+        namespace LFEIndices {
+        
+        const juce::String inputLFEChannelIndex     = "Input_LFE_Channel_Index";
+        const juce::String outputLFEChannelIndex    = "Output_LFE_Channel_index";
         
         }
+        
     
     }
 
