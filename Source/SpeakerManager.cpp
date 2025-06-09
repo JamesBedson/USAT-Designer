@@ -70,7 +70,6 @@ const bool Speaker::getBoolAttribute() const
 SpeakerManager::SpeakerManager(const juce::String treeType)
 : speakerTree(treeType)
 {
-
 }
 
 SpeakerManager::~SpeakerManager()
@@ -81,7 +80,7 @@ SpeakerManager::~SpeakerManager()
 void SpeakerManager::addSpeaker(std::unique_ptr<Speaker> newSpeaker, int speakerID)
 {
     
-    // Internal List
+    // Internal Map
     if (speakerMap.find(speakerID) != speakerMap.end())
         jassertfalse;
     
@@ -89,8 +88,6 @@ void SpeakerManager::addSpeaker(std::unique_ptr<Speaker> newSpeaker, int speaker
     
     // Speaker Tree
     juce::ValueTree speakerInfo {"Speaker_" + juce::String(speakerID)};
-    
-    jassert(speakerInfo.isValid());
     
     speakerInfo.setProperty(ProcessingConstants::SpeakerProperties::ID,
                             speakerID,
@@ -103,15 +100,15 @@ void SpeakerManager::addSpeaker(std::unique_ptr<Speaker> newSpeaker, int speaker
     speakerInfo.setProperty(ProcessingConstants::SpeakerProperties::elevation,
                             speakerMap[speakerID]->getAttribute(Speaker::Attributes::Elevation),
                             nullptr);
-    
+
     speakerInfo.setProperty(ProcessingConstants::SpeakerProperties::distance,
                             speakerMap[speakerID]->getAttribute(Speaker::Attributes::Distance),
                             nullptr);
-    
+
     speakerInfo.setProperty(ProcessingConstants::SpeakerProperties::isLFE,
                             speakerMap[speakerID]->getAttribute(Speaker::Attributes::LFE),
                             nullptr);
-    
+
     speakerTree.appendChild(speakerInfo, nullptr);
 }
 
@@ -205,7 +202,9 @@ void SpeakerManager::loadValueTreeFromXML(const juce::File& xmlFile)
 
 void SpeakerManager::recoverStateFromValueTree(const juce::ValueTree& newValueTree) 
 {
-    speakerTree         = newValueTree.createCopy();
+    speakerTree         = newValueTree;
+    if (!speakerTree.isValid())
+        DBG("Invalid when recovering state");
     auto numSpeakers    = speakerTree.getNumChildren();
     speakerMap.clear();
 
@@ -337,4 +336,8 @@ const juce::ValueTree& SpeakerManager::getSpeakerTree() const{
 unsigned const int SpeakerManager::getSpeakerCount() const
 {
     return static_cast<unsigned int>(speakerMap.size());
+}
+
+void SpeakerManager::initEmptySpeakerTree() {
+    speakerTree = juce::ValueTree {ProcessingConstants::TreeTags::inputSpeakerLayoutID};
 }

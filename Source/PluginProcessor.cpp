@@ -209,22 +209,43 @@ void USATAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
             auto settings           = params.getChildWithName(ProcessingConstants::TreeTags::settingsID);
             auto ambisonicsInput    = params.getChildWithName(ProcessingConstants::TreeTags::inputAmbisonicsID);
             auto ambisonicsOutput   = params.getChildWithName(ProcessingConstants::TreeTags::outputAmbisonicsID);
+            
             stateManager.updateAPVTSParameters(settings, ambisonicsInput, ambisonicsOutput);
             
+            // Speaker In
             auto speakersInput  = params.getChildWithName(ProcessingConstants::TreeTags::inputSpeakerLayoutID);
-            stateManager.inputSpeakerManager.recoverStateFromValueTree(speakersInput);
+            if (speakersInput.isValid())
+                stateManager.inputSpeakerManager.recoverStateFromValueTree(speakersInput);
+            else
+                stateManager.inputSpeakerManager.initEmptySpeakerTree();
             
+            // Speaker Out
             auto speakersOutput = params.getChildWithName(ProcessingConstants::TreeTags::outputSpeakerLayoutID);
-            stateManager.outputSpeakerManager.recoverStateFromValueTree(speakersOutput);
+            if (speakersOutput.isValid())
+                stateManager.outputSpeakerManager.recoverStateFromValueTree(speakersOutput);
+            else
+                stateManager.outputSpeakerManager.initEmptySpeakerTree();
             
+            // Coefficients
             auto coefficients   = params.getChildWithName(ProcessingConstants::TreeTags::coefficientsID);
-            stateManager.updateCoefficients(coefficients);
+            if (coefficients.isValid())
+                stateManager.updateCoefficients(coefficients);
+            else
+                stateManager.initCoefficientsTree();
             
+            // Plots
             auto plots = mainState.getChildWithName(ProcessingConstants::TreeTags::allPlotsID);
-            stateManager.updatePlots(plots);
+            if (plots.isValid())
+                stateManager.updatePlots(plots);
+            else
+                stateManager.initPlotsTree();
             
+            // Gains
             auto gainMatrix = mainState.getChildWithName(ProcessingConstants::TreeTags::gainMatrixID);
-            stateManager.updateGainMatrixCoefficients(gainMatrix);
+            if (gainMatrix.isValid())
+                stateManager.updateGainMatrixCoefficients(gainMatrix);
+            else
+                stateManager.initGainMatrixTree();
         }
     }
 }

@@ -44,21 +44,24 @@ namespace ProcessingConstants {
 
     namespace TreeTags {
     
-    const juce::String inputSpeakerLayoutID     = "Input_Loudspeaker_Layout";
-    const juce::String outputSpeakerLayoutID    = "Output_Loudspeaker_Layout";
+    const juce::String mainStateID              = "USAT_Designer";
+    
+    // USAT State Parameters
+    const juce::String stateParametersID        = "USAT_State_Parameters";
     const juce::String settingsID               = "Settings";
     const juce::String inputAmbisonicsID        = "Input_Ambisonics";
     const juce::String outputAmbisonicsID       = "Output_Ambisonics";
+    const juce::String inputSpeakerLayoutID     = "Input_Loudspeaker_Layout";
+    const juce::String outputSpeakerLayoutID    = "Output_Loudspeaker_Layout";
     const juce::String coefficientsID           = "Coefficients";
-    const juce::String stateParametersID        = "USAT_State_Parameters";
+    
+    // Gain Matrix
     const juce::String gainMatrixID             = "Gain_Matrix";
     const juce::String channelCountsID          = "Channel_Counts";
     const juce::String LFEChannelIndices        = "LFE_Channel_Indices";
     const juce::String matrixCoefficientsID     = "Matrix_Coefficients";
-    const juce::String mainStateID              = "Main_State";
-    const juce::String stateID                  = "USAT_State";
     
-    // Plot Tree Tags
+    // Plots
     const juce::String allPlotsID                   = "Plots";
     const juce::String energyPlotID                 = "EnergyPlot";
     const juce::String pressurePlotID               = "PressurePlot";

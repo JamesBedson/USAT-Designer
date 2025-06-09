@@ -411,7 +411,7 @@ def start_decoding(xml_string: str,
     if status_callback:
         status_callback("Optimizing")
     optimisation_data   = optimize_for_usat_designer(optimization_dict)
-    T_optimised         = optimisation_data[DSN_OUT_TRANSCODING_MATRIX].tolist()
+    T_optimised         = optimisation_data[DSN_OUT_TRANSCODING_MATRIX].T.tolist()
 
     if progress_callback:
         progress_callback(3.0 / total_steps)

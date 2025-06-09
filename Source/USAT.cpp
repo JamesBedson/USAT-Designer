@@ -69,7 +69,7 @@ void USAT::signalStopPythread() {
 // ==============================================================
 
 void USAT::produceSilence(juce::AudioBuffer<float> &buffer) {
-    DBG("Producing Silence");
+    //DBG("Producing Silence");
     for (int ch = 0; ch < buffer.getNumChannels(); ch++) {
         buffer.clear(ch, 0, buffer.getNumSamples());
     }
@@ -124,6 +124,9 @@ void USAT::process(juce::AudioBuffer<float> &buffer,
                    int numInputChannelsFromHost,
                    int numOutputChannelsFromHost)
 {
+    //DBG("Number of input channels: " << gainsMatrix.getNumInputChannels());
+    //DBG("Number of output channels: " << gainsMatrix.getNumOutputChannels());
+    
     bool dimensionsOkay = hostAndUSATInputDimensionsMatch(numInputChannelsFromHost) && hostAndUSATOutputDimensionsMatch(numOutputChannelsFromHost);
     
     if (!dimensionsOkay) {
@@ -133,6 +136,7 @@ void USAT::process(juce::AudioBuffer<float> &buffer,
     else {
         juce::AudioBuffer<float>* inputBuffer = nullptr;
         
+        // LFE INPUT ====================================================================
         if (LFEIndexIn == -1) {
             inputBuffer = &buffer; // can use the same buffer for input
         }
@@ -151,6 +155,7 @@ void USAT::process(juce::AudioBuffer<float> &buffer,
             inputBuffer = &multiplicationInputBuffer;
         }
         
+        // Matrix multiplication =======================================================
         auto numOutputChannelsMult  = gainsMatrix.getNumOutputChannels();
         auto numInputChannelsMult   = gainsMatrix.getNumInputChannels();
         auto numSamples             = buffer.getNumSamples();
@@ -172,6 +177,7 @@ void USAT::process(juce::AudioBuffer<float> &buffer,
             }
         }
         
+        // LFE OUTPUT =================================================================
         // No LFE in output
         if (LFEIndexOut == -1) {
             // Copy all channels directly
@@ -219,7 +225,7 @@ void USAT::fillMatrixFromValueTree(const juce::ValueTree& matrixTree) {
             gainsMatrix.assign(chIn, chOut, value);
         }
     }
-    gainsMatrix.debugMatrix();
+    //gainsMatrix.debugMatrix();
 }
 
 const GainMatrix& USAT::getGainMatrixInstance() const {

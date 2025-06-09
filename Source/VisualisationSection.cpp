@@ -117,7 +117,6 @@ void VisualisationSection::valueChanged(juce::Value &value)
     {
         if (static_cast<bool>(stateManager.signalPlots.getValue()) ==  true)
         {
-            DBG("Updating plots");
             loadPlots(true);
             stateManager.signalPlots = false;
         }

@@ -165,16 +165,20 @@ const juce::ValueTree StateManager::createSettingsTree() const
 const juce::ValueTree StateManager::createParameterValueTree() const
 {
     // Create Separate ValueTree for APVTS parameters
-    auto encodingSettingsTree   = createSettingsTree();
+    auto settingsTree           = createSettingsTree();
     auto ambisonicsInTree       = createInputAmbisonicsTree();
     auto ambisonicsOutTree      = createOutputAmbisonicsTree();
-    auto speakerLayoutInTree    = inputSpeakerManager.getSpeakerTree().createCopy();
-    auto speakerLayoutOutTree   = outputSpeakerManager.getSpeakerTree().createCopy();
+    auto speakerLayoutInTree    = inputSpeakerManager.getSpeakerTree();
+    if (!speakerLayoutInTree.isValid())
+        DBG("Speaker layout is invalid");
+    auto speakerLayoutOutTree   = outputSpeakerManager.getSpeakerTree();
+    if (speakerLayoutOutTree.isValid())
+        DBG("Output layout is valid in state manager");
     auto coeffTree              = coefficientsTree.createCopy();
     
     juce::ValueTree parameters {ProcessingConstants::TreeTags::stateParametersID};
     
-    parameters.addChild(encodingSettingsTree, -1, nullptr);
+    parameters.addChild(settingsTree, -1, nullptr);
     parameters.addChild(ambisonicsInTree, -1, nullptr);
     parameters.addChild(ambisonicsOutTree, -1, nullptr);
     parameters.addChild(speakerLayoutInTree, -1, nullptr);
@@ -265,21 +269,20 @@ void StateManager::debugValueTree(const juce::ValueTree& tree) const {
 
 const juce::ValueTree StateManager::createGlobalStateTree() const
 {
-    juce::ValueTree globalState {ProcessingConstants::TreeTags::stateID};
+    juce::ValueTree mainState {ProcessingConstants::TreeTags::mainStateID};
     auto parameterValueTree = createParameterValueTree();
     
-    globalState.addChild(parameterValueTree, -1, nullptr);
+    mainState.addChild(parameterValueTree, -1, nullptr);
     
     if (gainMatrixTree.isValid()) {
-        globalState.addChild(gainMatrixTree.createCopy(), -1, nullptr);
+        mainState.addChild(gainMatrixTree.createCopy(), -1, nullptr);
     }
     
     if (plotsTree.isValid()) {
-        globalState.addChild(plotsTree.createCopy(), -1, nullptr);
+        mainState.addChild(plotsTree.createCopy(), -1, nullptr);
     }
     
-    debugValueTree(globalState);
-    return globalState;
+    return mainState;
 }
 
 void StateManager::saveStateParametersToXML(const juce::File &xmlFile)

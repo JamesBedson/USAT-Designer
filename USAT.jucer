@@ -134,8 +134,7 @@
   </MODULES>
   <JUCEOPTIONS JUCE_STRICT_REFCOUNTEDPOINTER="1" JUCE_VST3_CAN_REPLACE_VST2="0"/>
   <EXPORTFORMATS>
-    <XCODE_MAC targetFolder="Builds/MacOSX" externalLibraries="python3.11" extraLinkerFlags="-L$(PROJECT_DIR)/../../python/versions/3.11.1/lib -Wl,-rpath,@executable_path/../Resources/python/versions/3.11.1/lib -lpython3.11&#10;"
-               postbuildCommand="#!/bin/bash&#10;set -e&#10;set -x&#10;&#10;APP_NAME=&quot;USAT&quot;&#10;&#10;# Project Root&#10;CURRENT_DIR=&quot;$(pwd)&quot;&#10;PROJECT_ROOT=&quot;$(cd &quot;$CURRENT_DIR/../..&quot; &amp;&amp; pwd)&quot;&#10;&#10;# Source Directory&#10;SCRIPTS_SRC=&quot;$PROJECT_ROOT/.Scripts&quot;&#10;PYTHON_SRC=&quot;$PROJECT_ROOT/python&quot;&#10;&#10;# Destination App Bundle&#10;APP_BUNDLE=&quot;$BUILT_PRODUCTS_DIR/$APP_NAME.app&quot;&#10;&#10;if [ ! -d &quot;$APP_BUNDLE&quot; ]; then&#10;    echo &quot;Error: App bundle not found at $APP_BUNDLE&quot;&#10;    exit 1&#10;fi&#10;&#10;# Resources Directory&#10;RESOURCES_DIR=&quot;$APP_BUNDLE/Contents/Resources&quot;&#10;mkdir -p &quot;$RESOURCES_DIR&quot;&#10;&#10;cp -R &quot;$SCRIPTS_SRC&quot; &quot;$RESOURCES_DIR/&quot;&#10;cp -R &quot;$PYTHON_SRC&quot; &quot;$RESOURCES_DIR/&quot;&#10;&#10;echo &quot;Copied resources to $APP_NAME.app&quot;&#10;">
+    <XCODE_MAC targetFolder="Builds/MacOSX" externalLibraries="python3.11" extraLinkerFlags="-L$(PROJECT_DIR)/../../python/versions/3.11.1/lib -Wl,-rpath,@executable_path/../Resources/python/versions/3.11.1/lib -lpython3.11&#10;">
       <CONFIGURATIONS>
         <CONFIGURATION isDebug="1" name="Debug" targetName="USAT" headerPath="$(PROJECT_DIR)/../../python/versions/3.11.1/include/python3.11"
                        libraryPath="$(PROJECT_DIR)/../../python/versions/3.11.1/lib"/>

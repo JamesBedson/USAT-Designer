@@ -70,6 +70,7 @@ public:
     
     void saveCurrentLayoutToXML(const juce::File& xmlFile);
     void loadValueTreeFromXML(const juce::File& xmlFile);
+    void initEmptySpeakerTree();
     void recoverStateFromValueTree(const juce::ValueTree& newValueTree);
 
     void printSpeakerMapProperties() {
