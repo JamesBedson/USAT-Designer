@@ -1,9 +1,9 @@
 import sys
 import os
 
-scripts_path = os.path.abspath(".Scripts")
-if scripts_path not in sys.path:
-    sys.path.insert(0, scripts_path)
+TOP_LEVEL_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+if TOP_LEVEL_DIR not in sys.path:
+    sys.path.insert(0, TOP_LEVEL_DIR)
 
 import numpy as np
 import usat_designer.processing.speaker_layouts as sl
@@ -128,7 +128,7 @@ def get_y_i(distribution: str, args) -> float:
 
         sample = -1
         while sample < 0:
-            sample = int(np.random.normal(mean, std))
+            sample = round(np.random.normal(mean, std), 2)
         return sample
 
     elif distribution == "lognormal":

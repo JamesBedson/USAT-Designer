@@ -90,7 +90,8 @@ DSN_SMPL_INPUT_LAYOUT_DESC      = "InputLayoutDescription"
 DSN_SMPL_OUTPUT_LAYOUT_DESC     = "OutputLayoutDescription"
 DSN_SMPL_QUALITY_SCORE          = "quality_score"
 DSN_SMPL_APPARENT_SOURCE_WIDTH  = "median_source_width"
-DSN_SMPL_SEED                   = "seed"    
+DSN_SMPL_SEED                   = "seed"
+DSN_SMPL_X_p                    = "X_p"
 # Distributions
 DSN_SMPL_UNIFORM     = "uniform"
 DSN_SMPL_NORMAL      = "normal"
@@ -120,3 +121,28 @@ DSN_PLT_LINE_COLOUR             = "#ffffff"
 DSN_PLT_GRADIENT_COOL           = "#0f4c5c"
 DSN_PLT_GRANDIENT_NEUTRAL       = "#fb8b24"
 DSN_PLT_GRADIENT_WARM           = "#5f0f40"
+
+DSN_PLT_ENERGY_TITLE            = "Energy"
+DSN_PLT_PRESSURE_TITLE          = "Pressure"
+DSN_PLT_RADIAL_I_TITLE          = "Radial Intensity"
+DSN_PLT_TRANSVERSE_I_TITLE      = "Transverse Intensity"
+DSN_PLT_RADIAL_V_TITLE          = "Radial Velocity"
+DSN_PLT_TRANSVERSE_V_TITLE      = "Transverse Velocity"
+DSN_PLT_ANGULAR_ERROR_TITLE     = "Angular Error"
+DSN_PLT_SOURCE_WIDTH_TITLE      = "Source Width"
+
+# DIRECTORIES ANALYSIS
+DSN_DIR_BASE                                = "analysis"
+DSN_DIR_PLOTS                               = "plots"
+DSN_DIR_USAT_STATE_PARAMETERS               = "usat_state_parameters"
+
+# PLOTS ANALYSIS
+DSN_PLT_PATH_FOCUS_VS_QUALITY_UNFILTERED    = "focus_vs_quality_unfiltered.png"
+DSN_PLT_PATH_FOCUS_VS_QUALITY_THRESHOLD     = "focus_vs_quality_threshold.png"
+DSN_PLT_PATH_FOCUS_QUALITY_DISTRIBUTION     = "focus_quality_distribution.png"
+DSN_PLT_PATH_FOCUS_GRID                     = "focus_grid.png"
+
+# USAT STATE PARAMETERS ANALYSIS
+DSN_PARAMS_PATH_LOW                         = "focus_low.xml"
+DSN_PARAMS_PATH_MID                         = "focus_mid.xml"
+DSN_PARAMS_PATH_HIGH                        = "focus_high.xml" 

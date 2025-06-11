@@ -10,7 +10,7 @@ gcloud auth configure-docker
 
 # === Build Docker image ===
 echo "Building Docker image..."
-docker build --platform linux/amd64 -t "${GCR_IMAGE}" -f .Scripts/docker/Dockerfile .
+docker build --platform linux/amd64 -t "${GCR_IMAGE}" .
 
 # === Push Docker image to GCR ===
 echo "Pushing image to GCR..."

@@ -1,0 +1,23 @@
+<?xml version="1.0" ?>
+<USAT_State_Parameters>
+  <Settings InputType="Ambisonics" OutputType="SpeakerLayout"/>
+  <Input_Ambisonics AmbisonicsOrderIn="5"/>
+  <Output_Ambisonics AmbisonicsOrderOut="1"/>
+  <Input_Loudspeaker_Layout/>
+  <Output_Loudspeaker_Layout>
+    <Speaker_1 ID="1" Azimuth="30.0" Elevation="0.0" Distance="1.0"/>
+    <Speaker_2 ID="2" Azimuth="-30.0" Elevation="0.0" Distance="1.0"/>
+    <Speaker_3 ID="3" Azimuth="0.0" Elevation="0.0" Distance="1.0"/>
+    <Speaker_4 ID="4" Azimuth="90.0" Elevation="0.0" Distance="1.0"/>
+    <Speaker_5 ID="5" Azimuth="-90.0" Elevation="0.0" Distance="1.0"/>
+    <Speaker_6 ID="6" Azimuth="150.0" Elevation="0.0" Distance="1.0"/>
+    <Speaker_7 ID="7" Azimuth="-150.0" Elevation="0.0" Distance="1.0"/>
+    <Speaker_8 ID="8" Azimuth="45.0" Elevation="45.0" Distance="1.0"/>
+    <Speaker_9 ID="9" Azimuth="-45.0" Elevation="45.0" Distance="1.0"/>
+    <Speaker_10 ID="10" Azimuth="135.0" Elevation="45.0" Distance="1.0"/>
+    <Speaker_11 ID="11" Azimuth="-135.0" Elevation="45.0" Distance="1.0"/>
+  </Output_Loudspeaker_Layout>
+  <InputLayoutDescription InputLayoutDescription=""/>
+  <OutputLayoutDescription OutputLayoutDescription="layout_7_0_4"/>
+  <Coefficients energy="5" radialIntensity="1" transverseIntensity="4" pressure="0" radialVelocity="0" transverseVelocity="0" inPhaseQuadratic="10" symmetryQuadratic="4" inPhaseLinear="0" symmetryLinear="0" totalGainsLinear="0" totalGainsQuadratic="0"/>
+</USAT_State_Parameters>

@@ -53,11 +53,12 @@ def create_speaker_layout(speaker_layout_xml: ET.Element) -> MyCoordinates:
         assert(azimuth is not None)
         assert(elevation is not None)
         assert(distance is not None)
-        assert(isLFE is not None)
         
-        if bool(float(isLFE)) == False:
+        is_lfe = float(isLFE) if isLFE is not None else 0.0
+
+        if bool(is_lfe) == False:
             speakers.append((float(azimuth), float(elevation), float(distance)))
-    
+
     return MyCoordinates.mult_points(npArray(speakers))
 
 
