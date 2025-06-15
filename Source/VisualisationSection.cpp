@@ -34,12 +34,15 @@ currentPlotSet(ImageToDisplay::energy)
     
     energyButton.setLookAndFeel(&lookAndFeel);
     energyButton.setButtonText("1");
+    energyButton.setMouseCursor(juce::MouseCursor::PointingHandCursor);
     
     intensityButton.setLookAndFeel(&lookAndFeel);
     intensityButton.setButtonText("2");
+    intensityButton.setMouseCursor(juce::MouseCursor::PointingHandCursor);
     
     errorButton.setLookAndFeel(&lookAndFeel);
     errorButton.setButtonText("3");
+    errorButton.setMouseCursor(juce::MouseCursor::PointingHandCursor);
     
     if (isPlotDataAvailable()) {
         loadPlots(false);
@@ -251,27 +254,31 @@ void VisualisationSection::loadPlots(bool repaintPanels) {
     
     auto plots = stateManager.plotsTree.createCopy();
     
-    juce::String energyPlotBase64               = plots.getChildWithName(ProcessingConstants::TreeTags::energyPlotID).getProperty(ProcessingConstants::TreeTags::plotData);
+    if (!plots.getNumChildren() == 0) {
+        juce::String energyPlotBase64               = plots.getChildWithName(ProcessingConstants::TreeTags::energyPlotID).getProperty(ProcessingConstants::TreeTags::plotData);
+        
+        juce::String pressurePlotBase64             = plots.getChildWithName(ProcessingConstants::TreeTags::pressurePlotID).getProperty(ProcessingConstants::TreeTags::plotData);
+        
+        juce::String radialIntensityPlotBase64      = plots.getChildWithName(ProcessingConstants::TreeTags::radialIntensityPlotID).getProperty(ProcessingConstants::TreeTags::plotData);
+        
+        juce::String transverseIntensityPlotsBase64 = plots.getChildWithName(ProcessingConstants::TreeTags::transverseIntensityPlotID).getProperty(ProcessingConstants::TreeTags::plotData);
+        
+        juce::String angularErrorPlotBase64         = plots.getChildWithName(ProcessingConstants::TreeTags::angularErrorPlotID).getProperty(ProcessingConstants::TreeTags::plotData);
+        
+        juce::String sourceWidthPlotBase64          = plots.getChildWithName(ProcessingConstants::TreeTags::sourceWidthPlotID).getProperty(ProcessingConstants::TreeTags::plotData);
+        
+        energyPlot              = decodeBase64ToImage(energyPlotBase64);
+        pressurePlot            = decodeBase64ToImage(pressurePlotBase64);
+        radialIntensityPlot     = decodeBase64ToImage(radialIntensityPlotBase64);
+        transverseIntensityPlot = decodeBase64ToImage(transverseIntensityPlotsBase64);
+        angularErrorPlot        = decodeBase64ToImage(angularErrorPlotBase64);
+        sourceWidthPlot         = decodeBase64ToImage(sourceWidthPlotBase64);
+        currentPlotSet          = VisualisationSection::ImageToDisplay::energy;
+    }
     
-    juce::String pressurePlotBase64             = plots.getChildWithName(ProcessingConstants::TreeTags::pressurePlotID).getProperty(ProcessingConstants::TreeTags::plotData);
-    
-    juce::String radialIntensityPlotBase64      = plots.getChildWithName(ProcessingConstants::TreeTags::radialIntensityPlotID).getProperty(ProcessingConstants::TreeTags::plotData);
-    
-    juce::String transverseIntensityPlotsBase64 = plots.getChildWithName(ProcessingConstants::TreeTags::transverseIntensityPlotID).getProperty(ProcessingConstants::TreeTags::plotData);
-    
-    juce::String angularErrorPlotBase64         = plots.getChildWithName(ProcessingConstants::TreeTags::angularErrorPlotID).getProperty(ProcessingConstants::TreeTags::plotData);
-    
-    juce::String sourceWidthPlotBase64          = plots.getChildWithName(ProcessingConstants::TreeTags::sourceWidthPlotID).getProperty(ProcessingConstants::TreeTags::plotData);
-    
-    energyPlot              = decodeBase64ToImage(energyPlotBase64);
-    pressurePlot            = decodeBase64ToImage(pressurePlotBase64);
-    radialIntensityPlot     = decodeBase64ToImage(radialIntensityPlotBase64);
-    transverseIntensityPlot = decodeBase64ToImage(transverseIntensityPlotsBase64);
-    angularErrorPlot        = decodeBase64ToImage(angularErrorPlotBase64);
-    sourceWidthPlot         = decodeBase64ToImage(sourceWidthPlotBase64);
-    
-    currentPlotSet = VisualisationSection::ImageToDisplay::energy;
-    setButtonToggleStates(currentPlotSet);
+    else {
+        currentPlotSet = placeholder;
+    }
     
     setPanelImages();
     

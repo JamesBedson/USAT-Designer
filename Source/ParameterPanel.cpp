@@ -17,6 +17,76 @@ ParameterPanel::ParameterPanel(StateManager& s)
 {
     stateManager.signalCoefficients.addListener(this);
     
+    // SIMPLE
+    addAndMakeVisible(focusParams);
+    addAndMakeVisible(focusLabel);
+    addAndMakeVisible(loadFocusParams);
+    
+    focusParams.setLookAndFeel(&lookAndFeel);
+    //focusLabel.setLookAndFeel(&lookAndFeel);
+    loadFocusParams.setLookAndFeel(&lookAndFeel);
+    
+    focusLabel.setText(ProcessingConstants::ParameterNames::focus,
+                       juce::dontSendNotification);
+    focusLabel.setFont(UI::Fonts::getMainFontWithSize(18.f));
+    focusLabel.setJustificationType(juce::Justification::centred);
+    focusParams.addItem(ProcessingConstants::ParameterNames::Focus::low, 1);
+    focusParams.addItem(ProcessingConstants::ParameterNames::Focus::mid, 2);
+    focusParams.addItem(ProcessingConstants::ParameterNames::Focus::high, 3);
+    focusParams.setSelectedId(1);
+    focusParams.setMouseCursor(juce::MouseCursor::PointingHandCursor);
+    
+    loadFocusParams.setButtonText("load");
+    loadFocusParams.setMouseCursor(juce::MouseCursor::PointingHandCursor);
+    
+    loadFocusParams.onClick = [this]() {
+        
+        auto currentItemID      = focusParams.getSelectedId();
+        
+        juce::File resourcesDir = juce::File::getSpecialLocation(juce::File::SpecialLocationType::invokedExecutableFile)
+                                              .getParentDirectory()
+                                              .getParentDirectory()
+                                              .getChildFile(ProcessingConstants::Paths::resourceDirectory);
+        
+        juce::File scriptsDir = resourcesDir
+            .getChildFile(ProcessingConstants::Paths::scriptsDirectory);
+    
+        juce::File focusPath = scriptsDir
+            .getChildFile(ProcessingConstants::Paths::usatDesignerPyDir)
+            .getChildFile(ProcessingConstants::Paths::notebooksDir)
+            .getChildFile(ProcessingConstants::Paths::analysisDir)
+            .getChildFile(ProcessingConstants::Paths::focusDir);
+        
+        if (currentItemID == 1) {
+            juce::File lowPath = focusPath
+                .getChildFile(ProcessingConstants::Paths::focusLow)
+                .withFileExtension(".xml");
+            
+            stateManager.loadStateParametersFromXML(lowPath);
+        }
+        
+        else if (currentItemID == 2) {
+            juce::File midPath = focusPath
+                .getChildFile(ProcessingConstants::Paths::focusMid)
+                .withFileExtension(".xml");
+    
+            stateManager.loadStateParametersFromXML(midPath);
+        }
+        
+        else if (currentItemID == 3) {
+            juce::File highPath = focusPath
+                .getChildFile(ProcessingConstants::Paths::focusHigh)
+                .withFileExtension(".xml");
+            
+            stateManager.loadStateParametersFromXML(highPath);
+        }
+        
+        else {
+            jassertfalse;
+        }
+    };
+    
+    // ADVANCED
     for (int i = 0; i < sliderPanels.size(); i++)
     {
         auto* sliderPanel = sliderPanels[i];
@@ -62,6 +132,10 @@ ParameterPanel::~ParameterPanel()
         auto* slider = &(sliderPanel->slider);
         slider->setLookAndFeel(nullptr);
     }
+    
+    focusParams.setLookAndFeel(nullptr);
+    focusLabel.setLookAndFeel(nullptr);
+    loadFocusParams.setLookAndFeel(nullptr);
 }
 
 void ParameterPanel::paint (juce::Graphics& g)
@@ -83,12 +157,19 @@ void ParameterPanel::paint (juce::Graphics& g)
 void ParameterPanel::resized()
 {
 }
+void ParameterPanel::setSimpleVisibility(bool isVisible)
+{
+    focusLabel.setVisible(isVisible);
+    focusParams.setVisible(isVisible);
+    loadFocusParams.setVisible(isVisible);
+}
 
-void ParameterPanel::setSimpleParameterPage() {
+void ParameterPanel::setAdvancedVisibility(bool isVisible) {
     for (auto* sliderPanel : sliderPanels) {
-        sliderPanel->setVisible(false);
+        sliderPanel->setVisible(isVisible);
     }
 }
+
 
 void ParameterPanel::refreshUIFromState()
 {
@@ -126,6 +207,9 @@ void ParameterPanel::valueChanged(juce::Value& value)
 
 void ParameterPanel::setAdvancedParameterPage(const ParameterSelectorChoice &advancedChoice)
 {
+    setSimpleVisibility(false);
+    setAdvancedVisibility(true);
+    
     int mid = static_cast<int>(sliderPanels.size()) / 2;
     
     auto slidersFirstHalf   = std::vector<SliderPanel*>(sliderPanels.begin(),
@@ -182,7 +266,7 @@ void ParameterPanel::setAdvancedParameterPage(const ParameterSelectorChoice &adv
         reducedBounds.getRight() - panelWidth
     };
     
-    // Now layout sliders in pairs vertically
+    // sliders in pairs vertically
     for (int i = 0; i + 1 < slidersFirstHalf.size(); i += 2)
     {
         int col = static_cast<int>(i / 2);
@@ -200,6 +284,46 @@ void ParameterPanel::setAdvancedParameterPage(const ParameterSelectorChoice &adv
                                            panelWidth,
                                            panelHeight);
     }
+}
+
+void ParameterPanel::setSimpleParameterPage()
+{
+    setAdvancedVisibility(false);
+    setSimpleVisibility(true);
+    
+    auto bounds = getLocalBounds();
+    auto width = bounds.getWidth();
+    auto height = bounds.getHeight();
+    
+    float
+    labelCentreX    = bounds.getCentreX(),
+    labelYOffset    = 30.f,
+    labelCentreY    = bounds.getCentreY() - labelYOffset,
+    labelWidth      = width * 0.4f,
+    labelHeight     = height * 0.1f;
+    
+    focusLabel.setSize(labelWidth, labelHeight);
+    focusLabel.setCentrePosition(labelCentreX, labelCentreY);
+    
+    float
+    focusParamsCentreX  = bounds.getCentreX(),
+    focusParamsOffset   = 10.f,
+    focusParamsCentreY  = focusLabel.getBottom() + labelHeight / 2 + focusParamsOffset,
+    focusParamsWidth    = width * 0.5f,
+    focusParamsHeight   = height * 0.15f;
+    
+    focusParams.setSize(focusParamsWidth, focusParamsHeight);
+    focusParams.setCentrePosition(focusParamsCentreX, focusParamsCentreY);
+    
+    float
+    loadFocusParamsCentreX  = bounds.getCentreX(),
+    loadFocusParamsOffset   = 10.f,
+    loadFocusButtonWidth    = width * 0.3f,
+    loadFocusButtonHeight   = height * 0.15f,
+    loadFocusParamsCentreY  = bounds.getBottom() - (loadFocusButtonHeight / 2.f) - loadFocusParamsOffset;
+    
+    loadFocusParams.setSize(loadFocusButtonWidth, loadFocusButtonHeight);
+    loadFocusParams.setCentrePosition(loadFocusParamsCentreX, loadFocusParamsCentreY);
 }
 
 void SliderPanel::resized() {

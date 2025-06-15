@@ -96,11 +96,13 @@ public:
             auto azimuth    = child.getProperty(ProcessingConstants::SpeakerProperties::azimuth);
             auto elevation  = child.getProperty(ProcessingConstants::SpeakerProperties::elevation);
             auto distance   = child.getProperty(ProcessingConstants::SpeakerProperties::distance);
+            auto LFE        = child.getProperty(ProcessingConstants::SpeakerProperties::isLFE);
             
             DBG("ID: " << ident.toString());
             DBG("Azimuth: " << azimuth.toString());
             DBG("Elevation: " << elevation.toString());
             DBG("Distance: " << distance.toString());
+            DBG("LFE: " << LFE.toString());
             DBG("=======================================");
         }
     }

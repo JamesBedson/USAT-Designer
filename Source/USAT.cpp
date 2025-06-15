@@ -20,7 +20,7 @@ processCompleted(processCompleted),
 stateManager(s)
 {
     stateManager.signalNewGainMatrix.addListener(this);
-    //pyThread = std::make_unique<PythonThread>(interpreter, gainsMatrix, base64PlotsStr);
+    pyThread = std::make_unique<PythonThread>(interpreter, gainsMatrix, base64PlotsStr);
 }
 
 USAT::~USAT()

@@ -52,10 +52,33 @@ sectionBackground(juce::ImageCache::getFromMemory(BinaryData::parameter_section3
     auto simpleHighlightedImg = juce::ImageCache::getFromMemory(BinaryData::simple_highlighted3x_png,
                                                              BinaryData::simple_highlighted3x_pngSize);
 
-    parameterStyleSwitch.setImages(true, true, true,
-        advancedImg, 1.f, juce::Colours::transparentBlack,
-        simpleImg, 1.f, juce::Colours::transparentBlack,
-        advancedImg, 1.f, juce::Colours::transparentBlack);
+    /*
+     void ImageButton::setImages (const bool resizeButtonNowToFitThisImage,
+                                  const bool rescaleImagesWhenButtonSizeChanges,
+                                  const bool preserveImageProportions,
+                                  const Image& normalImage_,
+                                  const float imageOpacityWhenNormal,
+                                  Colour overlayColourWhenNormal,
+                                  const Image& overImage_,
+                                  const float imageOpacityWhenOver,
+                                  Colour overlayColourWhenOver,
+                                  const Image& downImage_,
+                                  const float imageOpacityWhenDown,
+                                  Colour overlayColourWhenDown,
+                                  const float hitTestAlphaThreshold)
+     */
+    parameterStyleSwitch.setImages(
+        true,  // resize button to fit the image
+        true,  // rescale images when button size changes
+        true,  // preserve image proportions
+
+        simpleImg, 1.f, juce::Colours::transparentBlack, // normal
+        juce::Image(), 1.f, juce::Colours::transparentBlack, // hover (same as normal)
+        advancedImg,   1.f, juce::Colours::transparentBlack, // down
+
+        0.0f // hit test alpha threshold (0 = no transparency-based hit testing)
+    );
+
     
     simple.setText("simple", juce::dontSendNotification);
     simple.setFont(juce::Font(juce::FontOptions {"Futura", 15.f, juce::Font::plain}));

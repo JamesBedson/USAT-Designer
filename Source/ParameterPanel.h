@@ -50,7 +50,6 @@ public:
     juce::Slider slider;
     juce::Label textLabel;
     juce::Label valueLabel;
-    
 private:
     
     
@@ -81,8 +80,12 @@ public:
     void valueChanged(juce::Value& value) override;
     
 private:
-    StateManager& stateManager;
     
+    void setSimpleVisibility(bool isVisible);
+    void setAdvancedVisibility(bool isVisible);
+    
+    StateManager& stateManager;
+    // ADVANCED ===========================================
     SliderPanel
     energy,
     radialIntensity,
@@ -126,6 +129,11 @@ private:
         "linear\ngain",
         "quadratic\ngain"
     };
+    
+    // SIMPLE ===========================================
+    juce::ComboBox focusParams;
+    juce::TextButton loadFocusParams;
+    juce::Label focusLabel;
     
     CustomLNF lookAndFeel;
     

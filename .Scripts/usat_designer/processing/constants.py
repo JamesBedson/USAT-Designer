@@ -91,7 +91,7 @@ DSN_SMPL_OUTPUT_LAYOUT_DESC     = "OutputLayoutDescription"
 DSN_SMPL_QUALITY_SCORE          = "quality_score"
 DSN_SMPL_APPARENT_SOURCE_WIDTH  = "median_source_width"
 DSN_SMPL_SEED                   = "seed"
-DSN_SMPL_X_p                    = "X_p"
+DSN_SMPL_P                      = "P"
 # Distributions
 DSN_SMPL_UNIFORM     = "uniform"
 DSN_SMPL_NORMAL      = "normal"

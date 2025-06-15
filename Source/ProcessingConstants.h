@@ -16,6 +16,12 @@ namespace ProcessingConstants {
     const juce::String resourceDirectory        = "Resources";
     const juce::String universalTranscoderPyDir = "universal_transcoder";
     const juce::String usatDesignerPyDir        = "usat_designer";
+    const juce::String notebooksDir             = "notebooks";
+    const juce::String analysisDir              = "analysis";
+    const juce::String focusDir                 = "usat_state_parameters";
+    const juce::String focusLow                 = "focus_low";
+    const juce::String focusMid                 = "focus_mid";
+    const juce::String focusHigh                = "focus_high";
     const juce::String pythonDir                = "python";
     const juce::String sitePackagesDir          = "site-packages";
     const juce::String versionsDir              = "versions";
@@ -104,9 +110,16 @@ namespace ProcessingConstants {
     
     }
 
-    namespace PluginParameterNames {
+    namespace ParameterNames {
         
-    const juce::String bypass = "bypass";
+    const juce::String bypass   = "bypass";
+    const juce::String focus    = "focus";
+    
+        namespace Focus {
+        const juce::String low  = "low";
+        const juce::String mid  = "mid";
+        const juce::String high = "high";
+        }
     
     }
 

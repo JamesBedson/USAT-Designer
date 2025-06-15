@@ -19,5 +19,9 @@
   </Output_Loudspeaker_Layout>
   <InputLayoutDescription InputLayoutDescription="" />
   <OutputLayoutDescription OutputLayoutDescription="layout_7_0_4" />
-  <Coefficients energy="5" radialIntensity="5" transverseIntensity="4" pressure="0" radialVelocity="0" transverseVelocity="0" inPhaseQuadratic="10" symmetryQuadratic="0" inPhaseLinear="0" symmetryLinear="0" totalGainsLinear="0" totalGainsQuadratic="0" />
+  <Coefficients 
+  energy="5" radialIntensity="9" transverseIntensity="3" pressure="0" 
+  radialVelocity="0" transverseVelocity="0" inPhaseQuadratic="10" 
+  symmetryQuadratic="7" inPhaseLinear="0" symmetryLinear="0" 
+  totalGainsLinear="0" totalGainsQuadratic="0" />
 </USAT_State_Parameters></USAT_Designer>

@@ -67,7 +67,7 @@ private:
     
     ProcessingConstants::PythonParameterNameMap pythonParameterMap;
     
-    //PythonInterpreter interpreter;
+    PythonInterpreter interpreter;
     std::unique_ptr<PythonThread> pyThread;
     
     GainMatrix gainsMatrix;

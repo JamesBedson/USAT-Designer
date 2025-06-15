@@ -202,6 +202,7 @@ void SpeakerManager::loadValueTreeFromXML(const juce::File& xmlFile)
 
 void SpeakerManager::recoverStateFromValueTree(const juce::ValueTree& newValueTree) 
 {
+    DBG("Recovering State from speaker value tree");
     speakerTree         = newValueTree;
     if (!speakerTree.isValid())
         DBG("Invalid when recovering state");
@@ -217,10 +218,11 @@ void SpeakerManager::recoverStateFromValueTree(const juce::ValueTree& newValueTr
         auto elevation  = static_cast<float>(speakerInfo.getProperty(ProcessingConstants::SpeakerProperties::elevation));
         auto distance   = static_cast<float>(speakerInfo.getProperty(ProcessingConstants::SpeakerProperties::distance));
         auto lfe        = static_cast<float>(speakerInfo.getProperty(ProcessingConstants::SpeakerProperties::isLFE));
-
+        
         std::unique_ptr<Speaker> newSpeaker = std::make_unique<Speaker>(azimuth, elevation, distance, lfe);
         speakerMap[id] = std::move(newSpeaker);
     }
+    generateSpeakerTree();
 }
 
 

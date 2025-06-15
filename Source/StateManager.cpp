@@ -385,6 +385,13 @@ void StateManager::updatePlots(const juce::ValueTree &plots)
             });
         }
     }
+    else {
+        initPlotsTree();
+        
+        juce::MessageManager::callAsync([this]() {
+            signalPlots.setValue(true);
+        });
+    }
 }
 
 const int StateManager::getLFEChannelIndexInput() const
@@ -442,13 +449,23 @@ void StateManager::updateGainMatrixCoefficients(const juce::ValueTree& gainMatri
             });
         }
     }
+    
+    else {
+        initGainMatrixTree();
+        
+        juce::MessageManager::callAsync([this]() {
+            signalNewGainMatrix.setValue(true);
+        });
+    }
 }
 
 void StateManager::loadStateParametersFromXML(const juce::File& xmlFile)
 {
     auto xmlString      = xmlFile.loadFileAsString();
     auto globalState    = juce::ValueTree::fromXml(xmlString);
-
+    
+    auto xml = juce::XmlDocument::parse(xmlString);
+    
     if (!globalState.isValid()) {
         jassertfalse;
         return;
