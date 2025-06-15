@@ -132,7 +132,9 @@ Select **VST3** as the target. Click on the target again and choose:
 ---
 #### 10. Run the Post Build Script
 From the ```USAT-Designer``` directory, execute the ```./copy_files_to_vst3.sh``` script. This copies the ```python``` folder generated earlier and the ```.Scripts``` directory to the VST3 bundle. 
+
 - ```.Scripts```: Folder containing the necessary Python scripts to execute USAT in the backend.
+
 - ```python```: The python runtime
 ```bash
 ./copy_files_to_vst3.sh
