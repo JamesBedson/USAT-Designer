@@ -114,7 +114,7 @@ DSN_PLT_ANGULAR_ERROR           = "ae_base_64"
 DSN_PLT_SOURCE_WIDTH            = "sw_base_64"
 DSN_PLT_ACCCENT_COLOUR          = "#ee9b00"
 DSN_PLT_PRIMARY_BG_COLOUR       = "#15191F"
-DSN_PLT_SECONDARY_BG_COLOUR     = "#15191F"
+DSN_PLT_SECONDARY_BG_COLOUR     = "#202731"
 DSN_PLT_TEXT_COLOUR             = "#ffffff"
 DSN_PLT_LINE_COLOUR             = "#ffffff"
 

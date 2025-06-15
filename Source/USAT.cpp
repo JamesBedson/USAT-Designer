@@ -155,6 +155,7 @@ void USAT::process(juce::AudioBuffer<float> &buffer,
             inputBuffer = &multiplicationInputBuffer;
         }
         
+        tempOutputBuffer.clear();
         // Matrix multiplication =======================================================
         auto numOutputChannelsMult  = gainsMatrix.getNumOutputChannels();
         auto numInputChannelsMult   = gainsMatrix.getNumInputChannels();
@@ -198,8 +199,8 @@ void USAT::process(juce::AudioBuffer<float> &buffer,
             buffer.clear(LFEIndexOut, 0, numSamples);
             
             // Copying all channels after the LFE channel
-            for (int ch = LFEIndexOut; ch < numOutputChannelsFromHost - 1; ch++) {
-                buffer.copyFrom(ch + 1, 0, tempOutputBuffer, ch, 0, numSamples);
+            for (int ch = LFEIndexOut + 1; ch < numOutputChannelsFromHost; ch++) {
+                buffer.copyFrom(ch, 0, tempOutputBuffer, ch - 1, 0, numSamples);
             }
         }
     }
