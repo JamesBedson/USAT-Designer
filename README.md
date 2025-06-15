@@ -84,19 +84,23 @@ git  clone  https://github.com/JamesBedson/USAT-Designer.git
 cd  USAT-Designer
 ```
 
+
 #### 2. Clone JUCE v8.0.8
 ```bash
 git  clone  --branch  8.0.8  --depth  1  https://github.com/juce-framework/JUCE.git
 ```
 
+
 #### 3. Build the Projucer
 You can find it under ```bash JUCE/extras/Projucer/Builds/MacOSX```. Open the Xcode file called ```bash Projucer.xcodeproj``` and compile the app. Once it's finished, the application will be in ```JUCE/extras/Projucer/Builds/MacOSX/build/Debug```. It is recommended to add it to your Applications folder on your Mac.
+
 
 #### 4. Download Python
 Run the script **download_python.sh** in the ```USAT-Designer```directory.  This will download the correct Python version for this project, based on your system architecture.
 ```bash
 ./download_python.sh
 ```
+
 
 #### 5. Open the Project in Projucer
 Open **USAT.projucer**. You might need to remove the reference to the ```Assets``` folder, as it may configured with absolute paths. 
@@ -105,21 +109,26 @@ In Projucer, click on ```File Explorer``` and navigate to the ```Assets``` folde
 
 After that,  copy the ```Assets``` folder in the ```USAT-Designer``` directory back into the project.
 
+
 #### 6. Configure the Exporter in Projucer
 Go to **Exporters** &rarr; **Xcode (macOS)**
 Choose your system architecture: **arm64 / arm64e** for Apple Silicon, **x86_64** for intel
 *NOTE: This setup has been tested on an M1 Mac. Use x86_64 at your own discretion.*
 
+
 #### 7. Open the USAT Designer XCode Project
 Click on the XCode icon at the top of the Projucer window to open the project.
+
 
 #### 8. Set up the Build Scheme for VST3
 
 Select **VST3** as the target. Click on the target again and choose:
 **Edit Scheme** &rarr; **Build Configuration** &rarr; *Release*
 
+
 #### **9. Build the Project
 ```Cmd + B``` or by click the **Run** button in XCode.
+
 
 #### 10. Run the Post Build Script
 From the ```USAT-Designer``` directory, execute the ```./copy_files_to_vst3.sh``` script. This copies the ```python``` folder generated earlier and the ```.Scripts``` directory to the VST3 bundle. 
