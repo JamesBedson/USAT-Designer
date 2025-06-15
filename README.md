@@ -3,9 +3,8 @@
 
   
 
-**USAT Designer** is a JUCE-based spatial audio plugin based on the Universal Spatial Audio Transcoder. It is designed to transcode between Ambisonics (up to 5th order) and arbitrary user-defined loudspeaker layouts.
+**USAT Designer** is a spatial audio plugin based on the Universal Spatial Audio Transcoder. It is designed to transcode between Ambisonics (up to 5th order) and arbitrary user-defined loudspeaker layouts.
 
-  
 
 ---
 
@@ -60,7 +59,7 @@ Save/load:
 
 ## Setup Guide for macOS
 
-This guide will walk you through setting up **USAT Designer** on macOS.
+This guide will walk you through setting up **USAT Designer** on macOS. This build setup is currently not supported on Windows. 
 
 ---
 
