@@ -106,7 +106,7 @@ In Projucer, click on ```File Explorer``` and navigate to the ```Assets``` folde
 After that,  copy the ```Assets``` folder in the ```USAT-Designer``` directory back into the project.
 
 #### 6. Configure the Exporter in Projucer
-Go to Exporters ---> **Xcode (macOS)**
+Go to **Exporters** &rarr; **Xcode (macOS)**
 Choose your system architecture: **arm64 / arm64e** for Apple Silicon, **x86_64** for intel
 *NOTE: This setup has been tested on an M1 Mac. Use x86_64 at your own discretion.*
 
@@ -116,7 +116,7 @@ Click on the XCode icon at the top of the Projucer window to open the project.
 #### 8. Set up the Build Scheme for VST3
 
 Select **VST3** as the target. Click on the target again and choose:
-**Edit Scheme** ---> **Build Configuration** ---> *Release*
+**Edit Scheme** &rarr; **Build Configuration** &rarr; *Release*
 
 #### **9. Build the Project
 ```Cmd + B``` or by click the **Run** button in XCode.
