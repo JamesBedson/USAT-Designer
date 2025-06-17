@@ -24,8 +24,8 @@ public:
     
     USAT(juce::Value& progress,
          juce::Value& status,
-         juce::Value& processCompleted,
-         StateManager& stateManager);
+         StateManager& stateManager,
+         GainMatrix& gainMatrix);
     ~USAT();
     
     enum MatrixDim{
@@ -70,11 +70,10 @@ private:
     PythonInterpreter interpreter;
     std::unique_ptr<PythonThread> pyThread;
     
-    GainMatrix gainsMatrix;
+    GainMatrix& gainsMatrix;
     std::array<std::string, 6> base64PlotsStr;
     juce::Value& progressValue;
     juce::Value& statusValue;
-    juce::Value& processCompleted;
     juce::Value updateGainMatrixXML;
     StateManager& stateManager;
     

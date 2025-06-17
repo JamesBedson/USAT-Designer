@@ -58,10 +58,11 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
     
     StateManager stateManager;
-    USAT decoder;
+    std::unique_ptr<USAT> decoder;
     
     void decode();
     
+    GainMatrix  gainMatrix;
     juce::Value progressValue;
     juce::Value statusValue;
     juce::Value processCompleted;

@@ -12,20 +12,25 @@
 
 USAT::USAT(juce::Value& progress,
            juce::Value& status,
-           juce::Value& processCompleted,
-           StateManager& s)
-: progressValue(progress),
+           StateManager& s,
+           GainMatrix& g)
+: gainsMatrix(g),
+progressValue(progress),
 statusValue(status),
-processCompleted(processCompleted),
 stateManager(s)
 {
+    DBG("Loaded Decoder");
     stateManager.signalNewGainMatrix.addListener(this);
-    pyThread = std::make_unique<PythonThread>(interpreter, gainsMatrix, base64PlotsStr);
 }
 
 USAT::~USAT()
 {
-    
+    if (pyThread && pyThread->isThreadRunning())
+        {
+            pyThread->signalThreadShouldExit();
+            pyThread->waitForThreadToExit(1000);
+        }
+        pyThread = nullptr;
 }
 
 // GAINS ========================================================================
@@ -33,15 +38,13 @@ USAT::~USAT()
 void USAT::computeMatrix(const std::string& valueTreeXML,
                          std::function<void()> onComplete)
 {
+    pyThread = std::make_unique<PythonThread>(interpreter, gainsMatrix, base64PlotsStr);
+    
     pyThread->setNewValueTree(valueTreeXML);
     
-    pyThread->setOnDoneCallback([this, onComplete]()
-    {
-        if (onComplete) {
-            juce::MessageManager::callAsync(onComplete);
-            processCompleted = true;
-        }
-        
+    pyThread->setOnDoneCallback([onComplete]() {
+        if (onComplete)
+            onComplete();
     });
     
     pyThread->setOnProgressCallback([this](float progress) {

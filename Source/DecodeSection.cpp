@@ -189,11 +189,13 @@ void DecoderSettingsPanel::buttonClicked(juce::Button *button) {
     else if (button == &save)
     {
         saveStateToXML();
+        //stateManager.debugValueTree(stateManager.createGlobalStateTree());
     }
     
     else if (button == &load)
     {
         loadStateFromXML();
+        //stateManager.debugValueTree(stateManager.createGlobalStateTree());
     }
 }
 

@@ -165,13 +165,13 @@ const juce::ValueTree StateManager::createSettingsTree() const
 const juce::ValueTree StateManager::createParameterValueTree() const
 {
     // Create Separate ValueTree for APVTS parameters
-    auto settingsTree           = createSettingsTree();
-    auto ambisonicsInTree       = createInputAmbisonicsTree();
-    auto ambisonicsOutTree      = createOutputAmbisonicsTree();
-    auto speakerLayoutInTree    = inputSpeakerManager.getSpeakerTree();
+    auto settingsTree           = createSettingsTree().createCopy();
+    auto ambisonicsInTree       = createInputAmbisonicsTree().createCopy();
+    auto ambisonicsOutTree      = createOutputAmbisonicsTree().createCopy();
+    auto speakerLayoutInTree    = inputSpeakerManager.getSpeakerTree().createCopy();
     if (!speakerLayoutInTree.isValid())
         DBG("Speaker layout is invalid");
-    auto speakerLayoutOutTree   = outputSpeakerManager.getSpeakerTree();
+    auto speakerLayoutOutTree   = outputSpeakerManager.getSpeakerTree().createCopy();
     if (speakerLayoutOutTree.isValid())
         DBG("Output layout is valid in state manager");
     auto coeffTree              = coefficientsTree.createCopy();
@@ -185,6 +185,7 @@ const juce::ValueTree StateManager::createParameterValueTree() const
     parameters.addChild(speakerLayoutOutTree, -1, nullptr);
     parameters.addChild(coeffTree, -1, nullptr);
     
+    //debugValueTree(parameters);
     return parameters;
 }
 
@@ -288,7 +289,7 @@ const juce::ValueTree StateManager::createGlobalStateTree() const
 void StateManager::saveStateParametersToXML(const juce::File &xmlFile)
 {
     auto globalState = createGlobalStateTree();
-    
+    debugValueTree(globalState);
     if (auto xml = globalState.createXml()) {
         if (!xmlFile.existsAsFile()) {
             auto fileRes = xmlFile.create();
@@ -379,7 +380,7 @@ void StateManager::updatePlots(const juce::ValueTree &plots)
     if (plots.isValid()) {
         plotsTree = plots.createCopy();
         if (plotsTree.getNumChildren() != 0) {
-            
+        
             juce::MessageManager::callAsync([this]() {
                 signalPlots.setValue(true);
             });
@@ -463,7 +464,7 @@ void StateManager::loadStateParametersFromXML(const juce::File& xmlFile)
 {
     auto xmlString      = xmlFile.loadFileAsString();
     auto globalState    = juce::ValueTree::fromXml(xmlString);
-    
+    debugValueTree(globalState);
     auto xml = juce::XmlDocument::parse(xmlString);
     
     if (!globalState.isValid()) {

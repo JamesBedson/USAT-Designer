@@ -13,6 +13,10 @@
 #include <JuceHeader.h>
 #include "GainMatrix.h"
 
+namespace {
+    std::once_flag pythonInitFlag;
+}
+
 class ScopedGILGuard {
 public:
     ScopedGILGuard() {
@@ -33,79 +37,33 @@ private:
 class PythonInterpreter {
 public:
     
+    inline static std::atomic<int> instanceCount = 0;
+    
     PythonInterpreter() {
-        
-        // Setting up Python's location
-        juce::File resourcesDir = juce::File::getSpecialLocation(juce::File::SpecialLocationType::invokedExecutableFile)
-                                              .getParentDirectory()
-                                              .getParentDirectory()
-                                              .getChildFile(ProcessingConstants::Paths::resourceDirectory);
-                
-        juce::File pythonHomeDir    = resourcesDir.getChildFile(ProcessingConstants::Paths::pythonDir).getChildFile(ProcessingConstants::Paths::versionsDir).getChildFile(ProcessingConstants::Paths::pythonVersion);
-        const auto pythonHomeStr    = pythonHomeDir.getFullPathName().toStdString();
-        
-        PyConfig config;
-        config.write_bytecode = 0;
-        PyConfig_InitPythonConfig(&config);
-        PyConfig_SetBytesString(&config, &config.home, pythonHomeStr.c_str());
-        Py_InitializeFromConfig(&config);
-        PyConfig_Clear(&config);
-        
-        // Setting up modules
-        juce::File scriptsDir               = resourcesDir.getChildFile(ProcessingConstants::Paths::scriptsDirectory);
-        juce::File universalTranscoderDir   = scriptsDir.getChildFile(ProcessingConstants::Paths::universalTranscoderPyDir);
-        juce::File usatDesignerDir          = scriptsDir.getChildFile(ProcessingConstants::Paths::usatDesignerPyDir);
-        juce::File sitePackagesDir          = resourcesDir.getChildFile(ProcessingConstants::Paths::pythonDir).getChildFile(ProcessingConstants::Paths::sitePackagesDir);
-        
-        const std::string scriptsDirStr             = scriptsDir.getFullPathName().toStdString();
-        const std::string universalTranscoderDirStr = universalTranscoderDir.getFullPathName().toStdString();
-        const std::string usatDesignerDirStr        = usatDesignerDir.getFullPathName().toStdString();
-        const std::string sitePackagesDirStr        = sitePackagesDir.getFullPathName().toStdString();
-        
-        PyObject* sysPath                   = PySys_GetObject((char*)"path");
-        PyObject* scriptsDirPy              = PyUnicode_FromString(scriptsDirStr.c_str());
-        PyObject* universalTranscoderDirPy  = PyUnicode_FromString(universalTranscoderDirStr.c_str());
-        PyObject* usatDesignerDirPy         = PyUnicode_FromString(usatDesignerDirStr.c_str());
-        PyObject* sitePackagesDirPy         = PyUnicode_FromString(sitePackagesDirStr.c_str());
-                               
-        PyList_Append(sysPath, (scriptsDirPy) );
-        PyList_Append(sysPath, (universalTranscoderDirPy) );
-        PyList_Append(sysPath, (usatDesignerDirPy) );
-        PyList_Append(sysPath, (sitePackagesDirPy) );
-        
-        numpyModule             = loadModule("numpy");
-        myCoordinatesModule     = loadModule("universal_transcoder.auxiliars.my_coordinates");
-        optimisationModule      = loadModule("universal_transcoder.calculations.optimization");
-        launchUsatModule        = loadModule("processing.launch_usat");
-        
-        Py_DECREF(scriptsDirPy);
-        Py_DECREF(universalTranscoderDirPy);
-        Py_DECREF(usatDesignerDirPy);
-        Py_DECREF(sitePackagesDirPy);
-        
-        PyEval_SaveThread();
-        
-        DBG("Python initialised...");
-        
+        instanceCount++;
+        initialisePythonOnce();
     }
     
     ~PythonInterpreter() {
-        
-        if (!_Py_IsFinalizing()) {
+        if (--instanceCount == 0) {
             ScopedGILGuard gil;
 
-            if (numpyModule)
-                Py_DECREF(numpyModule);
-            if (myCoordinatesModule)
-                Py_DECREF(myCoordinatesModule);
-            if (optimisationModule)
-                Py_DECREF(optimisationModule);
-            if (launchUsatModule)
-                Py_DECREF(launchUsatModule);
+            // Optional: guard against shutdown races
+            if (!_Py_IsFinalizing()) {
+                Py_XDECREF(numpyModule);
+                Py_XDECREF(myCoordinatesModule);
+                Py_XDECREF(optimisationModule);
+                Py_XDECREF(launchUsatModule);
+            }
+
+            numpyModule = nullptr;
+            myCoordinatesModule = nullptr;
+            optimisationModule = nullptr;
+            launchUsatModule = nullptr;
         }
     }
     
-    PyObject* loadModule(std::string name) {
+    inline static PyObject* loadModule(std::string name) {
         
         PyObject* moduleName    = PyUnicode_FromString(name.c_str());
         PyObject* pyModule      = PyImport_Import(moduleName);
@@ -115,10 +73,9 @@ public:
         if (!pyModule) {
             PyErr_Print();
             DBG("Failed to load Python module: " << name);
-            Py_DECREF(pyModule);
             return nullptr;
         }
-        
+
         return pyModule;
     }
     
@@ -325,17 +282,78 @@ public:
     
 private:
     
-    PyObject* numpyModule;
-    PyObject* myCoordinatesModule;
-    PyObject* optimisationModule;
-    PyObject* launchUsatModule;
-    
+    inline static PyObject* numpyModule;
+    inline static PyObject* myCoordinatesModule;
+    inline static PyObject* optimisationModule;
+    inline static PyObject* launchUsatModule;
+
+    static void initialisePythonOnce() {
+        std::call_once(pythonInitFlag, [] {
+            //juce::File resourcesDir = juce::File("/Users/james/Documents/Development/USAT-Designer");
+            
+            juce::File resourcesDir = juce::File::getSpecialLocation(juce::File::SpecialLocationType::invokedExecutableFile)
+                                          .getParentDirectory()
+                                          .getParentDirectory()
+                                          .getChildFile(ProcessingConstants::Paths::resourceDirectory);
+             
+            juce::File pythonHomeDir = resourcesDir.getChildFile(ProcessingConstants::Paths::pythonDir)
+                                                   .getChildFile(ProcessingConstants::Paths::versionsDir)
+                                                   .getChildFile(ProcessingConstants::Paths::pythonVersion);
+            const auto pythonHomeStr = pythonHomeDir.getFullPathName().toStdString();
+            
+            juce::File scriptsDir               = resourcesDir.getChildFile(ProcessingConstants::Paths::scriptsDirectory);
+            
+            PyConfig config;
+            PyConfig_InitPythonConfig(&config);
+            PyConfig_SetBytesString(&config, &config.home, pythonHomeStr.c_str());
+            config.write_bytecode = 0;
+            
+            Py_InitializeFromConfig(&config);
+            PyConfig_Clear(&config);
+            
+            // Setting up modules
+            juce::File universalTranscoderDir   = scriptsDir.getChildFile(ProcessingConstants::Paths::universalTranscoderPyDir);
+            juce::File usatDesignerDir          = scriptsDir.getChildFile(ProcessingConstants::Paths::usatDesignerPyDir);
+            juce::File sitePackagesDir          = resourcesDir.getChildFile(ProcessingConstants::Paths::pythonDir).getChildFile(ProcessingConstants::Paths::sitePackagesDir);
+            
+            const std::string scriptsDirStr             = scriptsDir.getFullPathName().toStdString();
+            const std::string universalTranscoderDirStr = universalTranscoderDir.getFullPathName().toStdString();
+            const std::string usatDesignerDirStr        = usatDesignerDir.getFullPathName().toStdString();
+            const std::string sitePackagesDirStr        = sitePackagesDir.getFullPathName().toStdString();
+            
+            PyObject* sysPath                   = PySys_GetObject((char*)"path");
+            PyObject* scriptsDirPy              = PyUnicode_FromString(scriptsDirStr.c_str());
+            PyObject* universalTranscoderDirPy  = PyUnicode_FromString(universalTranscoderDirStr.c_str());
+            PyObject* usatDesignerDirPy         = PyUnicode_FromString(usatDesignerDirStr.c_str());
+            PyObject* sitePackagesDirPy         = PyUnicode_FromString(sitePackagesDirStr.c_str());
+                                   
+            PyList_Append(sysPath, (scriptsDirPy) );
+            PyList_Append(sysPath, (universalTranscoderDirPy) );
+            PyList_Append(sysPath, (usatDesignerDirPy) );
+            PyList_Append(sysPath, (sitePackagesDirPy) );
+            
+            numpyModule             = loadModule("numpy");
+            myCoordinatesModule     = loadModule("universal_transcoder.auxiliars.my_coordinates");
+            optimisationModule      = loadModule("universal_transcoder.calculations.optimization");
+            launchUsatModule        = loadModule("processing.launch_usat");
+            
+            Py_DECREF(scriptsDirPy);
+            Py_DECREF(universalTranscoderDirPy);
+            Py_DECREF(usatDesignerDirPy);
+            Py_DECREF(sitePackagesDirPy);
+            
+            PyEval_SaveThread();
+            
+            DBG("Python initialized once.");
+        });
+    }
 };
 
 
 class PythonThread : public juce::Thread {
   
 public:
+    juce::WeakReference<PythonThread>::Master masterReference;
     
     using OnDoneCallback        = std::function<void()>;
     using OnProgressCallback    = std::function<void(float)>;
@@ -354,6 +372,7 @@ public:
     
     ~PythonThread() {
         stopThread(1000);
+        masterReference.clear();
     }
     
     void setOnDoneCallback(OnDoneCallback callback) {
@@ -370,35 +389,31 @@ public:
     
     void run() override
     {
-        
         if (valueTreeXML.empty()) {
             DBG("Value Tree does not contain info.");
             return;
         }
-        
+
         bool success = pyRef.runScript(valueTreeXML,
                                        gainsMatrixRef,
                                        base64PlotsStrRef,
                                        onProgress,
                                        onStatus);
-        
+
+        DBG("Python script finished, success = " << (success ? "true" : "false"));
+
         if (success && onDone) {
-            juce::MessageManager::callAsync([this]() {
-                onDone();
-            });
-        }
-        else {
+            onDone();
+        } else {
             DBG("Python Execution failed.");
         }
-        
+
         signalThreadShouldExit();
     }
-    
+
     void setNewValueTree(const std::string& valueTreeXML) {
         this->valueTreeXML = valueTreeXML;
     }
-    
-    juce::Value progress;
     
 private:
     PythonInterpreter&          pyRef;

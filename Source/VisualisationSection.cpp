@@ -61,6 +61,7 @@ VisualisationSection::~VisualisationSection()
     energyButton.setLookAndFeel(nullptr);
     intensityButton.setLookAndFeel(nullptr);
     errorButton.setLookAndFeel(nullptr);
+    stateManager.signalPlots.removeListener(this);
 }
 
 void VisualisationSection::paint (juce::Graphics& g)
@@ -116,6 +117,7 @@ void VisualisationSection::resized()
 
 void VisualisationSection::valueChanged(juce::Value &value)
 {
+    /*
     if (value.refersToSameSourceAs(stateManager.signalPlots))
     {
         if (static_cast<bool>(stateManager.signalPlots.getValue()) ==  true)
@@ -123,6 +125,11 @@ void VisualisationSection::valueChanged(juce::Value &value)
             loadPlots(true);
             stateManager.signalPlots = false;
         }
+    }*/
+    
+    if (static_cast<bool>(value.getValue()) == true) {
+        loadPlots(true);
+        //stateManager.signalPlots = false;
     }
 }
 
