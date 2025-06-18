@@ -21,6 +21,7 @@ stateManager(s)
 {
     DBG("Loaded Decoder");
     stateManager.signalNewGainMatrix.addListener(this);
+    matrixReadyAtomic.store(false);
 }
 
 USAT::~USAT()
@@ -31,6 +32,7 @@ USAT::~USAT()
             pyThread->waitForThreadToExit(1000);
         }
         pyThread = nullptr;
+    updateGainMatrixXML.removeListener(this);
 }
 
 // GAINS ========================================================================
@@ -38,8 +40,8 @@ USAT::~USAT()
 void USAT::computeMatrix(const std::string& valueTreeXML,
                          std::function<void()> onComplete)
 {
+    gainsMatrix.clear();
     pyThread = std::make_unique<PythonThread>(interpreter, gainsMatrix, base64PlotsStr);
-    
     pyThread->setNewValueTree(valueTreeXML);
     
     pyThread->setOnDoneCallback([onComplete]() {
@@ -84,59 +86,91 @@ bool USAT::hostAndUSATInputDimensionsMatch(const int numInputChannelsHost)
     
     // No LFE
     if (LFEIndexIn == -1)
+    {
+        //DBG("No LFE");
+        //DBG("Number of input channels: " << juce::String(numInputChannelsHost));
         return gainMatrixNumInputs == numInputChannelsHost;
+    }
     
     // containsLFE
-    else
+    else {
+        //DBG("Input contains LFE");
         return gainMatrixNumInputs == numInputChannelsHost - 1;
+    }
 }
 
 bool USAT::hostAndUSATOutputDimensionsMatch(const int numOutputChannelsHost) {
+    int numChannelsThatShouldBePresent {0};
     const int gainMatrixNumOutputs = gainsMatrix.getNumOutputChannels();
     
     // No LFE
-    if (LFEIndexOut == -1)
-        return gainMatrixNumOutputs == numOutputChannelsHost;
+    if (LFEIndexOut == -1) {
+        numChannelsThatShouldBePresent = gainMatrixNumOutputs;
+    }
     
     // contains LFE
-    else
-        return gainMatrixNumOutputs == numOutputChannelsHost - 1;
+    else {
+        numChannelsThatShouldBePresent = gainMatrixNumOutputs + 1;
+    }
+    //DBG("Number of output channels that should be present: " + juce::String(numChannelsThatShouldBePresent));
+    //DBG("Number of output channels defined in host: " + juce::String(numOutputChannelsHost));
+    
+    return numChannelsThatShouldBePresent <= numOutputChannelsHost;
     
 }
 void USAT::prepare(double sampleRate,
                    int samplesPerBlock,
-                   int numInputChannelsInHost,
-                   int numOutputChannelsInHost,
                    int LFEChannelIndexInput,
                    int LFEChannelIndexOutput)
 {
-    LFEIndexIn  = LFEChannelIndexInput;
-    LFEIndexOut = LFEChannelIndexOutput;
-    
-    auto inputChannelsMult  = gainsMatrix.getNumInputChannels();
-    multiplicationInputBuffer.setSize(inputChannelsMult, samplesPerBlock);
-    multiplicationInputBuffer.clear();
-    
-    auto outputChannelsTemp = gainsMatrix.getNumOutputChannels();
-    tempOutputBuffer.setSize(outputChannelsTemp, samplesPerBlock);
-    tempOutputBuffer.clear();
+    currentSamplesPerBlock  = samplesPerBlock;
+    prepareTempBuffers();
+    //matrixReadyAtomic.store(true);
 }
 
-
+void USAT::prepareTempBuffers() {
+    auto inputChannelsMult  = gainsMatrix.getNumInputChannels();
+    
+    if (inputChannelsMult <= 0) {
+        matrixReadyAtomic.store(false);
+        return;
+    }
+    
+    DBG("Setting multiplication buffer:");
+    DBG("Input channels: " + juce::String(inputChannelsMult));
+    DBG("Current samples per block: " + juce::String(currentSamplesPerBlock));
+    multiplicationInputBuffer.setSize(inputChannelsMult, currentSamplesPerBlock);
+    multiplicationInputBuffer.clear();
+    DBG("After Setting Ch (matrix): " + juce::String(multiplicationInputBuffer.getNumChannels()));
+    DBG("After Setting Smpl (matrix): " + juce::String(multiplicationInputBuffer.getNumChannels()));
+    
+    auto outputChannelsTemp = gainsMatrix.getNumOutputChannels();
+    if (outputChannelsTemp <= 0) {
+        matrixReadyAtomic.store(false);
+        return;
+    }
+    
+    DBG("Setting temp out buffer:");
+    DBG("Input channels: " + juce::String(outputChannelsTemp));
+    DBG("Current samples per block: " + juce::String(currentSamplesPerBlock));
+    tempOutputBuffer.setSize(outputChannelsTemp, currentSamplesPerBlock);
+    tempOutputBuffer.clear();
+    
+    DBG("After Setting Ch (temp): " + juce::String(tempOutputBuffer.getNumChannels()));
+    DBG("After Setting Smpl (temp): " + juce::String(tempOutputBuffer.getNumChannels()));
+    
+    matrixReadyAtomic.store(true);
+}
 void USAT::process(juce::AudioBuffer<float> &buffer,
                    int numInputChannelsFromHost,
-                   int numOutputChannelsFromHost)
+                   int totalNumOutputChannelsHost)
 {
-    //DBG("Number of input channels: " << gainsMatrix.getNumInputChannels());
-    //DBG("Number of output channels: " << gainsMatrix.getNumOutputChannels());
+   
+    bool inputChannelsMatch     = hostAndUSATInputDimensionsMatch(numInputChannelsFromHost);
+    bool outputChannelsMatch    = hostAndUSATOutputDimensionsMatch(totalNumOutputChannelsHost);
+    bool dimensionsOkay         = inputChannelsMatch && outputChannelsMatch;
     
-    bool dimensionsOkay = hostAndUSATInputDimensionsMatch(numInputChannelsFromHost) && hostAndUSATOutputDimensionsMatch(numOutputChannelsFromHost);
-    
-    if (!dimensionsOkay) {
-        produceSilence(buffer);
-    } // Channels don't match --> silence
-    
-    else {
+    if (dimensionsOkay == true && matrixReadyAtomic.load() == true) {
         juce::AudioBuffer<float>* inputBuffer = nullptr;
         
         // LFE INPUT ====================================================================
@@ -166,21 +200,24 @@ void USAT::process(juce::AudioBuffer<float> &buffer,
         
         // Apply gain matrix to input buffer
         for (int chOut = 0; chOut < numOutputChannelsMult; chOut++) {
-            
             float* dest = tempOutputBuffer.getWritePointer(chOut);
-            
             for (int chIn = 0; chIn < numInputChannelsMult; chIn++) {
                 
                 const float* src = inputBuffer->getReadPointer(chIn);
                 float gain       = gainsMatrix.get(chIn, chOut);
 
-                if (chIn == 0)
+                if (chIn == 0) {
                     juce::FloatVectorOperations::multiply(dest, src, gain, numSamples);
-                else
+                    //DBG("Destination channel 1: " + juce::String(dest[0]));
+                }
+                else {
                     juce::FloatVectorOperations::addWithMultiply(dest, src, gain, numSamples);
+                    //DBG("Destination channel x: " + juce::String(dest[0]));
+                }
+                    
             }
         }
-        
+        int numOutputChannelsFromHost =  numOutputChannelsMult + 1;
         // LFE OUTPUT =================================================================
         // No LFE in output
         if (LFEIndexOut == -1) {
@@ -206,20 +243,67 @@ void USAT::process(juce::AudioBuffer<float> &buffer,
                 buffer.copyFrom(ch, 0, tempOutputBuffer, ch - 1, 0, numSamples);
             }
         }
+        
+        if (totalNumOutputChannelsHost > numOutputChannelsFromHost) {
+            for (int ch = numOutputChannelsFromHost; ch < totalNumOutputChannelsHost; ++ch) {
+                buffer.clear(ch, 0, buffer.getNumSamples());
+            }
+        }
+    } // IF PROCESSING
+    else {
+        DBG("Producing Silence");
+        produceSilence(buffer);
     }
 }
 
 void USAT::fillMatrixFromValueTree(const juce::ValueTree& matrixTree) {
     
-    auto channelCountTree = matrixTree.getChildWithName(ProcessingConstants::TreeTags::channelCountsID);
+    auto channelCountTree   = matrixTree.getChildWithName(ProcessingConstants::TreeTags::channelCountsID);
+    auto LFEIndexTree       = matrixTree.getChildWithName(ProcessingConstants::TreeTags::LFEChannelIndices);
+    auto coefficientsTree   = matrixTree.getChildWithName(ProcessingConstants::TreeTags::matrixCoefficientsID);
     
-    const int inputChannels  = channelCountTree.getProperty(ProcessingConstants::GainMatrixTree::ChannelCount::inputChannelCount);
-    const int outputChannels = channelCountTree.getProperty(ProcessingConstants::GainMatrixTree::ChannelCount::outputChannelCount);
-
-    gainsMatrix.setNumChannels(inputChannels, outputChannels);
+    if (!(channelCountTree.isValid()) && !(LFEIndexTree.isValid()) && !(coefficientsTree.isValid()) )
+        {
+            matrixReadyAtomic.store(false);
+        }
     
+    if (channelCountTree.getNumProperties() <= 0
+        && LFEIndexTree.getNumProperties() <= 0
+        && coefficientsTree.getNumProperties() <= 0) {
+        matrixReadyAtomic.store(false);
+    }
+    
+    // CHANNELS
+    const int inputChannels  = channelCountTree.getProperty(ProcessingConstants::
+                                                            GainMatrixTree::
+                                                            ChannelCount::
+                                                            inputChannelCount);
+    const int outputChannels = channelCountTree.getProperty(ProcessingConstants::
+                                                            GainMatrixTree::
+                                                            ChannelCount::
+                                                            outputChannelCount);
+    DBG("Input Channels: " + juce::String(inputChannels));
+    DBG("Output Channels: " + juce::String(outputChannels));
+    
+    gainsMatrix.setNumChannels(static_cast<int>(inputChannels),
+                               static_cast<int>(outputChannels));
+    
+    // LFE
+    const auto LFEIndexInProp   = LFEIndexTree.getProperty(ProcessingConstants::
+                                                           GainMatrixTree::
+                                                           LFEIndices::
+                                                           inputLFEChannelIndex);
+    
+    const auto LFEIndexOutProp  = LFEIndexTree.getProperty(ProcessingConstants::
+                                                           GainMatrixTree::
+                                                           LFEIndices::
+                                                           outputLFEChannelIndex);
+    
+    LFEIndexIn  = static_cast<int>(LFEIndexInProp);
+    LFEIndexOut = static_cast<int>(LFEIndexOutProp);
+    
+    // COEFFICIENTS
     auto matrixCoefficientsTree = matrixTree.getChildWithName(ProcessingConstants::TreeTags::matrixCoefficientsID);
-    
     for (int chIn = 0; chIn < inputChannels; chIn++) {
         for (int chOut = 0; chOut < outputChannels; chOut++) {
             
@@ -229,7 +313,6 @@ void USAT::fillMatrixFromValueTree(const juce::ValueTree& matrixTree) {
             gainsMatrix.assign(chIn, chOut, value);
         }
     }
-    //gainsMatrix.debugMatrix();
 }
 
 const GainMatrix& USAT::getGainMatrixInstance() const {
@@ -245,6 +328,9 @@ void USAT::valueChanged(juce::Value &value) {
         if (static_cast<bool>(value.getValue()) == true) {
             auto gainMatrixTree = stateManager.gainMatrixTree.createCopy();
             fillMatrixFromValueTree(gainMatrixTree);
+            DBG("Finished filling matrix.");
+            prepareTempBuffers();
+            DBG("Finished preparing Buffers.");
             value.setValue(false);
         }
     }

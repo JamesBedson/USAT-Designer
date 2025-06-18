@@ -13,14 +13,14 @@
 #include <JuceHeader.h>
 #include "StateManager.h"
 #include "UIConstants.h"
-
+#include "PluginProcessor.h"
 //==============================================================================
 /*
 */
 class Header  : public juce::Component
 {
 public:
-    Header(StateManager&);
+    Header(StateManager&, USATAudioProcessor& p);
     ~Header() override;
 
     void paint (juce::Graphics&) override;
@@ -30,5 +30,6 @@ private:
     StateManager& stateManager;
     
     juce::Label pluginName, about;
+    juce::Label numInputs, numOutputs;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Header)
 };

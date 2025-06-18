@@ -67,6 +67,8 @@ public:
     juce::Value statusValue;
     juce::Value processCompleted;
     juce::Value matrixIsReady;
+    std::atomic<bool> matrixReadyAtomic;
+    int currentNumSamples {0};
     
     bool isPlaying, stoppedPlaying;
     int64_t playheadCurrentPosition {0}, playheadPreviousPosition {0};

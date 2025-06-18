@@ -50,7 +50,7 @@ void WrappedAudioProcessorEditor::resized()
 
 RasterComponent::RasterComponent(USATAudioProcessor& p)
 : audioProcessor(p),
-header(p.stateManager),
+header(p.stateManager, p),
 controlSection(p.stateManager),
 visualisationSection(p.stateManager),
 decodeSection(p),

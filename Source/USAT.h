@@ -41,14 +41,12 @@ public:
     
     void prepare(double sampleRate,
                  int samplesPerBlock,
-                 int numInputChannelsInHost,
-                 int numOutputChannelsInHost,
                  int LFEChannelIndexInput,
                  int LFEChannelIndexOutput);
     
     void process(juce::AudioBuffer<float>& buffer,
-                 int numInputChannelsFromHost,
-                 int numOutputChannelsFromHost);
+                 int numInputChannelsBuffer,
+                 int totalNumOutputChannelsHost);
     
     const GainMatrix& getGainMatrixInstance() const;
     const std::array<std::string, 6> getBase64Plots() const;
@@ -59,7 +57,10 @@ public:
     bool hostAndUSATInputDimensionsMatch(const int numInputChannelsHost);
     bool hostAndUSATOutputDimensionsMatch(const int numOutputChannelsHost);
     
+    int currentSamplesPerBlock {0};
+    std::atomic<bool> matrixReadyAtomic;
 private:    
+    void prepareTempBuffers();
     
     juce::AudioBuffer<float> tempInputBuffer;
     juce::AudioBuffer<float> tempOutputBuffer;
@@ -77,5 +78,5 @@ private:
     juce::Value updateGainMatrixXML;
     StateManager& stateManager;
     
-    int LFEIndexIn, LFEIndexOut;
+    int LFEIndexIn {-1}, LFEIndexOut {-1};
 };

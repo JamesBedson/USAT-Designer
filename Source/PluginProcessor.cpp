@@ -15,22 +15,23 @@ USATAudioProcessor::USATAudioProcessor()
      : AudioProcessor (BusesProperties()
                      #if ! JucePlugin_IsMidiEffect
                       #if ! JucePlugin_IsSynth
-                       .withInput ("Input",  juce::AudioChannelSet::discreteChannels(64), true)
+                       .withInput ("Input",  juce::AudioChannelSet::ambisonic(5), true)
                       #endif
-                       .withOutput ("Output", juce::AudioChannelSet::discreteChannels(64), true)
+                       .withOutput ("Output", juce::AudioChannelSet::ambisonic(5), true)
                      #endif
                        ),
 #endif
 stateManager(userParameters),
 userParameters(*this, nullptr, juce::Identifier("USAT Designer"),
 #include "ParameterDefinitions.h"
-               )
+                        )
 {
     juce::MessageManager::callAsync([this](){
         decoder = std::make_unique<USAT>(progressValue,
                                          statusValue,
                                          stateManager,
                                          gainMatrix);
+        decoder->currentSamplesPerBlock = currentNumSamples;
     });
 }
 
@@ -109,38 +110,43 @@ void USATAudioProcessor::decode()
         stateManager.signalPlots.setValue(false);
     });
     
+    decoder->matrixReadyAtomic.store(false);
     std::string usatParameters = stateManager.createParameterValueTree().toXmlString().toStdString();
-    decoder->computeMatrix(usatParameters, [this]() {
-        DBG("Setting state params");
-        const auto matrix           = decoder->getGainMatrixInstance();
-        const auto base64Plots      = decoder->getBase64Plots();
-        
-        auto gainMatrixTree         = stateManager.createGainMatrixTree(matrix);
-        stateManager.gainMatrixTree = gainMatrixTree.createCopy();
-        
-        auto plotsTree              = stateManager.createPlotTree(base64Plots);
-        stateManager.plotsTree      = plotsTree.createCopy();
-        stateManager.updatePlots(stateManager.plotsTree);
-        
-        //stateManager.debugValueTree(stateManager.gainMatrixTree);
-    });
+    if (decoder) {
+        decoder->computeMatrix(usatParameters, [this]() {
+            
+            const auto matrix           = decoder->getGainMatrixInstance();
+            const auto base64Plots      = decoder->getBase64Plots();
+            
+            DBG("Updating gain matrix");
+            stateManager.gainMatrixTree = stateManager.createGainMatrixTree(matrix).createCopy();
+            stateManager.updateGainMatrixCoefficients(stateManager.gainMatrixTree);
+            
+            auto plotsTree              = stateManager.createPlotTree(base64Plots);
+            stateManager.plotsTree      = plotsTree.createCopy();
+            stateManager.updatePlots(stateManager.plotsTree);
+            
+        });
+    }
 }
 
 void USATAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
+    currentNumSamples = samplesPerBlock;
+    
     if (decoder) {
+        
         auto gainMatrixTree     = stateManager.createGainMatrixTree(decoder->getGainMatrixInstance());
         auto LFEChannelIndices  = gainMatrixTree.getChildWithName(ProcessingConstants::TreeTags::LFEChannelIndices);
-        
         int LFEInputChannelIdx  = LFEChannelIndices.getProperty(ProcessingConstants::GainMatrixTree::LFEIndices::inputLFEChannelIndex);
         int LFEOutputChannelIdx = LFEChannelIndices.getProperty(ProcessingConstants::GainMatrixTree::LFEIndices::outputLFEChannelIndex);
-        
+        //DBG(getTotalNumInputChannels());
+        //DBG(getTotalNumOutputChannels());
         decoder->prepare(sampleRate,
                         samplesPerBlock,
-                        getTotalNumInputChannels(),
-                        getTotalNumOutputChannels(),
                         LFEInputChannelIdx,
                         LFEOutputChannelIdx);
+        
     }
 }
 
@@ -152,26 +158,28 @@ void USATAudioProcessor::releaseResources()
 
 #ifndef JucePlugin_PreferredChannelConfigurations
 bool USATAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
-{
-    // Allow any number of channels on input and output
-    // Optionally, enforce at least some channels to avoid edge cases
-    if (layouts.getMainOutputChannelSet().isDisabled())
-        return false;
-
-   #if ! JucePlugin_IsSynth
+{        
+    #if ! JucePlugin_IsSynth
     if (layouts.getMainInputChannelSet().isDisabled())
         return false;
-   #endif
+    #endif
 
-    return true; // Support any input and output channel configuration determined by the host.
+    return true;
 }
 #endif
 
+
+
+
 void USATAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
+    
     juce::ScopedNoDenormals noDenormals;
     if (decoder) {
-        decoder->process(buffer, getTotalNumInputChannels(), getTotalNumOutputChannels());
+        decoder->process(buffer,
+                         buffer.getNumChannels(),       // Input channels in buffer
+                         getTotalNumOutputChannels()    // Total Number of output channels;
+                         );
     }
 }
 
@@ -197,7 +205,6 @@ void USATAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
         const juce::ValueTree gainMatrixTree = stateManager.createGainMatrixTree(gainMatrix);
         if (gainMatrixTree.getNumChildren() > 0) {
             mainState.addChild(gainMatrixTree, -1, nullptr);
-            matrixIsReady.setValue(true);
         }
     }
     
@@ -257,8 +264,11 @@ void USATAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
             
             // Gains
             auto gainMatrix = mainState.getChildWithName(ProcessingConstants::TreeTags::gainMatrixID);
-            if (gainMatrix.isValid())
+            if (gainMatrix.isValid() && gainMatrix.getNumChildren() > 0) {
+                if (decoder)
+                    decoder->matrixReadyAtomic.store(false);
                 stateManager.updateGainMatrixCoefficients(gainMatrix);
+            }
             else
                 stateManager.initGainMatrixTree();
         }

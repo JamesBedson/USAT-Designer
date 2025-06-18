@@ -289,16 +289,20 @@ private:
 
     static void initialisePythonOnce() {
         std::call_once(pythonInitFlag, [] {
-            //juce::File resourcesDir = juce::File("/Users/james/Documents/Development/USAT-Designer");
-            
+            juce::File resourcesDir = juce::File("/Users/james/Documents/Development/USAT-Designer");
+            /*
             juce::File resourcesDir = juce::File::getSpecialLocation(juce::File::SpecialLocationType::invokedExecutableFile)
                                           .getParentDirectory()
                                           .getParentDirectory()
                                           .getChildFile(ProcessingConstants::Paths::resourceDirectory);
-             
+             */
+            
             juce::File pythonHomeDir = resourcesDir.getChildFile(ProcessingConstants::Paths::pythonDir)
                                                    .getChildFile(ProcessingConstants::Paths::versionsDir)
                                                    .getChildFile(ProcessingConstants::Paths::pythonVersion);
+            
+            DBG("Resources: " <<resourcesDir.getFullPathName());
+            DBG("Python Home: " << pythonHomeDir.getFullPathName());
             const auto pythonHomeStr = pythonHomeDir.getFullPathName().toStdString();
             
             juce::File scriptsDir               = resourcesDir.getChildFile(ProcessingConstants::Paths::scriptsDirectory);

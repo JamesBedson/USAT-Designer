@@ -261,7 +261,7 @@ void VisualisationSection::loadPlots(bool repaintPanels) {
     
     auto plots = stateManager.plotsTree.createCopy();
     
-    if (!plots.getNumChildren() == 0) {
+    if (plots.getNumChildren() != 0) {
         juce::String energyPlotBase64               = plots.getChildWithName(ProcessingConstants::TreeTags::energyPlotID).getProperty(ProcessingConstants::TreeTags::plotData);
         
         juce::String pressurePlotBase64             = plots.getChildWithName(ProcessingConstants::TreeTags::pressurePlotID).getProperty(ProcessingConstants::TreeTags::plotData);

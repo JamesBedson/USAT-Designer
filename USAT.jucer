@@ -2,7 +2,7 @@
 
 <JUCERPROJECT id="VGD34c" name="USAT" projectType="audioplug" useAppConfig="0"
               addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1" pluginName="USAT Designer"
-              companyName="James_UPF">
+              companyName="James_UPF" pluginFormats="buildStandalone,buildVST3">
   <MAINGROUP id="eTEwYW" name="USAT">
     <GROUP id="{75454686-D724-A001-9E08-39DABE220BEF}" name="Source">
       <GROUP id="{6DC1898D-4BF4-8425-78D1-5CB9243978E9}" name="Utils">

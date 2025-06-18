@@ -61,7 +61,6 @@ coefficientsTree(ProcessingConstants::TreeTags::coefficientsID)
     initCoefficientsTree();
     initGainMatrixTree();
     initPlotsTree();
-    
     signalNewGainMatrix.setValue(false);
 }
 
