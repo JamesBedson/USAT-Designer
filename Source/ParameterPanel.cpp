@@ -12,8 +12,9 @@
 #include "ParameterPanel.h"
 
 //==============================================================================
-ParameterPanel::ParameterPanel(StateManager& s)
-: stateManager(s)
+ParameterPanel::ParameterPanel(StateManager& s, USATAudioProcessor& processor)
+: stateManager(s),
+p(processor)
 {
     stateManager.signalCoefficients.addListener(this);
     
@@ -61,7 +62,7 @@ ParameterPanel::ParameterPanel(StateManager& s)
             juce::File lowPath = focusPath
                 .getChildFile(ProcessingConstants::Paths::focusLow)
                 .withFileExtension(".xml");
-            
+            p.matrixReadyAtomic.store(false);
             stateManager.loadStateParametersFromXML(lowPath);
         }
         
@@ -69,7 +70,8 @@ ParameterPanel::ParameterPanel(StateManager& s)
             juce::File midPath = focusPath
                 .getChildFile(ProcessingConstants::Paths::focusMid)
                 .withFileExtension(".xml");
-    
+
+            p.matrixReadyAtomic.store(false);
             stateManager.loadStateParametersFromXML(midPath);
         }
         
@@ -77,7 +79,7 @@ ParameterPanel::ParameterPanel(StateManager& s)
             juce::File highPath = focusPath
                 .getChildFile(ProcessingConstants::Paths::focusHigh)
                 .withFileExtension(".xml");
-            
+            p.matrixReadyAtomic.store(false);
             stateManager.loadStateParametersFromXML(highPath);
         }
         

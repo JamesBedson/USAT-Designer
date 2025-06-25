@@ -194,6 +194,7 @@ void DecoderSettingsPanel::buttonClicked(juce::Button *button) {
     
     else if (button == &load)
     {
+        audioProcessor.matrixReadyAtomic.store(false);
         loadStateFromXML();
         //stateManager.debugValueTree(stateManager.createGlobalStateTree());
     }

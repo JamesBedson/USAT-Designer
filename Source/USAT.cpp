@@ -251,7 +251,7 @@ void USAT::process(juce::AudioBuffer<float> &buffer,
         }
     } // IF PROCESSING
     else {
-        DBG("Producing Silence");
+        //DBG("Producing Silence");
         produceSilence(buffer);
     }
 }
@@ -261,6 +261,8 @@ void USAT::fillMatrixFromValueTree(const juce::ValueTree& matrixTree) {
     auto channelCountTree   = matrixTree.getChildWithName(ProcessingConstants::TreeTags::channelCountsID);
     auto LFEIndexTree       = matrixTree.getChildWithName(ProcessingConstants::TreeTags::LFEChannelIndices);
     auto coefficientsTree   = matrixTree.getChildWithName(ProcessingConstants::TreeTags::matrixCoefficientsID);
+    
+    stateManager.debugValueTree(matrixTree);
     
     if (!(channelCountTree.isValid()) && !(LFEIndexTree.isValid()) && !(coefficientsTree.isValid()) )
         {
@@ -313,6 +315,7 @@ void USAT::fillMatrixFromValueTree(const juce::ValueTree& matrixTree) {
             gainsMatrix.assign(chIn, chOut, value);
         }
     }
+    gainsMatrix.debugMatrix();
 }
 
 const GainMatrix& USAT::getGainMatrixInstance() const {

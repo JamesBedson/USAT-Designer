@@ -1,0 +1,20 @@
+<USAT_Designer>
+  <USAT_State_Parameters>
+    <Settings InputType="" OutputType=""/>
+    <Input_Ambisonics/>
+    <Output_Ambisonics/>
+    <Input_Loudspeaker_Layout/>
+    <Output_Loudspeaker_Layout>
+      <Speaker_1 ID="1" Azimuth="30.0" Elevation="0.0" Distance="1.0" IsLFE="0.0"/>
+      ...
+    </Output_Loudspeaker_Layout>
+    <Coefficients energy="5.0"
+    ...>
+    </USAT_State_Parameters>
+    <Gain_Matrix/>
+      <Channel_Counts/>
+      <LFE_Channel_Indices>
+      <Matrix_Coefficients/>
+    </Gain_Matrix>
+    <Plots/>
+  <USAT_Designer>

@@ -12,9 +12,9 @@
 #include "ControlSection.h"
 
 //==============================================================================
-ControlSection::ControlSection(StateManager& s)
+ControlSection::ControlSection(StateManager& s, USATAudioProcessor& processor)
 : stateManager(s),
-parameterPanel(s),
+parameterPanel(s, processor),
 sectionBackground(juce::ImageCache::getFromMemory(BinaryData::parameter_section3x_png, BinaryData::parameter_section3x_pngSize))
 {
     addAndMakeVisible(parameterPanel);

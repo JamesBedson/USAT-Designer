@@ -14,6 +14,7 @@
 #include "StateManager.h"
 #include "UIConstants.h"
 #include "CustomLNF.h"
+#include "PluginProcessor.h"
 //==============================================================================
 /*
 */
@@ -68,7 +69,7 @@ public:
         Advanced_2
     };
     
-    ParameterPanel(StateManager&);
+    ParameterPanel(StateManager&, USATAudioProcessor&);
     ~ParameterPanel() override;
 
     void paint (juce::Graphics&) override;
@@ -134,7 +135,7 @@ private:
     juce::ComboBox focusParams;
     juce::TextButton loadFocusParams;
     juce::Label focusLabel;
-    
+    USATAudioProcessor& p;
     CustomLNF lookAndFeel;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ParameterPanel)

@@ -15,6 +15,7 @@
 #include "ParameterPanel.h"
 #include "UIConstants.h"
 #include "CustomLNF.h"
+#include "PluginProcessor.h"
 
 //==============================================================================
 /*
@@ -22,7 +23,7 @@
 class ControlSection  : public juce::Component
 {
 public:
-    ControlSection(StateManager&);
+    ControlSection(StateManager&, USATAudioProcessor&);
     ~ControlSection() override;
 
     void paint (juce::Graphics&) override;
