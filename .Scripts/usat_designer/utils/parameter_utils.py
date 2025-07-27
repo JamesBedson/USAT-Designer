@@ -45,11 +45,8 @@ def restore_coordinates(serialized):
 def save_output_data(xml_string: str,
                     output_dict: dict,
                     seed: float,
-                    base_dir: str):
+                    output_dir: str):
 
-    os.makedirs(base_dir, exist_ok=True)
-
-    output_dir = os.path.join(base_dir, f"usat_{seed}")
     os.makedirs(output_dir, exist_ok=True)
 
     xml_path = os.path.join(output_dir, f"y_parameters_{seed}.xml")

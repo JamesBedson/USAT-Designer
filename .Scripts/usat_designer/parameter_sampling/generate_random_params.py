@@ -12,7 +12,6 @@ import xml.dom.minidom as minidom
 import yaml
 from usat_designer.processing.constants import *
 from usat_designer.processing.launch_usat import decode_for_random_parameter_generation
-from usat_designer.processing.optimize_usat_designer import optimize_for_usat_designer
 from usat_designer.utils import parameter_utils as pu
 import usat_designer.utils.directory_utils as dir_utils
 import time
@@ -216,45 +215,50 @@ def generate_decoding_data(args):
 
 
 def main(num_decodings_targeted, yaml_path, bucket_name):
-    
+    start_time = time.time()
+
     if not yaml_path:
         print("No config file specified...")
         return
-    
-    yaml_base   = os.path.splitext(os.path.basename(yaml_path))[0]
-    base_dir    = os.path.join(tempfile.gettempdir(), yaml_base)
-    os.makedirs(base_dir, exist_ok=True)
 
-    if (dir_utils.is_gcs_path(yaml_path)):
-        local_yaml_path, _ = dir_utils.download_yaml_to_directory(yaml_path, base_dir)
-    else:
-        local_yaml_path = dir_utils.copy_local_yaml_to_directory(yaml_path, base_dir)
+    # Create initial working directories
+    dirs                = dir_utils.prepare_output_dir(yaml_path, bucket_name)
+    config_base_name    = dirs[0] # Config name
+    output_dir          = dirs[1] # Directory for this config file
+    local_yaml_path     = dirs[2] # Path to yaml
 
+    # Upload YAML to GC bucket if applicable 
     if bucket_name:
-        gcs_config_path = f"outputs/{yaml_base}/{os.path.basename(local_yaml_path)}"
-        dir_utils.upload_file_to_gcs(local_path=local_yaml_path,
-                                     bucket_name=bucket_name,
-                                     destination_blob_name=gcs_config_path)
+            yaml_blob = f"{config_base_name}/{config_base_name}.yaml"
+            if not dir_utils.blob_exists(bucket_name, yaml_blob):
+                dir_utils.upload_blob_to_gcs(local_file_path=local_yaml_path,
+                                             bucket_name=bucket_name,
+                                             destination_blob_name=yaml_blob)
 
-    seed        = secrets.randbits(32)
-    start_time  = time.time()
-    
-    for i in range(1, num_decodings_targeted + 1):
+    for i in range(1, num_decodings_targeted + 1):    
         print(f"Starting iteration {i}...")
-        
-        xml, output_dict    = generate_decoding_data((local_yaml_path, seed))
+
+        # Create directory for results
+        seed        = secrets.randbits(32)
+        results_dir = os.path.join(output_dir, f"seed_{seed}")
+
+        # Generate data
+        xml, output_dict = generate_decoding_data((local_yaml_path, seed))
         assert(isinstance(xml, str))
 
-        output_dir = pu.save_output_data(xml, output_dict, seed, base_dir)
-        print(f"Saved output files to: {output_dir}")
+        # Save and serialise output data
+        saved_dir = pu.save_output_data(xml, output_dict, seed, results_dir)
+        print(f"Saved output files to: {saved_dir}")
 
+        # Upload to GCS
         if bucket_name:
-            print("Uploading...")
-            gcs_prefix = f"outputs/{yaml_base}/usat_{seed}"
-            dir_utils.upload_directory_to_gcs(output_dir, bucket_name, gcs_prefix)
+            print("Uploading to GCS...")
+            gcs_dir = f"{config_base_name}/seed_{seed}"
+            dir_utils.upload_directory_to_gcs(saved_dir, bucket_name, gcs_dir)
 
     elapsed = time.time() - start_time
     print(f"Elapsed time: {elapsed}")
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate random decoding data.")
